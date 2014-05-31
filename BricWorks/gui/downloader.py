@@ -46,8 +46,18 @@ import os.path
 import time
 import wave
 
-if False:
+EDISON_VERSION = "\x20"
+
+if sys.platform.startswith("linux"):
+    PLATFORM="linux"
     import pyglet
+elif sys.platform.startswith("win"):
+    PLATFORM="win"
+elif sys.platform.startswith("darwin"):
+    PLATFORM="mac"
+else:
+    print "Unsupported platform -", sys.platform
+    sys.exit(1)
 
 import token_assembler
 import token_downloader
@@ -275,13 +285,18 @@ class audio_downloader(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.on_cancel, self.cancel)
 
         self.download_bytes, self.dtype, self.version = get_bytes(file_name)
-        self.byte_count = len(self.download_bytes)
+
+        prefix = token_downloader.SERIAL_WAKEUP_STR + token_downloader.PROGRAM_STR + \
+                 EDISON_VERSION
+        self.prefix_len = len(prefix)
+        self.byte_count = self.prefix_len + len(self.download_bytes)
         self.gauge.SetRange(self.byte_count)
         self.gauge.SetValue(0)
-
-        self.help_text.SetLabel("Download size is %d bytes." % (len(self.download_bytes),))
+        
+        self.help_text.SetLabel("Download size is %d bytes." % (self.byte_count,))
 
         # convert to wav file
+        convert(list(bytearray(prefix)), "prefix.wav");
         convert(self.download_bytes, "program.wav");
         
     def on_cancel(self, event):
@@ -303,16 +318,32 @@ class audio_downloader(wx.Dialog):
 
         time.sleep(1)
         
-        if False:
-            sound = pyglet.media.load("program.wav", streaming=False)
-            sound.play()
-        else:
+        if PLATFORM == "linux":
+            s0 = pyglet.media.load("prefix.wav", streaming=False)
+            s0.play()
+            self.gauge.SetValue(self.prefix_len)
+            time.sleep(2)
+            s1 = pyglet.media.load("program.wav", streaming=False)
+            s1.play()
+        elif PLATFORM == "win":
+            if (not self.soundedBefore):
+                s0 = wx.Sound("prefix.wav")
+                s0.Play(wx.SOUND_SYNC)
+                self.soundedBefore = True
+                
+            s0 = wx.Sound("prefix.wav")
+            s0.Play(wx.SOUND_SYNC)
+            self.soundedBefore = True
+            self.gauge.SetValue(self.prefix_len)
+                
+            time.sleep(2)
+            
             s1 = wx.Sound("program.wav")
             s1.Play(wx.SOUND_SYNC)
             
 
         self.gauge.SetValue(self.byte_count)
-        self.help_text.SetLabel("Downloading was successful!")
+        self.help_text.SetLabel("Finished downloading")
         self.start.Enable()
 
         self.Refresh()
