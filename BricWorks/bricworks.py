@@ -48,11 +48,12 @@ SESSION_FILE_NAME = "session.dat"
 
 class Session_data(object):
     def __init__(self):
-        self.sdata_version = 4
+        self.sdata_version = 11
         self.win_size = (800,600)
         self.win_pos = None
         self.sashes = [140, 120, -120]
         self.advanced_mode = False
+        self.edison_mode = True
         self.usb_device = ""
         self.toolbar = True
         self.main_window = 'program'
@@ -74,7 +75,7 @@ class Session_data(object):
         self.main_window = v3_data.main_window
 
 sdata = Session_data()
-sdata_changed = False
+sdata_changed = True
 
 
 class Bricworks_frame(wx.Frame):
@@ -257,6 +258,23 @@ class Bricworks_frame(wx.Frame):
         gui.win_data.config_change_name(2, "RIGHT_LED")
         gui.win_data.config_change_name(10, "LEFT_LED")
 
+    def set_edison_modules(self):
+        gui.win_data.config_clear()
+        gui.win_data.config_add(0,"Line Tracker")
+        gui.win_data.config_add(1, "LED")
+        gui.win_data.config_add(3, "Motor A")
+        gui.win_data.config_add(5, "IR Receiver")
+        gui.win_data.config_add(6, "Sounder")
+        gui.win_data.config_add(7, "IR Transmitter")
+        gui.win_data.config_add(8, "Motor B")
+        gui.win_data.config_add(11, "LED")
+
+        gui.win_data.config_change_name(3, "RIGHT_MOTOR")
+        gui.win_data.config_change_name(8, "LEFT_MOTOR")
+        
+        gui.win_data.config_change_name(1, "RIGHT_LED")
+        gui.win_data.config_change_name(11, "LEFT_LED")
+
 
     def set_adv_mode(self):
         # advanced mode
@@ -331,15 +349,22 @@ class Bricworks_frame(wx.Frame):
         for i in range(len(self.splitters)):
             self.splitters[i].SetSashPosition(sdata.sashes[i])
 
-        if (sdata.advanced_mode):
-            self.set_adv_mode()
-            id = self.menu_bar.FindMenuItem("&Settings", "&Advanced mode")
-            self.menu_bar.FindItemById(id).Check(True)
-        else:
+        # BED-EDISON remove the Advancedmode menu item
+        if (sdata.edison_mode):
             self.set_basic_mode()
             id = self.menu_bar.FindMenuItem("&Settings", "&Advanced mode")
             self.menu_bar.FindItemById(id).Check(False)
-            self.set_initial_basic_modules()
+            self.set_edison_modules()
+        else:
+            if (sdata.advanced_mode):
+                self.set_adv_mode()
+                id = self.menu_bar.FindMenuItem("&Settings", "&Advanced mode")
+                self.menu_bar.FindItemById(id).Check(True)
+            else:
+                self.set_basic_mode()
+                id = self.menu_bar.FindMenuItem("&Settings", "&Advanced mode")
+                self.menu_bar.FindItemById(id).Check(False)
+                self.set_initial_basic_modules()
 
         id = self.menu_bar.FindMenuItem("&Settings", "&Display toolbar")
         if (sdata.toolbar):
@@ -502,6 +527,12 @@ class Bricworks_frame(wx.Frame):
         self.tool_bar.AddControl(self.add_var_button)
         self.Bind(wx.EVT_BUTTON, self.on_add_variable, id=self.add_var_id)
 
+        self.tool_bar.AddSeparator()
+        self.add_prog_id = wx.NewId()
+        self.add_prog_button = wx.Button(self.tool_bar, self.add_prog_id, "Program Edison", size=(140,-1))
+        self.tool_bar.AddControl(self.add_prog_button)
+        self.Bind(wx.EVT_BUTTON, self.on_program_button, id=self.add_prog_id)
+        
 
         
         self.tool_bar.Realize()
@@ -530,6 +561,25 @@ class Bricworks_frame(wx.Frame):
     def on_add_variable(self, event):
         gui.win_data.add_variable()
 
+    def on_program_button(self, event):
+        global sdata_changed
+        gui.win_data.selection_drop_all()
+        dialog = gui.downloader.audio_downloader("", "Download over audio")
+        result = dialog.ShowModal()
+        dialog.Destroy()
+        
+    def menu_new_edison(self, event):
+        gui.win_data.selection_drop_all()
+        if (self.handle_unsaved_changes("Unsaved program.")):
+            gui.win_data.clear_pdata()
+            self.set_basic_mode()
+            self.set_edison_modules()
+            self.change_dirty(False)
+            self.save_file = ""
+            gui.win_data.status_file(self.save_file)
+            gui.win_data.make_var_and_config_update()
+            self.Refresh()
+            
     def menu_new_basic(self, event):
         gui.win_data.selection_drop_all()
         if (self.handle_unsaved_changes("Unsaved program.")):
@@ -838,16 +888,38 @@ class Bottom_right_panel(wx.Panel):
 
 
 #----------------------------------------------------------------------
-
+    
 def main(file_path=None):
     app = wx.PySimpleApp()
     frame = Bricworks_frame(None)
     frame.Show(True)
     frame.Update()
+    
 
     if (file_path):
         frame.load_existing_path(file_path)
+
+    app.MainLoop()
+
+#----------------------------------------------------------------------
+
+class BricworksApp(wx.App):
+    def OnInit(self):
+        self.frame = Bricworks_frame(None)
+        self.SetTopWindow(self.frame)
+        self.frame.Show(True)
+        self.frame.Update()
+        return True
+
+    def load(self, file_path):
+        print "Loading", file_path
+        self.frame.load_existing_path(file_path)
+        self.frame.Update()
     
+def main2(file_path=None):
+    app = BricworksApp(False)
+    if (file_path):
+        app.load(file_path)
     app.MainLoop()
     
 

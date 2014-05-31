@@ -69,34 +69,35 @@ tone_durations = ["sixteenth", "eighth", "quarter", "half", "whole"]
 TRACKER_0_STATUS = "On reflective surface"
 TRACKER_1_STATUS = "On non-reflective surface"
 
+#                           title,      (mod,bit),       if_variant
 EVENT_DICT = {MOTHERBOARD:(('Button 1', ('_devices', 0), 'button'),
                            ('Button 2', ('_devices', 1), 'button'),
                            ('Button 3', ('_devices', 2), 'button'),
                            ('Timer finished', ('_timers', 0), 'timer'),
                            ('Serial Character', ('_devices', 4), 'serial'),),
 
-              'Sounder' : (('Tune Finished', (None, 0), 'timer'),),
+              'Motor A' : (('Strain detected', (None, 0), 'motor'),),
+              'Motor B' : (('Strain detected', (None, 0), 'motor'),),
+              'Sounder' : (('Tune Finished', (None, 0), 'timer'),
+                           ('Clap detected', (None, 1), 'timer'),),
               'IR Receiver': (('IR Character', (None, 0), 'irrx'),
-                             ('Any RC match', (None, 1), 'remote'),
-                             ('RC match 1', (None, 1), 'remote'),
-                             ('RC match 2', (None, 1), 'remote'),
-                             ('RC match 3', (None, 1), 'remote'),
-                             ('RC match 4', (None, 1), 'remote'),
-                             ('RC match 5', (None, 1), 'remote'),
-                             ('RC match 6', (None, 1), 'remote'),
-                             ('RC match 7', (None, 1), 'remote'),
-                             ('RC match 8', (None, 1), 'remote'),),
-              'Bump' : (('Pressed', (None, 7), 'bumper'),
-                        ('Released', (None, 7), 'bumper'),
-                        ('Any change', (None, 7), 'bumper'),
-                        ),
+                              ('Any Obstacle detected', (None,6), 'irrx'),
+                              ('Obstacle detected on left', (None,5), 'irrx'),
+                              ('Obstacle detected ahead', (None,4), 'irrx'),
+                              ('Obstacle detected on right', (None,3), 'irrx'),
+                              ('Any RC match', (None, 1), 'remote'),
+                              ('RC match 1', (None, 1), 'remote'),
+                              ('RC match 2', (None, 1), 'remote'),
+                              ('RC match 3', (None, 1), 'remote'),
+                              ('RC match 4', (None, 1), 'remote'),
+                              ('RC match 5', (None, 1), 'remote'),
+                              ('RC match 6', (None, 1), 'remote'),
+                              ('RC match 7', (None, 1), 'remote'),
+                              ('RC match 8', (None, 1), 'remote'),),
               'Line Tracker' : ((TRACKER_0_STATUS, (None, 1), 'tracker'),
                                 (TRACKER_1_STATUS, (None, 1), 'tracker'),
                                 ('Any change', (None, 1), 'tracker'),
                                 ),
-              'Digital Out' : (('Pulse finished',(None, 0), 'pulse'),),
-              'Digital In' : (('Level change', (None, 5), 'digin'),
-                              ('Capture finished', (None, 3), 'pulse')),
               }
 
 
@@ -112,9 +113,13 @@ MOTOR_P_BL = "back left"
 MOTOR_P_BR = "back right"
 MOTOR_P_SR = "spin right"
 MOTOR_P_SL = "spin left"
+MOTOR_P_RT_90 = "turn right 90"
+MOTOR_P_LT_90 = "turn left 90"
 
-MOTOR_CODE = {"F":0x80, "C":0x00, "B":0x40, "S":0xc0}
+
+MOTOR_CODE = {"F":0x80, "C":0x00, "B":0x40, "S":0xc0, "FD":0xa0, "BD":0x60}
 DIRECTION_CODE = {MOTOR_FWD:0x80, MOTOR_CST:0x00, MOTOR_BCK:0x40, MOTOR_STP:0xC0}
+DIRECTION_WITH_DIST_CODE = {MOTOR_FWD:0xa0, MOTOR_CST:0x20, MOTOR_BCK:0x60, MOTOR_STP:0xC0}
 
 class Detail_win(wx.ScrolledWindow):
     def __init__(self, parent):
@@ -124,18 +129,25 @@ class Detail_win(wx.ScrolledWindow):
 
         self.vbox = wx.BoxSizer(wx.VERTICAL)
         self.dirty = False
+        self.cb_special = None
 
         self.SetSizer(self.vbox)
         self.FitInside()
         self.detail_dict = {'Tone':self.tones_details, 'Beep':self.beep_details,
                             'Digital Out':self.digout_details, 'LED':self.digital_details,
                             'LineTracker':self.digital_details, 'Infrared Data Out':self.txir_details,
+                            'Obstacle Detection':self.digital_details,
                             'Serial Data Out':self.txserial_details,
-                            'Light Level':self.readsmall_details, 'Line Tracker':self.readsmall_details,
+                            'Light Level':self.readlight_details,
+                            'Motor Distance Count':self.readdist_details,
+                            'Line Tracker':self.readsmall_details,
                             'Bumper':self.readsmall_details, 'Infrared Data In':self.readsmall_details,
                             'Remote':self.readsmall_details, 'Analogue In':self.readsmall_details,
                             'Digital In':self.readsmall_details,
-                            'Serial Data In':self.readinternal_details, 'Button':self.readinternal_details,
+                            'Serial Data In':self.readinternal_details,
+                            'Button':self.readinternal_details,
+                            'Read Clap Detect':self.readsmall_details,
+                            'Read Obstacle Detect':self.readsmall_details,
                             'Read Timer':self.readinternal_details,
                             'Set Timer':self.settimer_details,
                             'Pulse In':self.digpulse_details,
@@ -152,12 +164,18 @@ class Detail_win(wx.ScrolledWindow):
         self.convert_dict = {'Tone':self.tones_convert, 'Beep':self.beep_convert,
                              'Digital Out':self.digout_convert, 'LED': self.digital_convert,
                              'LineTracker':self.digital_convert, 'Infrared Data Out':self.txir_convert,
+                             'Obstacle Detection':self.digital_convert,
                              'Serial Data Out':self.txserial_convert,
-                             'Light Level':self.readsmall_convert, 'Line Tracker':self.readsmall_convert,
+                             'Light Level':self.readlight_convert,
+                             'Motor Distance Count':self.readdist_convert,
+                             'Line Tracker':self.readsmall_convert,
                              'Bumper':self.readsmall_convert, 'Infrared Data In':self.readsmall_convert,
                              'Remote':self.readsmall_convert, 'Analogue In':self.readsmall_convert,
                              'Digital In':self.readsmall_convert,
-                             'Serial Data In':self.readinternal_convert, 'Button':self.readinternal_convert,
+                             'Serial Data In':self.readinternal_convert,
+                             'Button':self.readinternal_convert,
+                             'Read Clap Detect':self.readsmall_convert,
+                             'Read Obstacle Detect':self.readsmall_convert,
                              'Read Timer':self.readinternal_convert,
                              'Set Timer':self.settimer_convert,
                              'Pulse In':self.digpulse_convert,
@@ -207,7 +225,7 @@ class Detail_win(wx.ScrolledWindow):
         else:
             for var, cons in self.vars:
                 cons.Enable(var.GetValue() == CONSTANT)
-        
+
     def on_rb(self, event):
         self.switch_group(event.GetEventObject())
         self.update_dirty(True)
@@ -215,12 +233,16 @@ class Detail_win(wx.ScrolledWindow):
     def on_cb_vars(self, event):
         """Switch constants depending on variable"""
         self.switch_constants(event.GetEventObject())
+        if (self.cb_special):
+            self.cb_special()
         self.update_dirty(True)
         
     def on_cons_tc(self, event):
         self.update_dirty(True)
 
     def on_cons_cb(self, event):
+        if (self.cb_special):
+            self.cb_special()
         self.update_dirty(True)
 
     def on_click(self, event):
@@ -265,6 +287,7 @@ class Detail_win(wx.ScrolledWindow):
 
             self.dirty = False
 
+        self.cb_special = None
         self.bric_type = name
         self.bric_id = bric_id
         
@@ -690,6 +713,11 @@ class Detail_win(wx.ScrolledWindow):
             mod_type = 'LED'
             levels = ['On', 'Off']
             prompt = "LED Setting:"
+            
+        elif (self.name == "Obstacle Detection"):
+            mod_type = 'IR Transmitter'
+            levels = ['On', 'Off']
+            prompt = "IR Transmitter obstacle detection:"
         else:
             mod_type = 'Line Tracker'
             levels = ['On', 'Off']
@@ -759,16 +787,24 @@ class Detail_win(wx.ScrolledWindow):
             win_data.vars_rm_use(input[2])
 
         elif (command == 'gen_code'):
+            if (self.name == "Obstacle Detection"):
+                output = "action"
+            else:
+                output = "output"
+            
             if (input[2] == CONSTANT):
                 if (input[1] == 'Off'):
                     value = 0
                 else:
-                    value = 1
+                    if (self.name == "Obstacle Detection"):
+                        value = 2
+                    else:
+                        value = 1
 
-                code = "movb $%d %s" % (value, (win_data.make_mod_reg(input[0], 'output')))
+                code = "movb $%d %s" % (value, (win_data.make_mod_reg(input[0], output)))
                 
             else:
-                code = "movb @%s %s" % (input[2], (win_data.make_mod_reg(input[0], 'output')))
+                code = "movb @%s %s" % (input[2], (win_data.make_mod_reg(input[0], output)))
 
             return [code]
 
@@ -1073,6 +1109,12 @@ class Detail_win(wx.ScrolledWindow):
         elif (self.name == 'Light Level'):
             mod_type = 'Line Tracker'
             v_type = S_NAME
+        elif (self.name == 'Read Clap Detect'):
+            mod_type = 'Sounder'
+            v_type = U_NAME
+        elif (self.name == 'Read Obstacle Detect'):
+            mod_type = 'IR Receiver'
+            v_type = U_NAME
         else:
             # Line status
             mod_type = 'Line Tracker'
@@ -1084,6 +1126,8 @@ class Detail_win(wx.ScrolledWindow):
         choices = win_data.vars_names(v_type)
         ctrl = self.make_combo(choices, add_const=False)
 
+        # debug
+        #print "readsmall_details:", self.name, mod_type, modules
        
         self.data_order = (mod_choice, ctrl)
         self.groups = None
@@ -1163,6 +1207,38 @@ class Detail_win(wx.ScrolledWindow):
             elif (name == 'Light Level'):
                 code_lines.append("movw %s @%s" % (win_data.make_mod_reg(input[0], 'level'), input[1]))
 
+            elif (name == 'Read Clap Detect'):
+                code_lines.append("movb %s %%_cpu:acc" % (win_data.make_mod_reg(input[0], 'status'),))
+                # clear the register bits now that we've captured them
+                code_lines.append("bitclr $1 %s" % (win_data.make_mod_reg(input[0], 'status'),))
+                
+                code_lines.append("and $1")
+                code_lines.append("movb %%_cpu:acc @%s" % (input[1]))
+                
+            elif (name == 'Read Obstacle Detect'):
+                code_lines.append("movb %s %%_cpu:acc" % (win_data.make_mod_reg(input[0], 'status'),))
+                # clear the register bits now that we've captured them
+                code_lines.append("bitclr $3 %s" % (win_data.make_mod_reg(input[0], 'status'),))
+                code_lines.append("bitclr $4 %s" % (win_data.make_mod_reg(input[0], 'status'),))
+                code_lines.append("bitclr $5 %s" % (win_data.make_mod_reg(input[0], 'status'),))
+                code_lines.append("bitclr $6 %s" % (win_data.make_mod_reg(input[0], 'status'),))
+                
+                code_lines.append("and $78/16")
+                code_lines.append("movb %%_cpu:acc @%s" % (input[1]))
+
+                ## alternate implementation
+                #code_lines.append("movb %s %%_cpu:acc" % (win_data.make_mod_reg(input[0], 'status'),))
+                ## move into variable before anding so can use for clearing too
+                #code_lines.append("movb %%_cpu:acc @%s" % (input[1]))
+                #code_lines.append("and $87/16")
+                ## save the cleared data back into the register
+                #code_lines.append("movb %%_cpu:acc %s" % (win_data.make_mod_reg(input[0], 'status'),))
+
+                ## get the original value back, and 'and' it
+                #code_lines.append("movb  @%s %%_cpu:acc" % (input[1]))
+                #code_lines.append("and $78/16")
+                #code_lines.append("movb %%_cpu:acc @%s" % (input[1]))
+                  
             else:
                 # line tracker
                 #code_lines.append("movb %s @%s" % (win_data.make_mod_reg(input[0], 'status'), input[1]))
@@ -1173,6 +1249,162 @@ class Detail_win(wx.ScrolledWindow):
                 
             return code_lines
 
+        else:
+            raise SyntaxError, "Unknown command: " + command
+
+# -------------- Read Light details  --------------------
+
+    def readlight_details(self, bric_id, data):
+        self.conv_func = self.readlight_convert
+        self.dirty = False
+        self.name = win_data.program().get_bric_name(bric_id)
+
+        values = None
+        self.title.SetLabel("%s - properties:" % (self.name))
+
+        grid = wx.GridBagSizer(5, 5)
+        
+        modules = win_data.config_device_names("LED")
+        modules.extend(win_data.config_device_names('Line Tracker'))
+
+        mod_choice = self.make_combo(modules)
+
+        choices = win_data.vars_names(S_NAME)
+        ctrl = self.make_combo(choices, add_const=False)
+
+        self.data_order = (mod_choice, ctrl)
+        self.groups = None
+        self.vars = None
+        self.cons_tc = None
+        self.cons_cb = (mod_choice,ctrl)
+        self.rbs = None
+
+        self.add_with_prompt(grid, (0,0), MODULE_PROMPT, (mod_choice,))
+        self.add_with_prompt(grid, (1,0), "Variable to read into:", (ctrl,))
+
+        self.bind_event_handlers()
+
+        if (data):
+            self.old_data = data
+            values = self.conv_func(data, 'from_ids', self.name, bric_id)
+            self.set_control_values(self.data_order, values)
+        else:
+            self.old_data = self.save_initial()
+            
+        return grid
+    
+
+    def readlight_convert(self, input, command, name, bric_id):
+        """Data: mod, var"""
+        
+        if (command == 'from_ids'):
+            output= [win_data.config_name_from_id(input[0]), win_data.vars_get_name(input[1])]
+            return output
+
+        elif (command == 'to_ids_add_refs'):
+            # get the data
+            output = []
+            for ctrl in self.data_order:
+                if (not ctrl):
+                    continue
+                output.append(ctrl.GetValue())
+            
+            # convert to ids
+            output[0] = win_data.config_id_from_name(output[0])
+            output[1] = win_data.vars_get_id(output[1])
+            win_data.config_add_use(output[0])
+            win_data.vars_add_use(output[1])
+
+            return output
+
+        elif (command == 'rm_refs'):
+            """Input is the stored data, with refs"""
+            win_data.config_rm_use(input[0])
+            win_data.vars_rm_use(input[1])
+
+        elif (command == 'gen_code'):
+            code_lines = []
+            code_lines.append("movw %s @%s" % (win_data.make_mod_reg(input[0], 'lightlevel'), input[1]))
+            return code_lines
+        
+        else:
+            raise SyntaxError, "Unknown command: " + command
+
+# -------------- Read Motor distance details  --------------------
+
+    def readdist_details(self, bric_id, data):
+        self.conv_func = self.readdist_convert
+        self.dirty = False
+        self.name = win_data.program().get_bric_name(bric_id)
+
+        values = None
+        self.title.SetLabel("%s - properties:" % (self.name))
+
+        grid = wx.GridBagSizer(5, 5)
+        
+        modules = []
+        modules.extend(win_data.config_device_names('Motor A'))
+        modules.extend(win_data.config_device_names('Motor B'))
+
+        mod_choice = self.make_combo(modules)
+
+        choices = win_data.vars_names(S_NAME)
+        ctrl = self.make_combo(choices, add_const=False)
+
+        self.data_order = (mod_choice, ctrl)
+        self.groups = None
+        self.vars = None
+        self.cons_tc = None
+        self.cons_cb = (mod_choice,ctrl)
+        self.rbs = None
+
+        self.add_with_prompt(grid, (0,0), MODULE_PROMPT, (mod_choice,))
+        self.add_with_prompt(grid, (1,0), "Variable to read into:", (ctrl,))
+
+        self.bind_event_handlers()
+
+        if (data):
+            self.old_data = data
+            values = self.conv_func(data, 'from_ids', self.name, bric_id)
+            self.set_control_values(self.data_order, values)
+        else:
+            self.old_data = self.save_initial()
+            
+        return grid
+    
+
+    def readdist_convert(self, input, command, name, bric_id):
+        """Data: mod, var"""
+
+        if (command == 'from_ids'):
+            output= [win_data.config_name_from_id(input[0]), win_data.vars_get_name(input[1])]
+            return output
+
+        elif (command == 'to_ids_add_refs'):
+            # get the data
+            output = []
+            for ctrl in self.data_order:
+                if (not ctrl):
+                    continue
+                output.append(ctrl.GetValue())
+            
+            # convert to ids
+            output[0] = win_data.config_id_from_name(output[0])
+            output[1] = win_data.vars_get_id(output[1])
+            win_data.config_add_use(output[0])
+            win_data.vars_add_use(output[1])
+
+            return output
+
+        elif (command == 'rm_refs'):
+            """Input is the stored data, with refs"""
+            win_data.config_rm_use(input[0])
+            win_data.vars_rm_use(input[1])
+
+        elif (command == 'gen_code'):
+            code_lines = []
+            code_lines.append("movw %s @%s" % (win_data.make_mod_reg(input[0], 'distance'), input[1]))
+            return code_lines
         else:
             raise SyntaxError, "Unknown command: " + command
 
@@ -1915,7 +2147,7 @@ class Detail_win(wx.ScrolledWindow):
                 #elif (locs[1] == 7 and win_data.config_orient_from_loc(1) == 1):
                 right_most = 1
 
-        print "Motor pairs: %s locs:%s dirs:%s" % (motors, locs, dirs)
+        #print "Motor pairs: %s locs:%s dirs:%s" % (motors, locs, dirs)
         
         left_most = 0
         if (right_most == 0):
@@ -1981,9 +2213,52 @@ class Detail_win(wx.ScrolledWindow):
             else:
                 codes[right_most] = MOTOR_CODE["F"]
 
+        elif (command == MOTOR_P_RT_90):
+            if (dirs[left_most] == 1):
+                codes[left_most] = MOTOR_CODE["FD"]
+                codes[right_most] = MOTOR_CODE["BD"]
+            else:
+                codes[left_most] = MOTOR_CODE["BD"]
+                codes[right_most] = MOTOR_CODE["FD"]
+            
+        elif (command == MOTOR_P_LT_90):
+            if (dirs[right_most] == 1):
+                codes[right_most] = MOTOR_CODE["FD"]
+                codes[left_most] = MOTOR_CODE["BD"]
+            else:
+                codes[right_most] = MOTOR_CODE["BD"]
+                codes[left_most] = MOTOR_CODE["FD"]
+            
+
         #print "Motorpairdir", motors[left_most], motors[right_most], dirs, command, codes
         return codes
-    
+
+    def motor_special_cb_change(self):
+        # a combo box has changed
+        # If direction isn't stop or coast and it's not done with a variable then
+        # possibly enable the distance cbs
+        dirs = self.cb_special_vars[0]
+        dist_units = self.cb_special_vars[1]
+        dist_value = self.cb_special_vars[2]
+
+        if (dirs[0].GetValue() in (MOTOR_STP, MOTOR_CST, MOTOR_P_RT_90, MOTOR_P_LT_90)) and (dirs[1].GetValue() == CONSTANT):
+            dist_units[0].Enable(False)
+            dist_value[0].Enable(False)
+            dist_value[1].Enable(False)
+        else:
+            dist_units[0].Enable(True)
+            e1,e2 = True, False
+            if (dist_units[0].GetValue() == "unlimited"):
+                e1,e2 = False, False
+                dist_value[1].SetValue(CONSTANT)
+            elif (dist_units[0].GetValue() == "raw"):
+                e1,e2 = True, True
+            else:
+                dist_value[1].SetValue(CONSTANT)
+                
+            dist_value[0].Enable(e1)
+            dist_value[1].Enable(e2)
+                
 
     def motor_details(self, bric_id, data):
         self.conv_func = self.motor_convert
@@ -1993,12 +2268,13 @@ class Detail_win(wx.ScrolledWindow):
         values = None
         self.title.SetLabel("%s - properties:" % (self.name))
 
-        grid = wx.GridBagSizer(5, 5)
+        grid = wx.GridBagSizer(7, 5)
 
         if (self.name == 'Motor Pair'):
             modules = win_data.config_motor_pairs()
             directions = [MOTOR_STP, MOTOR_FWD, MOTOR_BCK, MOTOR_CST,
-                          MOTOR_P_RT, MOTOR_P_LT, MOTOR_P_SR, MOTOR_P_SL,
+                          MOTOR_P_RT, MOTOR_P_RT_90, MOTOR_P_LT, MOTOR_P_LT_90,
+                          MOTOR_P_SR, MOTOR_P_SL,
                           MOTOR_P_BR, MOTOR_P_BL]
         else:
             modules = []
@@ -2011,30 +2287,40 @@ class Detail_win(wx.ScrolledWindow):
         
         d_choices = win_data.vars_names(U_NAME)
         s_choices = win_data.vars_names(U_NAME)
+        dist_choices = win_data.vars_names(S_NAME)
 
         speeds = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
+
+        distance_units = ["unlimited", "mm", "1/10 inch", "degree", "raw"]
         
         dirs = (self.make_combo(directions, sort=False),
                  self.make_combo(d_choices, add_const=True))
         speed = (self.make_combo(speeds, sort=False),
                  self.make_combo(s_choices, add_const=True))
+        dist_units = (self.make_combo(distance_units, sort=False),)
+        dist_value = (self.make_text_ctrl("0"),
+                      self.make_combo(dist_choices, add_const=True))
         
         # Can't control a motor pair direction from a variable (too complex)
         if (self.name == 'Motor Pair'):
             dirs[1].Enable(False)
         
-        self.data_order = (mod_choice,)+dirs+speed
+        self.data_order = (mod_choice,)+dirs+speed+dist_units+dist_value
         self.groups = None
-        self.vars = ((dirs[1], dirs[0]),(speed[1], speed[0]))
-        self.cons_tc = None
-        self.cons_cb = (mod_choice, dirs[0], speed[0])
+        self.vars = ((dirs[1], dirs[0]),(speed[1], speed[0]), (dist_value[1], dist_value[0]))
+        self.cons_tc = (dist_value[1],)
+        self.cons_cb = (mod_choice, dirs[0], speed[0], dist_units[0])
+        self.cb_special_vars = ((dirs),(dist_units), (dist_value))
+        self.cb_special = self.motor_special_cb_change
         self.rbs = None
 
         self.add_with_prompt(grid, (0,0), MODULE_PROMPT, (mod_choice,), ctrl_span=(1,2))
         self.make_headings(grid, (1,1))
         self.add_with_prompt(grid, (2,0), "Direction:", dirs)
         self.add_with_prompt(grid, (3,0), "Speed:", speed)
-
+        self.add_with_prompt(grid, (4,0), "Distance:", dist_units)
+        self.add_with_prompt(grid, (5,0), "Distance:", dist_value)
+        
         self.bind_event_handlers()
 
         if (data):
@@ -2045,20 +2331,74 @@ class Detail_win(wx.ScrolledWindow):
         else:
             self.switch_constants()
             self.old_data = self.save_initial()
-            
+            #print self.old_data
+        self.cb_special()
         return grid
     
 
+    def motor_distance(self, input, code_lines):
+        if ((input[5] == "unlimited") or ((input[2] == CONSTANT) and
+                                          (input[1] in (MOTOR_STP, MOTOR_CST)))): 
+            # use the unlimited version of the direction
+            distance_cmd = False
+        else:
+            # set up the distance register
+            distance_cmd = True
+
+            if (input[7] == CONSTANT):
+                dist = win_data.conv_to_number(input[6], 'w', 0, 32000)
+                rotations = 0
+                if (dist == None):
+                    return []
+                if (input[5] == "mm"):
+                    # each rotation is 2.5mm
+                    # round to the nearest integer
+                    rotations = int((dist / 2.5) + 0.5)
+                
+                elif (input[5] == "1/10 inch"):
+                    # 1/10 of an inch is 2.54mm, which is pretty close
+                    # to 1 rotation. 
+                    rotations = dist
+                elif (input[5] == "degree"):
+                    # each rotation is 7.5 degrees
+                    # round to the nearest integer
+                    rotations = int((dist / 7.5) + 0.5)
+                elif (input[5] == "raw"):
+                    # the number goes through un-changed
+                    rotations = dist
+                else:
+                    rotations = dist
+                        
+                code_lines.append("movw $%s %s" % (rotations,win_data.make_mod_reg(input[0], 'distance')))
+            else:
+                # this must be raw, as raw is the only one allowed
+                # with variables
+                code_lines.append("movw @%s %%_cpu:acc" % (input[7],))
+                        
+                code_lines.append("movw %%_cpu:acc %s" % (win_data.make_mod_reg(input[0], 'distance'),))
+
+        if (input[2] == CONSTANT):
+            if (distance_cmd):
+                dir = DIRECTION_WITH_DIST_CODE[input[1]]
+            else:
+                dir = DIRECTION_CODE[input[1]]
+            code_lines.append("movb $%s %%_cpu:acc" % (dir,))
+        else:
+            code_lines.append("movb @%s %%_cpu:acc" % (input[2],))
+
+
+    
     def motor_convert(self, input, command, name, bric_id):
-        """Data: mod, dir_cons, var, speed_cons, var, [, other motor mod]"""
+        """Data: mod, dir_cons, var, speed_cons, var, dist_unit, dist_cons, var, [, other motor mod]"""
         
         if (command == 'from_ids'):
-            output= [win_data.config_name_from_id(input[0]), input[1], CONSTANT, input[3], CONSTANT]
+            output= [win_data.config_name_from_id(input[0]), input[1], CONSTANT, input[3], CONSTANT,
+                     input[5], input[6], CONSTANT]
             
             if (name == 'Motor Pair'):
-                output[0] += '+'+win_data.config_name_from_id(input[5])
+                output[0] += '+'+win_data.config_name_from_id(input[8])
 
-            for index in [2, 4]:
+            for index in [2, 4, 7]:
                 if (input[index]):
                     output[index] = win_data.vars_get_name(input[index])
             
@@ -2071,51 +2411,75 @@ class Detail_win(wx.ScrolledWindow):
                 if (not ctrl):
                     continue
                 output.append(ctrl.GetValue())
+                
+            # debug
+            #print "to_ids_add_refs - output1", output
             
             if (name == 'Motor Pair'):
                 motors = output[0].split('+')
                 output[0] = win_data.config_id_from_name(motors[0])
                 output.append(win_data.config_id_from_name(motors[1]))
-                win_data.config_add_use(output[5])
+                win_data.config_add_use(output[8])
 
             else:
                 output[0] = win_data.config_id_from_name(output[0])
                 
             output[2] = win_data.vars_get_id(output[2])
             output[4] = win_data.vars_get_id(output[4])
+            output[7] = win_data.vars_get_id(output[7])
+            
+            # debug
+            #print "to_ids_add_refs - output2", output
 
             win_data.config_add_use(output[0])
             win_data.vars_add_use(output[2])
             win_data.vars_add_use(output[4])
+            win_data.vars_add_use(output[7])
+            
+            # debug
+            #print "to_ids_add_refs - output3", output
             
             return output
 
         elif (command == 'rm_refs'):
             """Input is the stored data, with refs"""
             win_data.config_rm_use(input[0])
-            if (len(input) == 6):
-                win_data.config_rm_use(input[5])
+            if (len(input) == 9):
+                win_data.config_rm_use(input[8])
                 
             win_data.vars_rm_use(input[2])
             win_data.vars_rm_use(input[4])
+            win_data.vars_rm_use(input[7])
 
         elif (command == 'gen_code'):
-            #"""Data: mod, dir_cons, var, speed_cons, var"""
-
+            #"""Data: mod, dir_cons, var, speed_cons, var, dist_unit, dist_cons, var, [, other motor mod]"""
             code_lines = []
             if (name == "Motor Pair"):
                 motors = input[0].split('+')
                 s_dirs = self.motor_pair_directions(motors, input[1])
 
                 for i in (0, 1):
-                    code_lines.append("movb $%s %%_cpu:acc" % (s_dirs[i],))
-                
+                    
+                    if ((s_dirs[i] & 0x20) == 0x20):
+                        # distance not speed -- no need to do an or
+                        
+                        # first the distance for 90 degrees -- 12 times 7.5 degrees
+                        code_lines.append("movw $12 %s" % (win_data.make_mod_reg(motors[i], 'distance'),))
+                        # then the command to use the distance
+                        code_lines.append("movb $%d %s" % (s_dirs[i], win_data.make_mod_reg(motors[i], 'control')))
+
+                        continue
+                    new_input = input
+                    new_input[0] = motors[i]
+                    
+                    self.motor_distance(new_input, code_lines)
+
                     if (input[4] == CONSTANT):
                         number = win_data.conv_to_number(input[3], 'b', 0, 10)
                         if (number == None):
                             return []
-
-                        code_lines.append("or $%s" % (number,))
+                        if (number != 0):
+                            code_lines.append("or $%s" % (number,))
                     else:
                         code_lines.append("or @%s" % (input[4],))
                 
@@ -2123,11 +2487,7 @@ class Detail_win(wx.ScrolledWindow):
 
             else:
                 # single motor
-                if (input[2] == CONSTANT):
-                    dir = DIRECTION_CODE[input[1]]
-                    code_lines.append("movb $%s %%_cpu:acc" % (dir,))
-                else:
-                    code_lines.append("movb @%s %%_cpu:acc" % (input[2],))
+                self.motor_distance(input, code_lines)
 
                 # BED - don't shift because the basic interpreter doesn't have room
                 # for the shift. Document for the user instead.
@@ -2138,7 +2498,8 @@ class Detail_win(wx.ScrolledWindow):
                     if (number == None):
                         return []
 
-                    code_lines.append("or $%s" % (number,))
+                    if (number != 0):
+                        code_lines.append("or $%s" % (number,))
                 else:
                     code_lines.append("or @%s" % (input[4],))
                 
@@ -2657,7 +3018,7 @@ class Detail_win(wx.ScrolledWindow):
 
     def get_event_modules(self):
         modules = [MOTHERBOARD]
-        for mod in ['Sounder', 'IR Receiver', 'Bump', 'Line Tracker', 'Digital Out', 'Digital In']:
+        for mod in ['Motor A', 'Motor B', 'Sounder', 'IR Receiver', 'Line Tracker']:
             modules.extend(win_data.config_device_names(mod))
 
         return modules

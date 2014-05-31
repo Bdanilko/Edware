@@ -43,6 +43,12 @@ import optparse
 import os
 import os.path
 
+import time
+import wave
+
+if False:
+    import pyglet
+
 import token_assembler
 import token_downloader
 import tokens
@@ -113,6 +119,7 @@ def assemble(f_name):
         for b in bytes:
             download_str += chr(b)
 
+    #print download_bytes
     return download_bytes, download_type, version
 
 def get_bytes(file_name):
@@ -234,7 +241,83 @@ class usb_downloader(wx.Dialog):
 
         self.Refresh()
         
+
+        # --------------- AUDIO dialog ----------------------------------
+
+class audio_downloader(wx.Dialog):
+    def __init__(self, file_name, title="Set Title!", size=(200, 200)):
+        wx.Dialog.__init__(self, None, -1, title, size=(500, 300))
+        self.SetBackgroundColour("lightgray")
+
+        self.grid = wx.GridBagSizer(5,5)
+        self.progress_prompt = wx.StaticText(self, -1, "Download progress:")
+        self.gauge = wx.Gauge(self, -1, range=100)
+        self.start = wx.Button(self, -1, "Start Download")
+        self.cancel = wx.Button(self, -1, "Cancel Download")
+        self.help_text = wx.StaticText(self, -1, "")
         
+        self.grid.Add(self.progress_prompt, (3,1), span=(1,2), flag=wx.EXPAND)
+        self.grid.Add(self.gauge, (4,1), span=(1,3), flag=wx.EXPAND)
+        
+        self.grid.Add(self.help_text, (6,1), span=(2,2), flag=wx.EXPAND)
+
+        self.grid.AddGrowableRow(7)
+        self.grid.Add(self.cancel, (8,2), flag=wx.ALIGN_RIGHT | wx.BOTTOM)
+        self.grid.Add(self.start, (8,3), flag=wx.ALIGN_LEFT | wx.BOTTOM)
+        self.grid.Add((1,1), (9,2))
+
+        self.SetSizer(self.grid)
+        self.Layout()
+
+        self.start.SetDefault()
+
+        self.Bind(wx.EVT_BUTTON, self.on_start, self.start)
+        self.Bind(wx.EVT_BUTTON, self.on_cancel, self.cancel)
+
+        self.download_bytes, self.dtype, self.version = get_bytes(file_name)
+        self.byte_count = len(self.download_bytes)
+        self.gauge.SetRange(self.byte_count)
+        self.gauge.SetValue(0)
+
+        self.help_text.SetLabel("Download size is %d bytes." % (len(self.download_bytes),))
+
+        # convert to wav file
+        convert(self.download_bytes, "program.wav");
+        
+    def on_cancel(self, event):
+        self.EndModal(wx.ID_CANCEL)
+
+
+    def on_start(self, event):
+        # get the device
+        #device = self.usb_ctrl.GetValue()
+        device = None
+##        if (not os.path.exists(device) or not os.access(device, os.R_OK|os.W_OK)):
+##            self.help_text.SetLabel("ERROR - device %s doesn't exist or isn't readable and writable." % (device))
+##            return
+        
+        # can't start twice so disable this button
+        self.start.Disable()
+        self.help_text.SetLabel("Starting download of %d bytes." % (self.byte_count,))
+        self.Update()
+
+        time.sleep(1)
+        
+        if False:
+            sound = pyglet.media.load("program.wav", streaming=False)
+            sound.play()
+        else:
+            s1 = wx.Sound("program.wav")
+            s1.Play(wx.SOUND_SYNC)
+            
+
+        self.gauge.SetValue(self.byte_count)
+        self.help_text.SetLabel("Downloading was successful!")
+        self.start.Enable()
+
+        self.Refresh()
+        
+
         
 # --------------- Screen dialog ----------------------------------
 
@@ -675,3 +758,69 @@ class hex_downloader(wx.Dialog):
         self.Refresh()
 
 
+def convert(binString, outFilePath):
+    print "Debug: in convert() with binString of length", len(binString)
+    waveWriter = wave.open(outFilePath, 'wb')
+    waveWriter.setnchannels(2)
+    waveWriter.setsampwidth(1)
+    waveWriter.setframerate(44100)
+    waveWriter.setcomptype("NONE", "")
+
+    # now generate the file
+    index = 0
+    
+    while (index < len(binString)):
+        data = binString[index]
+        print "..debug: coding value", data
+        # add start
+        waveWriter.writeframes(createAudio(6))
+        
+        # now the actual data -- big endian or little endian
+        mask = 1
+        ones = 0
+        while (mask <= 0x80):
+            if (data & mask):
+                waveWriter.writeframes(createAudio(2))
+                ones += 1
+            else:
+                waveWriter.writeframes(createAudio(0))
+            mask <<= 1
+
+        # add parity
+        # if (ones % 2 == 1):
+        #     # odd so need to add a one
+        #     waveWriter.writeframes(createAudio(2))
+        # else:
+        #     # even so add a zero
+        #     waveWriter.writeframes(createAudio(0))
+
+        # add stop
+        waveWriter.writeframes(createAudio(6))
+
+        index += 1
+
+def createAudio(midQuantas):
+    data = ""
+    
+    # write fars
+    count = 0
+    while (count < 22):
+        data += chr(255) + chr(0)
+        count += 1
+
+    # write nears
+    count = 0
+    while (count < 22):
+        data += chr(0) + chr(255)
+        count += 1
+
+    if (midQuantas > 0):
+        count = 0
+        samples = midQuantas * 22
+        while (count < samples):
+            data += chr(128) + chr(128)
+            count += 1
+
+    return data
+        
+            

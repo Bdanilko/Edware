@@ -162,6 +162,9 @@ def load_brics(big = True):
     data.brics = []
     data.bric_dict.clear()
 
+    # get the top bric number
+    topBricNumber = cp.getint('control', 'highbric')
+    
     # get the arrows
     larrow = cp.get('arrow', 'left')
     rarrow = cp.get('arrow', 'right')
@@ -215,7 +218,7 @@ def load_brics(big = True):
         group += 1
 
     bric = 1
-    while True:
+    while bric <= topBricNumber:
         b_name = 'bric%d' % (bric)
         if (cp.has_section(b_name)):
             new_bric = Bric(b_name, cp)
@@ -224,9 +227,6 @@ def load_brics(big = True):
                 name_and_group = new_bric.get_name_and_group()
                 data.brics.append(name_and_group)
                 data.bric_dict[name_and_group[0]] = new_bric
-
-        else:
-            break
         bric += 1
 
     # load ifs
@@ -246,7 +246,7 @@ def load_brics(big = True):
     get_if_variant(cp, "serial")
     get_if_variant(cp, "timer")
     get_if_variant(cp, "var")
-    
+
 
 def get_if_variant(cp, name):
     normal = cp.get('ifs', name)+'.png'
@@ -350,7 +350,7 @@ def arg_condition(arg):
                          (d[0] == "'" and d[-1] == "'"))):
         d = d[1:-1]
     return d
-    
+
 def enable_check(enable_list):
     for etype, args in enable_list:
         #print etype,args

@@ -3,11 +3,11 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils 0.4: http://docutils.sourceforge.net/" />
+<meta name="generator" content="Bluefish 2.2.6" />
 <title>Microbric Hybrid Token Design</title>
-<meta name="date" content="2006-10-19" />
-<meta name="author" content="Brian Danilko, Likeable Software" />
-<meta name="copyright" content="2006, Microbric Pty Ltd" />
+<meta name="date" content="2014-04-26T12:11:04+0930" />
+<meta name="author" content="Brian Danilko" />
+<meta name="copyright" content="2006,2014 Microbric Pty Ltd" />
 <style type="text/css">
 
 /*
@@ -294,19 +294,19 @@ ul.auto-toc {
 </head>
 <body>
 <div class="document" id="microbric-hybrid-token-design">
-<h1 class="title">Microbric Hybrid Token Design</h1>
+<h1 class="title">Microbric Edison/Hybrid Token Design</h1>
 <table class="docinfo" frame="void" rules="none">
 <col class="docinfo-name" />
 <col class="docinfo-content" />
 <tbody valign="top">
 <tr><th class="docinfo-name">Date:</th>
-<td>2006-10-19</td></tr>
+<td>2014-05-18</td></tr>
 <tr><th class="docinfo-name">Version:</th>
-<td>3.6</td></tr>
+<td>3.8</td></tr>
 <tr><th class="docinfo-name">Author:</th>
 <td>Brian Danilko, Likeable Software</td></tr>
 <tr><th class="docinfo-name">Copyright:</th>
-<td>2006, Microbric Pty Ltd</td></tr>
+<td>2006,2014 Microbric Pty Ltd</td></tr>
 <tr class="field"><th class="docinfo-name">License:</th><td class="field-body">GNU GPL version 2</td>
 </tr>
 </tbody>
@@ -366,6 +366,7 @@ ul.auto-toc {
 <li><a class="reference" href="#led" id="id37" name="id37">LED</a></li>
 <li><a class="reference" href="#connectable-module-register-notes" id="id38" name="id38">Connectable Module Register Notes</a></li>
 <li><a class="reference" href="#basic-configuration-for-the-hybrid" id="id39" name="id39">Basic configuration for the Hybrid</a></li>
+<li><a class="reference" href="#edison-configuration" id="id100" name="id100">Edison configuration</a></li>
 </ul>
 </li>
 <li><a class="reference" href="#module-status-bit-details" id="id40" name="id40">Module Status bit details</a></li>
@@ -396,6 +397,23 @@ ul.auto-toc {
 </tr>
 </thead>
 <tbody valign="top">
+<tr><td>3.8</td>
+<td>2014-05-18</td>
+<td><p class="first">More changes for the new Edison robot:</p>
+<p>Motor has a new event: distance covered</p>
+<p>IR rx obstacle events have been re-worked</p>
+  <p class="last">Update to the Event Handling documentation</p>
+</td>
+</tr>
+<tr><td>3.7</td>
+<td>2014-04-26</td>
+<td><p class="first">Changes for the new Edison robot:</p>
+<p>Changes to version number for download of Edison code</p>
+<p>Documented implicit configuration for Edison</p>
+<p>Changes to motor, beeper, LED, IR modules for Edison</p>
+  <p class="last">Made all of the status registers read AND write so that manually cleared statuses can be cleared.</p>
+</td>
+</tr>
 <tr><td>3.6</td>
 <td>2006-10-05</td>
 <td><p class="first">Changed the NOP to 'stop' to help reduce the size of the
@@ -714,11 +732,11 @@ there will always be a multiple of 8 pixels affected.</td>
 </tr>
 <tr><td>0101</td>
 <td>IR Transmit</td>
-<td>Used for transmitting characters via IR.</td>
+<td>Used for transmitting characters via IR, or transmitting IR for obstacle detection.</td>
 </tr>
 <tr><td>0110</td>
 <td>IR Receive</td>
-<td>Used for receiving characters and remote control bursts via IR.</td>
+<td>Used for receiving characters and remote control bursts via IR, and for obstacle detection.</td>
 </tr>
 <tr><td>0111</td>
 <td>Beeper</td>
@@ -744,7 +762,7 @@ the two in the module table (see <a class="reference" href="#download-format">Do
 </tr>
 <tr><td>1011</td>
 <td>LED</td>
-<td>Used for controlling LEDs (a special digital output).</td>
+<td>Used for controlling switching a LED on/orr, and to monitor light levels</td>
 </tr>
 </tbody>
 </table>
@@ -1673,11 +1691,18 @@ between each token).</li>
 <li>Bumper level change</li>
 <li>Beeper tune finished</li>
 <li>Beeper tone finished</li>
+<li>Beeper clap detected</li>
 <li>IR rx match</li>
 <li>IR rx character</li>
+<li>IR rx obstacle detected</li>
+<li>IR rx obstacle detected to the Left/Centre/Right</li>
 <li>Devices rx serial character</li>
 <li>Devices keypress</li>
 <li>Timers one-shot expired</li>
+<li>Motor distance has been covered</li>
+<li>Motor strain gauge has exceeded limits</li>
+
+
 </ul>
 </div>
 <div class="section">
@@ -1783,7 +1808,7 @@ triggered by M in action bits. Defaults to 1.</td>
 <tbody valign="top">
 <tr><td>&nbsp;</td>
 <td><ol class="first last arabic simple" start="0">
-<li>Status bits (r-8)</li>
+<li>Status bits (r/w-8)</li>
 </ol>
 </td>
 <td>Format:???r1234, R-byte received. 1, 2, 3, 4
@@ -1876,7 +1901,7 @@ is set in the action bits.</td>
 <li>Button (r-8)</li>
 </ol>
 </td>
-<td>Reading this the current button that is being
+<td>Reading this the gives the current button that is being
 held down (after debounce).</td>
 </tr>
 </tbody>
@@ -1893,7 +1918,7 @@ held down (after debounce).</td>
 <tbody valign="top">
 <tr><td>&nbsp;</td>
 <td><ol class="first last arabic simple" start="0">
-<li>Status bits (r-8)</li>
+<li>Status bits (r/w-8)</li>
 </ol>
 </td>
 <td>Format: ??????re. R one shot timer running, E
@@ -2027,14 +2052,31 @@ have different types of virtual registers.</p>
 <tbody valign="top">
 <tr><td>&nbsp;</td>
 <td><ol class="first last arabic simple" start="0">
+<li>Motor Status (r/w-8)</li>
+</ol>
+</td>
+  <td>Format: ??????DS. D is set to one when zero is written into the distance register.
+    S is set to one when the strain on the motor goes over a safe value.
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="1">
 <li>Motor Control (r/w-8)</li>
 </ol>
 </td>
-<td>Format: cc??ssss. CC are control
-bytes (00-coast, 01-forward,
-10-backward, 11-brake), and SSSS
-is the speed. Speeds can range
-from 0 to 10.</td>
+<td>Format: ccc?ssss. CCC are control
+bytes (00?-coast, 010-forward continuous using speed in SSSS, 011-forward using distance register,
+  100-backward continuous using speed in SSSS, 101-backward using distance register, 11?-brake).
+  Speeds in SSSS can range from 0 to 10.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="2">
+<li>Distance (r/w-16)</li>
+</ol>
+</td>
+<td>When this register is non-zero, and the control register has forward or
+     backword distance set, then the motor will do this many half-motor
+     rotations which equates to the value in the register X 7.5 degrees, or the value X 2.5 mm (.1 inch)
+     As the unit is moving, this register will be updated (counting down).</td>
 </tr>
 </tbody>
 </table>
@@ -2050,7 +2092,7 @@ from 0 to 10.</td>
 <tbody valign="top">
 <tr><td>&nbsp;</td>
 <td><ol class="first last arabic simple" start="0">
-<li>Status bits (r-8)</li>
+<li>Status bits (r/w-8)</li>
 </ol>
 </td>
 <td>Format: xcfnpl. X means that the
@@ -2096,7 +2138,7 @@ time. 10mS units (max time is
 <tbody valign="top">
 <tr><td>&nbsp;</td>
 <td><ol class="first last arabic simple" start="0">
-<li>Status bits (r-8)</li>
+<li>Status bits (r/w-8)</li>
 </ol>
 </td>
 <td>Format: ???????p. P means pulse
@@ -2149,8 +2191,8 @@ output driver level. 10mS Units
 <li>Input level (r-16)</li>
 </ol>
 </td>
-<td>Format: ??????llllllllll
-(10bit). L is the input level.</td>
+<td>Format: ??????nnnnnnnnnn
+(10bit). N is the input level.</td>
 </tr>
 </tbody>
 </table>
@@ -2167,7 +2209,7 @@ output driver level. 10mS Units
 <tbody valign="top">
 <tr><td>&nbsp;</td>
 <td><ol class="first last arabic simple" start="0">
-<li>Status bits (r-8)</li>
+<li>Status bits (r/w-8)</li>
 </ol>
 </td>
 <td>Format: ??????cl. C is set if
@@ -2187,11 +2229,11 @@ written.</td>
 </tr>
 <tr><td>&nbsp;</td>
 <td><ol class="first last arabic simple" start="2">
-<li>Input level (r-16)</li>
+<li>lightlevel (r-16)</li>
 </ol>
 </td>
-<td>Format: ??????llllllllll
-(10bit). L is the input level.</td>
+<td>Format: ??????nnnnnnnnnn
+(10bit). N is the input light level detected.</td>
 </tr>
 </tbody>
 </table>
@@ -2207,11 +2249,11 @@ written.</td>
 <tbody valign="top">
 <tr><td>&nbsp;</td>
 <td><ol class="first last arabic simple" start="0">
-<li>Status bits (r-8)</li>
+<li>Status bits (r/w-8)</li>
 </ol>
 </td>
-<td>Format: ??????ou: O tone is
-done, U tune is done.</td>
+<td>Format: ?????cou: C means that a clap was detected, O tone is
+done, U tune is done. (Write 0 to this register to clear the status)</td>
 </tr>
 <tr><td>&nbsp;</td>
 <td><ol class="first last arabic simple">
@@ -2293,8 +2335,9 @@ units of 50mS each, and NNNN is the note to play, following this table:</p>
 <li>Action bits (w-8)</li>
 </ol>
 </td>
-<td>Format: ???????t. T means to
-transmit.</td>
+  <td>Format: ??????dt. D means to do obstacle detection, T means to transmit a character.
+    Note that D and T can not both be set to 1!
+  </td>
 </tr>
 <tr><td>&nbsp;</td>
 <td><ol class="first last arabic simple">
@@ -2318,15 +2361,14 @@ protocol.</td>
 <tbody valign="top">
 <tr><td>&nbsp;</td>
 <td><ol class="first last arabic simple" start="0">
-<li>Status bits (r-8)</li>
+<li>Status bits (r/w-8)</li>
 </ol>
 </td>
-<td>Format: ?????vmc. V means that
-the last check was valid, M
-means that an IR transmission
-matched in the IR table, and C
-means that a Bill protocol
-character was received.</td>
+  <td>Format: ?dlcrvmb. D is 1 if an obstacle was detected (if the IR transmitter
+    is configured to do obstacle detection). If D is set, then the actual obstacle detection is
+    on the left (L), centre (C) or right (R).
+    V means that the last check was valid, M means that an IR transmission matched in the IR table,
+    and B means that a Bill protocol character was received.</td>
 </tr>
 <tr><td>&nbsp;</td>
 <td><ol class="first last arabic simple">
@@ -2377,7 +2419,7 @@ in Bill protocol.</td>
 <tbody valign="top">
 <tr><td>&nbsp;</td>
 <td><ol class="first last arabic simple" start="0">
-<li>Status bits (r-8)</li>
+<li>Status bits (r/w-8)</li>
 </ol>
 </td>
 <td>Format: x????l. X means that the
@@ -2399,7 +2441,7 @@ pressed, 1 for pressed).</td>
 <tbody valign="top">
 <tr><td>&nbsp;</td>
 <td><ol class="first last arabic simple" start="0">
-<li>Status bits (r-8)</li>
+<li>Status bits (r/w-8)</li>
 </ol>
 </td>
 <td>Format: ????????. No status bits
@@ -2413,6 +2455,14 @@ used.</td>
 <td>Write 0 for LED off, 1 for LED
 on. Reading returns the last
 write.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="2">
+<li>lightlevel (r-16)</li>
+</ol>
+</td>
+<td>Format: ??????nnnnnnnnnn
+(10bit). N is the input light level detected.</td>
 </tr>
 </tbody>
 </table>
@@ -2438,6 +2488,24 @@ write.</td>
 <li>Continuation of Motor-b</li>
 <li>LED</li>
 <li>Bumper</li>
+</ol>
+</div>
+</div>
+<div class="section">
+<h2><a class="toc-backref" href="#id100" id="edison-configuration" name="edison-configuration">Edison Configuration</a></h2>
+<ol class="arabic simple" start="0">
+<li>Line Tracker</li>
+<li>LED</li>
+<li></li>
+<li>Motor-a</li>
+<li>Continuation of Motor-a</li>
+<li>IR Rx</li>
+<li>Beeper</li>
+<li>IR Tx</li>
+<li>Motor-b</li>
+<li>Continuation of Motor-b</li>
+<li></li>
+<li>LED</li>
 </ol>
 </div>
 </div>
@@ -2471,9 +2539,15 @@ cleared</li>
 <li>L: (auto) set to 1 when over a line, set to 0 when not</li>
 </ul>
 </li>
+<li>Motor<ul>
+<li>D: (<strong>man</strong>) set when the motor is running in distance mode, and the distance has been covered. User needs to clear it.</li>
+<li>S: (<strong>man</strong>) set when the motor's strain sensor has triggered. User needs to clear it.</li>
+</ul>
+</li>
 <li>Beeper<ul>
 <li>O: (<strong>man</strong>) set when a tone finishes. Users needs to clear it.</li>
 <li>U: (<strong>man</strong>) set when a tune finishes. Users needs to clear it.</li>
+<li>C: (<strong>man</strong>) set when a clap is detected. Users needs to clear it.</li>
 </ul>
 </li>
 <li>IR Receive<ul>
@@ -2481,9 +2555,14 @@ cleared</li>
 <li>M: (<strong>man</strong>) set on an IR transmission match. User needs to clear it. Note
 that if a second match happens before dealing with the first, the first
 match info will be lost.</li>
-<li>C: (<strong>man</strong>) set on receiving an IR character. User needs to clear it. Note
+<li>B: (<strong>man</strong>) set on receiving an IR character. User needs to clear it. Note
 that if a second character arrived before dealing with the first, the first
 character will be lost.</li>
+<li>D: (<strong>man</strong>) set when an obstacle has been detected. At least one of
+  L,C,R will also be set. User needs to clear it.</li>
+<li>L: (<strong>man</strong>) set when an obstacle has been detected to the left. User needs to clear it.</li>
+<li>C: (<strong>man</strong>) set when an obstacle has been detected in the centre. User needs to clear it.</li>
+<li>R: (<strong>man</strong>) set when an obstacle has been detected to the right. User needs to clear it.</li>
 </ul>
 </li>
 <li>Bumper<ul>
@@ -2547,9 +2626,12 @@ The idea is that a difference in a Major would be definitly incompatible, while
 a minor change should be compatible. The firmware should be able to handle different
 versions of minor changes (say a difference in hardware requiring a different
 setting in a CPU register) but just NACK a difference in Major.</p>
-<p>The first versions are:
-- 0x00 (00000000) the hybrid with Advertiser functionality
-- 0x10 (00010000) the hybrid with the alternate firmware downloaded</p>
+<p>The first versions are:</p>
+<ul class="simple">
+<li>0x00 (00000000) the hybrid with Advertiser functionality</li>
+<li>0x10 (00010000) the hybrid with the alternate firmware downloaded</li>
+<li>0x20 (00100000) the Edison Robot (module table is <strong>NOT</strong> allowed for this version)</li>
+</ul>
 </div>
 <div class="section">
 <h2><a class="toc-backref" href="#id45" id="download-format" name="download-format">Download format</a></h2>

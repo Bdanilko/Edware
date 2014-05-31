@@ -65,7 +65,9 @@ class Temporary_data(object):
 
 class Persistent_data(object):
     def __init__(self):
-        self.version = 4
+        self.edison_mode = True
+        self.version = 10            # Edison version 0 (10+0)
+
         self.advanced_mode = False
 
         self.configuration = {}
@@ -88,6 +90,7 @@ def dump():
     print "Data:"
     print "Pdata Version:", pdata.version
     print "Advanced:", pdata.advanced_mode
+    print "Edison:", pdata.edison_mode
     print "Configuration:", pdata.configuration
     print "Conf_ids:", pdata.config_ids
     print "Conf_use:", pdata.config_use
@@ -157,6 +160,9 @@ def set_adv_mode(advanced):
 
 def get_adv_mode():
     return pdata.advanced_mode
+
+def get_edison_mode():
+    return pdata.edison_mode
 
 def register_window(name, window):
     if (name not in win_names):
@@ -949,6 +955,8 @@ def get_code_stream(bric_id, end_bric, in_event, code_lines):
 
         code_lines.append("")
         code_lines.append("# Bric id: %s, name: %s" % (bric_id, bric_name))
+        #print "Code_lines:", code_lines
+        #print "Window:", tdata.windows['detail']
         code_lines.extend(tdata.windows['detail'].generate_code(bric_id, in_event))
     
         if (bric_name == "If"):
@@ -993,13 +1001,18 @@ def add_header_code(code_lines):
     code_lines.append("# Do not edit! Created automatically by Microbric Works.")
     code_lines.append("#")
 
-    if (get_adv_mode()):
-        code_lines.append("# Advanced code")
-        code_lines.append("VERSION 1,0")
+    if (get_edison_mode()):
+        code_lines.append("# Edison code")
+        code_lines.append("VERSION 2,0")
     else:
-        code_lines.append("# Basic code")
-        code_lines.append("VERSION 0,0")
+        if (get_adv_mode()):
+            code_lines.append("# Advanced code")
+            code_lines.append("VERSION 1,0")
+        else:
+            code_lines.append("# Basic code")
+            code_lines.append("VERSION 0,0")
 
+    # IN EDISON - put the modules here for compiling, but don't download
     for i in range(12):
         mod_id = config_get_id(i)
         if (mod_id and config_in_use(mod_id)):

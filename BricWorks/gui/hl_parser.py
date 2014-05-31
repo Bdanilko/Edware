@@ -42,7 +42,7 @@ device_types = {  #'not used':0,
 device_storage = {
     'digin':4+0, 'digout':5+0, 'analogin':2+0,
     'tracker':4+0, 'irtx':2+0, 'irrx':5+0, 'beeper':7+0,
-    'motor-a':1+4, 'motor-b':1+4, 'led':2+0, 'bumper':1+0}
+    'motor-a':5+4, 'motor-b':5+4, 'led':4+0, 'bumper':1+0}
 
 special_names = ['_index', '_devices', '_timers', '_cpu']
 special_dtypes = ['index', 'devices', 'timers', 'cpu']
@@ -62,17 +62,17 @@ registers = {
                 'digin' : {'status' : (0, 1), 'action':(1,1), 'pulsetime':(2,2)},
                 'digout' : {'status' : (0,1), 'action':(1,1), 'output':(2,1), 'pulsetime':(3,2)},
                 'analogin' : {'level' : (0,2)},
-                'tracker' : {'status' : (0,1), 'output':(1,1), 'level':(2,2)},
+                'tracker' : {'status' : (0,1), 'output':(1,1), 'lightlevel':(2,2)},
                 'beeper' : {'status':(0,1), 'action' : (1,1), 'freq' : (2,2),
                             'duration' : (4,2), 'tune' : (6,1)},
                 'irtx' : {'action':(0,1), 'char':(1,1)},
                 
                 'irrx' : {'status' : (0,1), 'action':(1,1), 'check':(2,1), 'match':(3,1), 'char':(4,1)},
-                'motor-a' : {'control':(0,1)},
-                'motor-b' : {'control':(0,1)},
+                'motor-a' : {'status' :(0,1), 'control':(1,1), 'distance':(2,2)},
+                'motor-b' : {'status' :(0,1), 'control':(1,1), 'distance':(2,2)},
                 
                 'bumper' : {'status' : (0, 1)},
-                'led' : {'status' : (0,1), 'output':(1,1)},
+                'led' : {'status' : (0,1), 'output':(1,1), 'lightlevel':(2,2)},
 
 
                 'index' : {'action':(0,1), '8b1cursor':(1,1), '8b1step':(2,1),

@@ -16,8 +16,14 @@ import os.path
 import string
 import wave
 
+FAR = 1
+NEAR = 2
+START = 4
+DecodeState = 0
+BitCount = 0
+Byte = 0
 
-def decode(inFilePath):
+def decode(inFilePath, quiet = False):
     print "Debug: in decode() with inFilePath:|%s|" % (inFilePath)
     waveReader = wave.open(inFilePath, 'rb')
     print "Channels:%d, Bytes/sample:%d, Framerate:%d" % \
@@ -29,22 +35,173 @@ def decode(inFilePath):
     width = waveReader.getsampwidth()
     frames = waveReader.getnframes()
     count = 0
+    outputList = []
 
     while (count < frames):
         data = waveReader.readframes(1)
 
         if (width == 1):
-            print "%00d Left: 0x%02x, Right: 0x%02x" % \
-                (count, ord(data[0]), ord(data[1]))
+            if (quiet):
+                outputList.append((ord(data[0]), ord(data[1])))
+            else:
+                print "%00d Left: 0x%02x, Right: 0x%02x" % \
+                    (count, ord(data[0]), ord(data[1]))
         elif (width == 2):
-            print "%00d Left: 0x%02x%02x, Right: 0x%02x%02x" % \
-                (count, ord(data[1]), ord(data[0]), ord(data[3]), ord(data[2]))
+            if (quiet):
+                outputList.append((ord(data[0]) << 8 + ord(data[1]), ord(data[3]) << 8 + ord(data[4])))
+            else:
+                print "%00d Left: 0x%02x%02x, Right: 0x%02x%02x" % \
+                    (count, ord(data[1]), ord(data[0]), ord(data[3]), ord(data[2]))
         else:
             print "Error: only handle 8 or 16-bit audio"
             sys.exit(1)
             
         count += 1
+    return outputList
 
+def detectedState(newState, count):
+    global DecodeState
+    global BitCount
+    global Byte
+
+    output = (False, 0)
+    #print "DetectedState state:", newState, " count:", count, "Decode:", DecodeState, " BitCount:", BitCount, " Byte:", Byte
+    if (newState == "Start"):
+        return False, 0
+    
+    # sanity check)
+    if (newState in ["near", "far"] and count != 22):
+        print "ERROR -- %s is wrong length -- should be 22, bit it's %d" % (newState, count)
+        return False, 1
+
+    if (newState == "mid"):
+        if (((count % 22) == 0) and (((count / 22) == 2) or ((count / 22) == 6))):
+            pass
+        else:
+            print "ERROR -- mid is wrong length -- should be either 2 * 22 or 6 * 22, but it's %d" % (count,)
+            return False, 1
+    
+    if (newState == "far"):
+        if (DecodeState == (FAR | NEAR | START)):
+            # 0-bit
+            BitCount += 1
+            DecodeState = START | FAR
+        elif (DecodeState & NEAR):
+            # wrong order
+            print "ERROR near seen before far"
+            return False, 1
+        else:
+            # start of a bit or start/stop
+            DecodeState |= FAR
+
+    if (newState == "near"):
+        if (DecodeState & NEAR):
+            # wrong order
+            print "ERROR two nears seen together"
+            DecodeState = 0
+            return False, 1
+        elif not (DecodeState & FAR):
+            # should have had "far"
+            print "ERROR near with far"
+            DecodeState = 0
+            return False, 1
+        else:
+            # start of a bit or start/stop
+            DecodeState |= NEAR
+
+    if (newState == "mid"):
+        if not(DecodeState & (FAR | NEAR)):
+            # wrong order
+            print "ERROR mid without far and near"
+            return False, 1
+        else:
+            if ((count / 22) == 6):
+                # start or stop
+                if (DecodeState & START):  # stop
+                    if (BitCount != 8):
+                        print "ERROR stop without 8 bits -- there were", BitCount
+                        return False, 1
+                    else:
+                        output = (True, Byte)
+                        BitCount = 0
+                        Byte = 0
+                        DecodeState = 0
+                else:
+                    # start
+                    DecodeState = START
+            else: #((count / 22) == 2)
+                # 1-bit
+                Byte |= (1 << BitCount)
+                BitCount += 1
+                DecodeState = START
+
+    return output
+        
+def audioToBin(inFilePath):
+    # get the list of samples
+    sampleList = decode(inFilePath, True)
+    byteList = []
+    
+    state = "Start"
+    count = 0
+    for left,right in sampleList:
+        valid = False
+        if (left == 255 and right == 0):
+            if (state == "far"):
+                count += 1
+            else:
+                # change of state -- check the old one first
+                valid,byte = detectedState(state, count)
+                count = 1
+                state = "far"
+        elif (left == 0 and right == 255):
+            if (state == "near"):
+                count += 1
+            else:
+                # change of state -- check the old one first
+                valid,byte = detectedState(state, count)
+                count = 1
+                state = "near"
+        elif (left == 128 and right == 128):
+            if (state == "mid"):
+                count += 1
+            else:
+                # change of state -- check the old one first
+                valid,byte = detectedState(state, count)
+                count = 1
+                state = "mid"
+        else:
+            # unknown state
+            print "ERROR -- unknown state of the audio channels left %x, right %x" % (left, right)
+        
+        if (valid):
+            #print "Adding byte %x" % byte
+            byteList.append(byte)
+                
+    # whatever is left -- should be end of stop
+    if (count > 0):
+        valid,byte = detectedState(state, count)
+        if (valid):
+            #print "Adding byte %x" % byte
+            byteList.append(byte)
+
+    # now binaryList should have the decoded binary
+    print "Binary from audio:"
+    count = 0
+    for b in byteList:
+        if (count == 0):
+            print "%x" % (b),
+        elif (count % 16 == 0):
+            print ",%x" % (b)
+            count = -1
+        else:
+            print ", %x" % (b),
+        count += 1
+
+    if (count != 0):
+        print
+    
+        
 def createAudio(midQuantas):
     data = ""
     
@@ -134,6 +291,16 @@ def main(args):
             
         decode(outFilePath)
         sys.exit(0)
+
+    if (hexString == "tobin"):
+        if (not os.path.isfile(outFilePath)):
+            print "Error: input file doesn't exist!"
+            sys.exit(1)
+            
+        audioToBin(outFilePath)
+        sys.exit(0)
+
+    
         
     # check if outFile is ok
     if (not os.path.isdir(os.path.dirname(outFilePath))):

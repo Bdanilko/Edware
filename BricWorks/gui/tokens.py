@@ -534,8 +534,8 @@ class Token_analyser(object):
             self.err.report_error("Version wasn't set")
             return ("", None)
         
-        elif (self.token_stream.version[0] < 0 or self.token_stream.version[0] > 1):
-            self.err.report_error("This assembler only handles major versions 0 and 1 (not %d)" % (self.version[0]))
+        elif (self.token_stream.version[0] < 0 or self.token_stream.version[0] > 2):
+            self.err.report_error("This assembler only handles major versions 0 to 2 (not %d)" % (self.version[0]))
             return ("", self.token_stream.version)
 
         header_list = []
@@ -561,7 +561,7 @@ class Token_analyser(object):
             main_offset = 0
 
             # Major version 0 doesn't use the module list
-            if (self.token_stream.version[0] > 0):
+            if (self.token_stream.version[0] == 1):
                 # build the module list
                 offset = 0
                 maxl = self.get_max_location()
