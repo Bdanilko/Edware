@@ -314,6 +314,8 @@ class audio_downloader(wx.Dialog):
         # can't start twice so disable this button
         self.start.Disable()
         self.help_text.SetLabel("Starting download of %d bytes." % (self.byte_count,))
+        self.gauge.SetValue(0)
+        self.gauge.Update()
         self.Update()
 
         time.sleep(1)
@@ -322,6 +324,7 @@ class audio_downloader(wx.Dialog):
             s0 = pyglet.media.load("prefix.wav", streaming=False)
             s0.play()
             self.gauge.SetValue(self.prefix_len)
+            self.gauge.Update()
             time.sleep(2)
             s1 = pyglet.media.load("program.wav", streaming=False)
             s1.play()
@@ -335,6 +338,7 @@ class audio_downloader(wx.Dialog):
             s0.Play(wx.SOUND_SYNC)
             self.soundedBefore = True
             self.gauge.SetValue(self.prefix_len)
+            self.gauge.Update()
                 
             time.sleep(2)
             
@@ -595,6 +599,8 @@ class firmware_downloader(wx.Dialog):
 
         else:
             self.gauge.SetValue(self.byte_count)
+            self.gauge.Update()
+
             self.help_text.SetLabel("Downloading was successful!")
             self.start.Enable()
 
@@ -783,6 +789,7 @@ class hex_downloader(wx.Dialog):
 
         else:
             self.gauge.SetValue(self.byte_count)
+            self.gauge.Update()
             self.help_text.SetLabel("Downloading was successful!")
             self.start.Enable()
 

@@ -79,7 +79,7 @@ sdata_changed = True
 
 
 class Bricworks_frame(wx.Frame):
-    def __init__(self, parent, title="Microbric Bric Works"):
+    def __init__(self, parent, title="Microbric EdWare"):
         wx.Frame.__init__(self, parent, title=title, size=(800, 500))
 
 ##        splash_bmap = wx.Bitmap("gui/devices/motherboard.png", wx.BITMAP_TYPE_ANY)
@@ -99,7 +99,7 @@ class Bricworks_frame(wx.Frame):
                            ("&Save", "Save the current program", self.menu_save),
                            ("Save &As", "Save the current program under a new name", self.menu_saveas),
                            ("", "", ""),
-                           ("&Exit", "Exit Bric Works", self.menu_exit)),
+                           ("&Exit", "Exit EdWare", self.menu_exit)),
 
                           # ("&View",
                           #  ("*&Configuration view", "Edit the module configuration", self.menu_config),
@@ -133,8 +133,8 @@ class Bricworks_frame(wx.Frame):
                             self.menu_check_program),
                            ),
                           ("&Help",
-                           ("&Help", "Display help for Microbric's Bric Works", self.menu_help),
-                           ("&About", "Display information about Bric Works", self.menu_about)))
+                           ("&Help", "Display help for Microbric's EdWare", self.menu_help),
+                           ("&About", "Display information about EdWare", self.menu_about)))
                          
 
         self.init_status_bar()
@@ -162,37 +162,36 @@ class Bricworks_frame(wx.Frame):
         gui.win_data.clear_pdata()
 
         self.splitters = []
-        self.splitters.append(wx.SplitterWindow(self, -1, style= wx.SP_3D))
+        self.splitters.append(wx.SplitterWindow(self, -1, style= wx.SP_3D))                # between pallete and work
         self.splitters.append(wx.SplitterWindow(self.splitters[0], -1, style=wx.SP_3D))
-        self.splitters.append(wx.SplitterWindow(self.splitters[1], -1, style=wx.SP_3D))
+        #self.splitters.append(wx.SplitterWindow(self.splitters[1], -1, style=wx.SP_3D))
         
-        pp = gui.program_pallete.Program_pallete(self.splitters[0])
-        cp = gui.config_pallete.Config_pallete(self.splitters[0])
+        pp = gui.program_pallete.Program_pallete(self.splitters[0])       # pallete of brics
+        #cp = gui.config_pallete.Config_pallete(self.splitters[0])         # pallete of components
 
-        pwork = gui.program_work.Program_work(self.splitters[2], self)
-        cwork = gui.config_work.Config_work(self.splitters[2], self)
+        pwork = gui.program_work.Program_work(self.splitters[1], self)
+        #cwork = gui.config_work.Config_work(self.splitters[2], self)
 
-        p21 = Top_right_panel(self.splitters[1])
-        p22 = Bottom_right_panel(self.splitters[2])
+        #p21 = Top_right_panel(self.splitters[1])
+        p22 = Bottom_right_panel(self.splitters[1])
 
-        self.splitters[2].SplitHorizontally(pwork, p22, 120)
-        self.splitters[1].SplitHorizontally(p21, self.splitters[2], 100)
+        self.splitters[1].SplitHorizontally(pwork, p22, 120)
         self.splitters[0].SplitVertically(pp, self.splitters[1], 200)
         
         # Don't allow losing a window
         for s in self.splitters:
             s.SetMinimumPaneSize(20)
-        self.splitters[2].SetSashGravity(1.0)
+        self.splitters[1].SetSashGravity(1.0)
 
         # add in the LAST windows
         gui.win_data.register_window("splitter1", self.splitters[0])
         gui.win_data.register_window("splitter2", self.splitters[1])
-        gui.win_data.register_window("splitter3", self.splitters[2])
+        #gui.win_data.register_window("splitter3", self.splitters[2])
         gui.win_data.register_window("status", self.status_bar)
         gui.win_data.register_window("ppallete", pp)
-        gui.win_data.register_window("cpallete", cp)
+        #gui.win_data.register_window("cpallete", cp)
         gui.win_data.register_window("pwork", pwork)
-        gui.win_data.register_window("cwork", cwork)
+        #gui.win_data.register_window("cwork", cwork)
         gui.win_data.register_window("frame", self)
 
         # set up for program
@@ -206,7 +205,7 @@ class Bricworks_frame(wx.Frame):
         # Initialise status fields
         gui.win_data.status_file("")
         gui.win_data.status_space(0, 20)
-        gui.win_data.status_info("Microbric Bric Works")
+        gui.win_data.status_info("Microbric EdWare")
 
 
         self.Bind(wx.EVT_SIZE, self.on_size)
@@ -582,7 +581,7 @@ class Bricworks_frame(wx.Frame):
             return
         gui.win_data.clear_pdata()
         load_path = wx.FileSelector("Open program", default_path=self.save_path,
-                                    wildcard="Bric Works files (*.mbw)|*.mbw|All files (*.*)|*.*",
+                                    wildcard="EdWare files (*.mbw)|*.mbw|All files (*.*)|*.*",
                                     flags=wx.OPEN)
 
         if (load_path):
@@ -852,13 +851,17 @@ class Bottom_right_panel(wx.Panel):
 
         detail = gui.detail_win.Detail_win(self)
         help = gui.help_win.Help_win(self)
+        vars = gui.var_win.Var_win(self)
+
         self.lower_box = wx.BoxSizer(wx.HORIZONTAL)
         self.lower_box.Add(detail, 4, wx.EXPAND)
         self.lower_box.Add(help, 3, wx.EXPAND)
+        self.lower_box.Add(vars, 2, wx.EXPAND)
         self.SetSizer(self.lower_box)
 
         gui.win_data.register_window("detail", detail)
         gui.win_data.register_window("help", help)
+        gui.win_data.register_window("var", vars)
 
 
 

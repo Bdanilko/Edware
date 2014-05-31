@@ -41,9 +41,9 @@ V_TYPES = ["0-255", "+/- 32767"]
 # basic(8-bits, 16-bits), adv(8-bits, 16-bits)
 var_limits = ((200, 13), (200, 13))
 
-win_names = ['ppallete', 'cpallete', 'pwork', 'cwork', 'var', # windows
-             'config', 'detail', 'help',
-             'splitter1', 'splitter2', 'splitter3', 'status', 'frame'] # containers
+win_names = ['ppallete', 'pwork', 'var', # windows
+             'detail', 'help',
+             'splitter1', 'splitter2', 'status', 'frame'] # containers
 
 
 class Temporary_data(object):
@@ -187,70 +187,61 @@ def force_redraw(name=None):
             tdata.windows[name].Refresh()
 
 def get_main_window_type():
-    if (tdata.program_mode):
-        return 'program'
-    else:
-        return 'config'
+    return 'program'
     
-def switch_to_config():
-    if (not tdata.program_mode and not tdata.first_mode):
-        return
+# def switch_to_config():
+#     if (not tdata.program_mode and not tdata.first_mode):
+#         return
     
-    tdata.program_mode = False
-    tdata.first_mode = False
+#     tdata.program_mode = False
+#     tdata.first_mode = False
     
-    sp = tdata.windows['splitter1']
-    sp3 = tdata.windows['splitter3']
+#     sp = tdata.windows['splitter1']
+#     sp3 = tdata.windows['splitter3']
     
-    if (sp.GetWindow1() == tdata.windows['ppallete']):
-        sp.ReplaceWindow(tdata.windows['ppallete'], tdata.windows['cpallete'])
-    if (sp3.GetWindow1() == tdata.windows['pwork']):
-        sp3.ReplaceWindow(tdata.windows['pwork'], tdata.windows['cwork'])
+#     if (sp.GetWindow1() == tdata.windows['ppallete']):
+#         sp.ReplaceWindow(tdata.windows['ppallete'], tdata.windows['cpallete'])
+#     if (sp3.GetWindow1() == tdata.windows['pwork']):
+#         sp3.ReplaceWindow(tdata.windows['pwork'], tdata.windows['cwork'])
         
-    tdata.windows['pwork'].Hide()
-    tdata.windows['cwork'].Show()
-    tdata.windows['ppallete'].Hide()
-    tdata.windows['cpallete'].Show()
+#     tdata.windows['pwork'].Hide()
+#     tdata.windows['cwork'].Show()
+#     tdata.windows['ppallete'].Hide()
+#     tdata.windows['cpallete'].Show()
 
-    selection_drop_all()
+#     selection_drop_all()
 
-def switch_to_program():
-    if (tdata.program_mode and not tdata.first_mode):
-        return
+# def switch_to_program():
+#     if (tdata.program_mode and not tdata.first_mode):
+#         return
 
-    tdata.program_mode = True
-    tdata.first_mode = False
+#     tdata.program_mode = True
+#     tdata.first_mode = False
     
-    sp = tdata.windows['splitter1']
-    sp3 = tdata.windows['splitter3']
+#     sp = tdata.windows['splitter1']
+#     sp3 = tdata.windows['splitter3']
 
-    if (sp.GetWindow1() == tdata.windows['cpallete']):
-        sp.ReplaceWindow(tdata.windows['cpallete'], tdata.windows['ppallete'])
-    if (sp3.GetWindow1() == tdata.windows['cwork']):
-        sp3.ReplaceWindow(tdata.windows['cwork'], tdata.windows['pwork'])
+#     if (sp.GetWindow1() == tdata.windows['cpallete']):
+#         sp.ReplaceWindow(tdata.windows['cpallete'], tdata.windows['ppallete'])
+#     if (sp3.GetWindow1() == tdata.windows['cwork']):
+#         sp3.ReplaceWindow(tdata.windows['cwork'], tdata.windows['pwork'])
         
-    tdata.windows['pwork'].Show()
-    tdata.windows['cwork'].Hide()
-    tdata.windows['ppallete'].Show()
-    tdata.windows['cpallete'].Hide()
+#     tdata.windows['pwork'].Show()
+#     tdata.windows['cwork'].Hide()
+#     tdata.windows['ppallete'].Show()
+#     tdata.windows['cpallete'].Hide()
 
-    selection_drop_all()
+#     selection_drop_all()
 
 def inform_pallete_of_frame_rect(rect):
-    if ('ppallete' in tdata.windows):
-        tdata.windows['ppallete'].update_frame_rect(rect)
-    if ('cpallete' in tdata.windows):
-        tdata.windows['cpallete'].update_frame_rect(rect)
+    tdata.windows['ppallete'].update_frame_rect(rect)
     
 def inform_work_of_centre_pt(pt, name, drag_image):
-    if (tdata.program_mode):
-        return tdata.windows['pwork'].update_move_centre_pt(pt, name, drag_image)
-    else:
-        return tdata.windows['cwork'].update_move_centre_pt(pt, name, drag_image)
+    return tdata.windows['pwork'].update_move_centre_pt(pt, name, drag_image)
 
 def make_var_and_config_update():
     # need to update the config and var windows
-    tdata.windows['config'].update_list()
+    #tdata.windows['config'].update_list()
     tdata.windows['var'].update_list()
 
 def inform_help_win(help_text):
@@ -279,7 +270,8 @@ def config_dirty(dirty):
     config_update_list()
 
 def config_update_list():
-    tdata.windows['config'].update_list()
+    pass
+    #tdata.windows['config'].update_list()
 
 def config_add(location, dtype):
     if (config_check(location, dtype)):
@@ -1092,11 +1084,7 @@ def selection_take(win_name, name_data, pos_data):
     last_win = tdata.selection_win
 
     # update help
-    if (win_name == 'cpallete' or win_name == 'cwork'):
-        tdata.windows['help'].set_text(device_data.get_device_help(name_data))
-        tdata.windows['detail'].set_details("", -1)
-        
-    elif (win_name == 'ppallete' or win_name == 'pwork'):
+    if (win_name == 'ppallete' or win_name == 'pwork'):
         tdata.windows['help'].set_text(bric_data.get_bric_help(name_data))
         if (win_name == 'pwork'):
             tdata.windows['detail'].set_details(name_data, pos_data)
@@ -1152,17 +1140,17 @@ def selection_check(win_name, name_data, pos_data):
 
 def set_zoom(zoom):
     tdata.windows['pwork'].set_zoom(zoom)
-    tdata.windows['cwork'].set_zoom(zoom)
+    #tdata.windows['cwork'].set_zoom(zoom)
 
 def adjust_zoom(dir):
     tdata.windows['pwork'].adjust_zoom(dir)
-    tdata.windows['cwork'].adjust_zoom(dir)
+    #tdata.windows['cwork'].adjust_zoom(dir)
 
 def get_zoom(win_name):
     if (win_name == 'ppallete'):
         return tdata.windows['pwork'].get_zoom()
-    elif (win_name == 'cpallete'):
-        return tdata.windows['cwork'].get_zoom()
+    #elif (win_name == 'cpallete'):
+    #    return tdata.windows['cwork'].get_zoom()
     else:
         return 1.0
 
