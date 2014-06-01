@@ -79,7 +79,7 @@ sdata_changed = True
 
 
 class Bricworks_frame(wx.Frame):
-    def __init__(self, parent, title="Microbric Bric Works"):
+    def __init__(self, parent, title="Microbric EdWare"):
         wx.Frame.__init__(self, parent, title=title, size=(800, 500))
 
 ##        splash_bmap = wx.Bitmap("gui/devices/motherboard.png", wx.BITMAP_TYPE_ANY)
@@ -93,57 +93,48 @@ class Bricworks_frame(wx.Frame):
         self.splitter_attempts = 0
 
         self.menu_data = (("&File",
-                           ("New - &Basic", "Start a new program with Factory modules", self.menu_new_basic),
-                           ("&New - Advanced", "Start a new empty program", self.menu_new_adv),
+                           ("New", "Start a new program", self.menu_new_edison),
                            ("&Open", "Open an existing program", self.menu_open),
                            ("", "", ""),
                            ("&Save", "Save the current program", self.menu_save),
                            ("Save &As", "Save the current program under a new name", self.menu_saveas),
                            ("", "", ""),
-                           ("&Exit", "Exit Bric Works", self.menu_exit)),
+                           ("&Exit", "Exit EdWare", self.menu_exit)),
 
-                          ("&View",
-                           ("*&Configuration view", "Edit the module configuration", self.menu_config),
-                           ("*&Program view", "Edit the program", self.menu_program),
+                          # ("&View",
+                          #  ("*&Configuration view", "Edit the module configuration", self.menu_config),
+                          #  ("*&Program view", "Edit the program", self.menu_program),
 ##                           ("", "", ""),
 ##                           ("Zoom - &Normal", "Display the blocks at normal size", self.menu_zoom_normal),
 ##                           ("Zoom - &Bigger", "Display the blocks at a larger size", self.menu_zoom_bigger),
 ##                           ("Zoom - &Smaller", "Display the blocks at a smaller size", self.menu_zoom_smaller)),
-                           ),
-                          ("&Settings",
+#                           ),
+#                          ("&Settings",
 
 ##                           ("*&Basic mode", "Basic level programming mode", self.menu_basic_mode),
 ##                           ("*&Advanced mode", "Advanced level programming mode", self.menu_adv_mode),
-                           ("+&Advanced mode", "Advanced level programming mode", self.menu_adv_mode),
-                           ("", "", ""),
+#                           ("+&Advanced mode", "Advanced level programming mode", self.menu_adv_mode),
+#                           ("", "", ""),
 ##                           ("&USB Device", "Set the usb device for downloading", self.menu_usb_device),
 ##                           ("", "", ""),
-                           ("+&Display toolbar", "Display the toolbar under the menu", self.menu_enable_toolbar),
+#                           ("+&Display toolbar", "Display the toolbar under the menu", self.menu_enable_toolbar),
                            
 ##                           ("", "", ""),
 ##                           ("+&Strict version check", "Make sure saved programs are readable by Bricworks",
 ##                            self.menu_strict_versions),
-                           ),
+#                           ),
 
 
                           ("&Program Robot",
+                           ("Program &Edison", "Program Edison",
+                            self.menu_edison_program),
+                           ("", "", ""),
                            ("&Check program size", "Report on the bytes and variables used in the program",
                             self.menu_check_program),
-                           ("", "", ""),
-                           ("Program via the &Screen", "Program the robot using the flashing rectangle",
-                            self.menu_screen_program),
-                           ("&Program via cable", "Program the robot using the USB cable",
-                            self.menu_cable_program),
-                           ("", "", ""),
-                           ("&Download new firmware", "Download new firmware to the robot",
-                            self.menu_firmware),
-                           ("", "", ""),
-                           ("Download &Intel hex file", "Download intel hex file (as produced by some compilers)",
-                            self.menu_hex_download)),
-                          
+                           ),
                           ("&Help",
-                           ("&Help", "Display help for Microbric's Bric Works", self.menu_help),
-                           ("&About", "Display information about Bric Works", self.menu_about)))
+                           ("&Help", "Display help for Microbric's EdWare", self.menu_help),
+                           ("&About", "Display information about EdWare", self.menu_about)))
                          
 
         self.init_status_bar()
@@ -171,37 +162,36 @@ class Bricworks_frame(wx.Frame):
         gui.win_data.clear_pdata()
 
         self.splitters = []
-        self.splitters.append(wx.SplitterWindow(self, -1, style= wx.SP_3D))
+        self.splitters.append(wx.SplitterWindow(self, -1, style= wx.SP_3D))                # between pallete and work
         self.splitters.append(wx.SplitterWindow(self.splitters[0], -1, style=wx.SP_3D))
-        self.splitters.append(wx.SplitterWindow(self.splitters[1], -1, style=wx.SP_3D))
+        #self.splitters.append(wx.SplitterWindow(self.splitters[1], -1, style=wx.SP_3D))
         
-        pp = gui.program_pallete.Program_pallete(self.splitters[0])
-        cp = gui.config_pallete.Config_pallete(self.splitters[0])
+        pp = gui.program_pallete.Program_pallete(self.splitters[0])       # pallete of brics
+        #cp = gui.config_pallete.Config_pallete(self.splitters[0])         # pallete of components
 
-        pwork = gui.program_work.Program_work(self.splitters[2], self)
-        cwork = gui.config_work.Config_work(self.splitters[2], self)
+        pwork = gui.program_work.Program_work(self.splitters[1], self)
+        #cwork = gui.config_work.Config_work(self.splitters[2], self)
 
-        p21 = Top_right_panel(self.splitters[1])
-        p22 = Bottom_right_panel(self.splitters[2])
+        #p21 = Top_right_panel(self.splitters[1])
+        p22 = Bottom_right_panel(self.splitters[1])
 
-        self.splitters[2].SplitHorizontally(pwork, p22, 120)
-        self.splitters[1].SplitHorizontally(p21, self.splitters[2], 100)
+        self.splitters[1].SplitHorizontally(pwork, p22, 120)
         self.splitters[0].SplitVertically(pp, self.splitters[1], 200)
         
         # Don't allow losing a window
         for s in self.splitters:
             s.SetMinimumPaneSize(20)
-        self.splitters[2].SetSashGravity(1.0)
+        self.splitters[1].SetSashGravity(1.0)
 
         # add in the LAST windows
         gui.win_data.register_window("splitter1", self.splitters[0])
         gui.win_data.register_window("splitter2", self.splitters[1])
-        gui.win_data.register_window("splitter3", self.splitters[2])
+        #gui.win_data.register_window("splitter3", self.splitters[2])
         gui.win_data.register_window("status", self.status_bar)
         gui.win_data.register_window("ppallete", pp)
-        gui.win_data.register_window("cpallete", cp)
+        #gui.win_data.register_window("cpallete", cp)
         gui.win_data.register_window("pwork", pwork)
-        gui.win_data.register_window("cwork", cwork)
+        #gui.win_data.register_window("cwork", cwork)
         gui.win_data.register_window("frame", self)
 
         # set up for program
@@ -215,7 +205,7 @@ class Bricworks_frame(wx.Frame):
         # Initialise status fields
         gui.win_data.status_file("")
         gui.win_data.status_space(0, 20)
-        gui.win_data.status_info("Microbric Bric Works")
+        gui.win_data.status_info("Microbric EdWare")
 
 
         self.Bind(wx.EVT_SIZE, self.on_size)
@@ -225,8 +215,8 @@ class Bricworks_frame(wx.Frame):
 
     def set_basic_mode(self):
         # basic mode
-        id = self.menu_bar.FindMenuItem("&File", "&New - Advanced")
-        self.menu_bar.FindItemById(id).Enable(False)
+        #id = self.menu_bar.FindMenuItem("&File", "&New - Advanced")
+        #self.menu_bar.FindItemById(id).Enable(False)
 ##        id = self.menu_bar.FindMenuItem("&Settings", "&USB Device")
 ##        self.menu_bar.FindItemById(id).Enable(False)
 ##        id = self.menu_bar.FindMenuItem("&Program Robot", "Program via &USB")
@@ -234,8 +224,8 @@ class Bricworks_frame(wx.Frame):
 ##        id = self.menu_bar.FindMenuItem("&Program Robot", "&Download new firmware")
 ##        self.menu_bar.FindItemById(id).Enable(False)
 
-        id = self.menu_bar.FindMenuItem("&Settings", "&Advanced mode")
-        self.menu_bar.FindItemById(id).Check(False)
+        #id = self.menu_bar.FindMenuItem("&Settings", "&Advanced mode")
+        #self.menu_bar.FindItemById(id).Check(False)
         
         gui.win_data.set_adv_mode(False)
 
@@ -295,7 +285,7 @@ class Bricworks_frame(wx.Frame):
         # refresh the programming pallete
         gui.win_data.force_redraw("ppallete")
 
-    def set_module_view(self):
+    #def set_module_view(self):
         # Turn off the zooms
 ##        id = self.menu_bar.FindMenuItem("&View", "Zoom - &Normal")
 ##        self.menu_bar.FindItemById(id).Enable(False)
@@ -305,11 +295,11 @@ class Bricworks_frame(wx.Frame):
 ##        self.menu_bar.FindItemById(id).Enable(False)
         #self.zoom_combo_box.Enable(False)
 
-        id = self.menu_bar.FindMenuItem("&View", "&Configuration view")
-        self.menu_bar.FindItemById(id).Check(True)
-        self.mode_combo_box.SetValue("Configuration")
+        #id = self.menu_bar.FindMenuItem("&View", "&Configuration view")
+        #self.menu_bar.FindItemById(id).Check(True)
+        #self.mode_combo_box.SetValue("Configuration")
 
-    def set_program_view(self):
+#    def set_program_view(self):
         # Turn on the zooms
 ##        id = self.menu_bar.FindMenuItem("&View", "Zoom - &Normal")
 ##        self.menu_bar.FindItemById(id).Enable(True)
@@ -319,9 +309,9 @@ class Bricworks_frame(wx.Frame):
 ##        self.menu_bar.FindItemById(id).Enable(True)
         #self.zoom_combo_box.Enable(True)
         
-        id = self.menu_bar.FindMenuItem("&View", "&Program view")
-        self.menu_bar.FindItemById(id).Check(True)
-        self.mode_combo_box.SetValue("Program")
+        # id = self.menu_bar.FindMenuItem("&View", "&Program view")
+        # self.menu_bar.FindItemById(id).Check(True)
+        # self.mode_combo_box.SetValue("Program")
         
         
     def session_load(self):
@@ -352,25 +342,25 @@ class Bricworks_frame(wx.Frame):
         # BED-EDISON remove the Advancedmode menu item
         if (sdata.edison_mode):
             self.set_basic_mode()
-            id = self.menu_bar.FindMenuItem("&Settings", "&Advanced mode")
-            self.menu_bar.FindItemById(id).Check(False)
+            #id = self.menu_bar.FindMenuItem("&Settings", "&Advanced mode")
+            #self.menu_bar.FindItemById(id).Check(False)
             self.set_edison_modules()
         else:
             if (sdata.advanced_mode):
                 self.set_adv_mode()
-                id = self.menu_bar.FindMenuItem("&Settings", "&Advanced mode")
-                self.menu_bar.FindItemById(id).Check(True)
+                #id = self.menu_bar.FindMenuItem("&Settings", "&Advanced mode")
+                #self.menu_bar.FindItemById(id).Check(True)
             else:
                 self.set_basic_mode()
-                id = self.menu_bar.FindMenuItem("&Settings", "&Advanced mode")
-                self.menu_bar.FindItemById(id).Check(False)
+                #id = self.menu_bar.FindMenuItem("&Settings", "&Advanced mode")
+                #self.menu_bar.FindItemById(id).Check(False)
                 self.set_initial_basic_modules()
 
-        id = self.menu_bar.FindMenuItem("&Settings", "&Display toolbar")
-        if (sdata.toolbar):
-            self.menu_bar.FindItemById(id).Check(True)
-        else:
-            self.menu_bar.FindItemById(id).Check(False)
+        #id = self.menu_bar.FindMenuItem("&Settings", "&Display toolbar")
+        #if (sdata.toolbar):
+        #    self.menu_bar.FindItemById(id).Check(True)
+        #else:
+        #    self.menu_bar.FindItemById(id).Check(False)
 
 ##        id = self.menu_bar.FindMenuItem("&Settings", "&Strict version check")
 ##        if (sdata.strict_versions):
@@ -378,12 +368,12 @@ class Bricworks_frame(wx.Frame):
 ##        else:
 ##            self.menu_bar.FindItemById(id).Check(False)
 
-        if (sdata.main_window == 'program'):
-            self.set_program_view()
-            gui.win_data.switch_to_program()
-        else:
-            self.set_module_view()
-            gui.win_data.switch_to_config()
+        # if (sdata.main_window == 'program'):
+        #     self.set_program_view()
+        #     gui.win_data.switch_to_program()
+        # else:
+        #     self.set_module_view()
+        #     gui.win_data.switch_to_config()
             
         self.change_dirty(False)
         sdata_changed = False
@@ -405,11 +395,11 @@ class Bricworks_frame(wx.Frame):
         cdata.usb_device = sdata.usb_device
         cdata.strict_versions = sdata.strict_versions
 
-        id = self.menu_bar.FindMenuItem("&Settings", "&Display toolbar")
-        if (self.menu_bar.FindItemById(id).IsChecked()):
-            cdata.toolbar = True
-        else:
-            cdata.toolbar = False
+        #id = self.menu_bar.FindMenuItem("&Settings", "&Display toolbar")
+        #if (self.menu_bar.FindItemById(id).IsChecked()):
+        #    cdata.toolbar = True
+        #else:
+        cdata.toolbar = True
 
         if (sdata_changed or (cdata != sdata)):
             #print "Session data changed"
@@ -505,13 +495,13 @@ class Bricworks_frame(wx.Frame):
     def init_tool_bar(self):
         self.tool_bar = self.CreateToolBar()
         id = wx.NewId()
-        self.mode_combo_box = wx.ComboBox(self.tool_bar, id, "Program", choices = ["Configuration", "Program"],
-                                          size=(180, -1))
+        #self.mode_combo_box = wx.ComboBox(self.tool_bar, id, "Program", choices = ["Configuration", "Program"],
+        #                                  size=(180, -1))
 
-        self.tool_bar.AddControl(wx.StaticText(self.tool_bar, -1, " View "))
-        self.tool_bar.AddControl(self.mode_combo_box)
-        self.Bind(wx.EVT_COMBOBOX, self.on_change_mode, id=id)
-        self.tool_bar.AddSeparator()
+        #self.tool_bar.AddControl(wx.StaticText(self.tool_bar, -1, " View "))
+        #self.tool_bar.AddControl(self.mode_combo_box)
+        #self.Bind(wx.EVT_COMBOBOX, self.on_change_mode, id=id)
+        #self.tool_bar.AddSeparator()
 
         self.zoom_id = wx.NewId()
         self.zoom_combo_box = wx.ComboBox(self.tool_bar, self.zoom_id, "70%",
@@ -539,8 +529,8 @@ class Bricworks_frame(wx.Frame):
         # start it on
         self.tool_bar.Show()
         
-        id = self.menu_bar.FindMenuItem("&Settings", "Display toolbar")
-        self.menu_bar.FindItemById(id).Check(True)
+        #id = self.menu_bar.FindMenuItem("&Settings", "Display toolbar")
+        #self.menu_bar.FindItemById(id).Check(True)
     
     def on_change_mode(self, event):
         new_mode = event.GetString().lower()
@@ -562,12 +552,17 @@ class Bricworks_frame(wx.Frame):
         gui.win_data.add_variable()
 
     def on_program_button(self, event):
-        global sdata_changed
         gui.win_data.selection_drop_all()
         dialog = gui.downloader.audio_downloader("", "Download over audio")
         result = dialog.ShowModal()
         dialog.Destroy()
-        
+
+    def menu_edison_program(self, event):
+        gui.win_data.selection_drop_all()
+        dialog = gui.downloader.audio_downloader("", "Download over audio")
+        result = dialog.ShowModal()
+        dialog.Destroy()
+    
     def menu_new_edison(self, event):
         gui.win_data.selection_drop_all()
         if (self.handle_unsaved_changes("Unsaved program.")):
@@ -580,34 +575,13 @@ class Bricworks_frame(wx.Frame):
             gui.win_data.make_var_and_config_update()
             self.Refresh()
             
-    def menu_new_basic(self, event):
-        gui.win_data.selection_drop_all()
-        if (self.handle_unsaved_changes("Unsaved program.")):
-            gui.win_data.clear_pdata()
-            self.set_basic_mode()
-            self.set_initial_basic_modules()
-            self.change_dirty(False)
-            self.save_file = ""
-            gui.win_data.status_file(self.save_file)
-            gui.win_data.make_var_and_config_update()
-            self.Refresh()
-
-    def menu_new_adv(self, event):
-        gui.win_data.selection_drop_all()
-        if (self.handle_unsaved_changes("Unsaved program.")):
-            gui.win_data.clear_pdata()
-            self.save_file = ""
-            gui.win_data.status_file(self.save_file)
-            gui.win_data.make_var_and_config_update()
-            self.Refresh()
-
     def menu_open(self, event):
         gui.win_data.selection_drop_all()
         if (not self.handle_unsaved_changes("Unsaved program.")):
             return
         gui.win_data.clear_pdata()
         load_path = wx.FileSelector("Open program", default_path=self.save_path,
-                                    wildcard="Bric Works files (*.mbw)|*.mbw|All files (*.*)|*.*",
+                                    wildcard="EdWare files (*.mbw)|*.mbw|All files (*.*)|*.*",
                                     flags=wx.OPEN)
 
         if (load_path):
@@ -780,17 +754,17 @@ class Bricworks_frame(wx.Frame):
             sdata.usb_device = used_device
             sdata_changed = True
 
-    def menu_config(self, event):
-        gui.win_data.selection_drop_all()
-        gui.win_data.switch_to_config()
-        self.mode_combo_box.SetSelection(0)
-        self.set_module_view()
+    # def menu_config(self, event):
+    #     gui.win_data.selection_drop_all()
+    #     gui.win_data.switch_to_config()
+    #     self.mode_combo_box.SetSelection(0)
+    #     self.set_module_view()
 
-    def menu_program(self, event):
-        gui.win_data.selection_drop_all()
-        gui.win_data.switch_to_program()
-        self.mode_combo_box.SetSelection(1)
-        self.set_program_view()
+    # def menu_program(self, event):
+    #     gui.win_data.selection_drop_all()
+    #     gui.win_data.switch_to_program()
+    #     self.mode_combo_box.SetSelection(1)
+    #     self.set_program_view()
 
     def menu_zoom_normal(self, event):
         gui.win_data.adjust_zoom(0)
@@ -804,17 +778,17 @@ class Bricworks_frame(wx.Frame):
     def menu_basic_mode(self, event):
         self.set_basic_mode()
 
-    def menu_adv_mode(self, event):
-        # Are we already advanced
-        if (gui.win_data.get_adv_mode()):
-            wx.MessageBox("To go back to basic (factory) mode, you must use 'New - Basic'.",
-                          "Back to Basics.", wx.OK | wx.ICON_WARNING)
+    # def menu_adv_mode(self, event):
+    #     # Are we already advanced
+    #     if (gui.win_data.get_adv_mode()):
+    #         wx.MessageBox("To go back to basic (factory) mode, you must use 'New - Basic'.",
+    #                       "Back to Basics.", wx.OK | wx.ICON_WARNING)
             
-            id = self.menu_bar.FindMenuItem("&Settings", "&Advanced mode")
-            self.menu_bar.FindItemById(id).Check(True)
+    #         id = self.menu_bar.FindMenuItem("&Settings", "&Advanced mode")
+    #         self.menu_bar.FindItemById(id).Check(True)
 
-        else:
-            self.set_adv_mode()
+    #     else:
+    #         self.set_adv_mode()
             
             
 
@@ -877,13 +851,17 @@ class Bottom_right_panel(wx.Panel):
 
         detail = gui.detail_win.Detail_win(self)
         help = gui.help_win.Help_win(self)
+        vars = gui.var_win.Var_win(self)
+
         self.lower_box = wx.BoxSizer(wx.HORIZONTAL)
         self.lower_box.Add(detail, 4, wx.EXPAND)
         self.lower_box.Add(help, 3, wx.EXPAND)
+        self.lower_box.Add(vars, 2, wx.EXPAND)
         self.SetSizer(self.lower_box)
 
         gui.win_data.register_window("detail", detail)
         gui.win_data.register_window("help", help)
+        gui.win_data.register_window("var", vars)
 
 
 

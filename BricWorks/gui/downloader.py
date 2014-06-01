@@ -46,7 +46,8 @@ import os.path
 import time
 import wave
 
-EDISON_VERSION = "\x20"
+EDISON_VERSION_STR = "\x20"
+EDISON_VERSION_BYTE = 0x20
 
 if sys.platform.startswith("linux"):
     PLATFORM="linux"
@@ -117,8 +118,8 @@ def assemble(f_name):
     #print download_type, version, header
 
     # get the token bytes
-    download_str = ""
-    download_bytes = []
+    download_str = EDISON_VERSION_STR
+    download_bytes = [EDISON_VERSION_BYTE]
     for t in header:
         download_bytes.append(t)
         download_str += chr(t)
@@ -135,20 +136,6 @@ def assemble(f_name):
 def get_bytes(file_name):
     compile_file = write_code(file_name)
     return assemble(compile_file)
-
-
-import comscan
-def get_possible_ports():
-    ports = []
-    res = comscan.comscan()
-    for r in res:
-        if ('available' in r and 'class' in r and 'name' in r):
-            if (r['available'] and r['class'] == 'serial'):
-                ports.append(r['name'])
-
-    ports.sort()
-    return ports
-    
 
 # --------------- Check size ----------------------------------
 
@@ -171,13 +158,14 @@ class usb_downloader(wx.Dialog):
         wx.Dialog.__init__(self, None, -1, title, size=(500, 300))
         self.SetBackgroundColour("lightgray")
 
-        self.ports = get_possible_ports()
-        if (usb_device not in self.ports):
-            if (len(self.ports) > 0):
-                usb_device = self.ports[0]
-            else:
-                usb_device = ""
-                
+        # self.ports = get_possible_ports()
+        # if (usb_device not in self.ports):
+        #     if (len(self.ports) > 0):
+        #         usb_device = self.ports[0]
+        #     else:
+        #         usb_device = ""
+        usb_device = ""
+        
         self.usb_ctrl = wx.ComboBox(self, -1, value=usb_device, choices=self.ports, size=(150,-1))
 
         
@@ -285,18 +273,14 @@ class audio_downloader(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.on_cancel, self.cancel)
 
         self.download_bytes, self.dtype, self.version = get_bytes(file_name)
-
-        prefix = token_downloader.SERIAL_WAKEUP_STR + token_downloader.PROGRAM_STR + \
-                 EDISON_VERSION
-        self.prefix_len = len(prefix)
-        self.byte_count = self.prefix_len + len(self.download_bytes)
+        
+        self.byte_count = len(self.download_bytes)
         self.gauge.SetRange(self.byte_count)
         self.gauge.SetValue(0)
         
         self.help_text.SetLabel("Download size is %d bytes." % (self.byte_count,))
 
         # convert to wav file
-        convert(list(bytearray(prefix)), "prefix.wav");
         convert(self.download_bytes, "program.wav");
         
     def on_cancel(self, event):
@@ -321,30 +305,11 @@ class audio_downloader(wx.Dialog):
         time.sleep(1)
         
         if PLATFORM == "linux":
-            s0 = pyglet.media.load("prefix.wav", streaming=False)
-            s0.play()
-            self.gauge.SetValue(self.prefix_len)
-            self.gauge.Update()
-            time.sleep(2)
             s1 = pyglet.media.load("program.wav", streaming=False)
             s1.play()
         elif PLATFORM == "win":
-            if (not self.soundedBefore):
-                s0 = wx.Sound("prefix.wav")
-                s0.Play(wx.SOUND_SYNC)
-                self.soundedBefore = True
-                
-            s0 = wx.Sound("prefix.wav")
-            s0.Play(wx.SOUND_SYNC)
-            self.soundedBefore = True
-            self.gauge.SetValue(self.prefix_len)
-            self.gauge.Update()
-                
-            time.sleep(2)
-            
             s1 = wx.Sound("program.wav")
             s1.Play(wx.SOUND_SYNC)
-            
 
         self.gauge.SetValue(self.byte_count)
         self.help_text.SetLabel("Finished downloading")
@@ -498,12 +463,13 @@ class firmware_downloader(wx.Dialog):
         wx.Dialog.__init__(self, None, -1, title, size=(500, 300))
         self.SetBackgroundColour("lightgray")
 
-        self.ports = get_possible_ports()
-        if (usb_device not in self.ports):
-            if (len(self.ports) > 0):
-                usb_device = self.ports[0]
-            else:
-                usb_device = ""
+        # self.ports = get_possible_ports()
+        # if (usb_device not in self.ports):
+        #     if (len(self.ports) > 0):
+        #         usb_device = self.ports[0]
+        #     else:
+        #         usb_device = ""
+        usb_device = ""
                 
         self.usb_ctrl = wx.ComboBox(self, -1, value=usb_device, choices=self.ports, size=(150,-1))
 
@@ -694,12 +660,13 @@ class hex_downloader(wx.Dialog):
         wx.Dialog.__init__(self, None, -1, title, size=(500, 300))
         self.SetBackgroundColour("lightgray")
 
-        self.ports = get_possible_ports()
-        if (usb_device not in self.ports):
-            if (len(self.ports) > 0):
-                usb_device = self.ports[0]
-            else:
-                usb_device = ""
+        # self.ports = get_possible_ports()
+        # if (usb_device not in self.ports):
+        #     if (len(self.ports) > 0):
+        #         usb_device = self.ports[0]
+        #     else:
+        #         usb_device = ""
+        usb_device = ""
                 
         self.usb_ctrl = wx.ComboBox(self, -1, value=usb_device, choices=self.ports, size=(150,-1))
 
@@ -806,7 +773,12 @@ def convert(binString, outFilePath):
 
     # now generate the file
     index = 0
-    
+    preamble = 0
+
+    while (preamble < 20):
+        waveWriter.writeframes(createAudio(0))
+        preamble += 1
+        
     while (index < len(binString)):
         data = binString[index]
         print "..debug: coding value", data
@@ -832,10 +804,16 @@ def convert(binString, outFilePath):
         #     # even so add a zero
         #     waveWriter.writeframes(createAudio(0))
 
-        # add stop
-        waveWriter.writeframes(createAudio(6))
+        # add stop - BBB Changed to 8 - differs from start 
+        waveWriter.writeframes(createAudio(8))
 
         index += 1
+
+    #added to end as well - to ensure entrie data is played. - ## BBB
+    preamble = 0    
+    while (preamble < 20):
+        waveWriter.writeframes(createAudio(0))
+        preamble += 1
 
 def createAudio(midQuantas):
     data = ""
