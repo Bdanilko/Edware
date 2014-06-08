@@ -232,20 +232,20 @@ def load_brics(big = True):
     # load ifs
     data.if_variants = {}
 
-    get_if_variant(cp, "bumper")
-    get_if_variant(cp, "analogin")
-    get_if_variant(cp, "digin")
+    #get_if_variant(cp, "bumper")
+    #get_if_variant(cp, "analogin")
+    #get_if_variant(cp, "digin")
+    #get_if_variant(cp, "pulse")
+    #get_if_variant(cp, "serial")
     get_if_variant(cp, "irrx")
     get_if_variant(cp, "tracker")
-
-    # specials
     get_if_variant(cp, "button")
-    get_if_variant(cp, "pulse")
     get_if_variant(cp, "light")
     get_if_variant(cp, "remote")
-    get_if_variant(cp, "serial")
     get_if_variant(cp, "timer")
     get_if_variant(cp, "var")
+    get_if_variant(cp, "clap")
+    get_if_variant(cp, "obstacle")
 
 
 def get_if_variant(cp, name):

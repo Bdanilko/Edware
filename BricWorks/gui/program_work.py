@@ -125,13 +125,16 @@ class Program_work(work_win.Work_win):
 
         # Things can move about now
         self.zone_hit = -1
-        
+
         dc.SetBackground(wx.Brush("white", wx.SOLID))
         dc.SetUserScale(self.zoom, self.zoom)
         dc.Clear()
 
-        dc.SetPen(wx.Pen("blue", 2))
-        dc.SetBrush(wx.Brush("blue", wx.SOLID))
+        ourGray = wx.Colour(red=108, green=109, blue=112)
+        ourPen = wx.Pen(ourGray, 11)
+        ourPen.SetCap(wx.CAP_BUTT)
+        dc.SetPen(ourPen)
+        dc.SetBrush(wx.Brush(ourGray, wx.SOLID))
 
         centre_line = 0
         centre_line_buffer = 200
@@ -372,7 +375,7 @@ class Program_work(work_win.Work_win):
 
         
     def paint_flow(self, dc, x, cl_base, flow, branch):
-        #print "paint_flow() x:", x, "cl_base:", cl_base, "flow:", flow
+        print "paint_flow() x:", x, "cl_base:", cl_base, "flow:", flow
         
         # flow starts with cl adjustment then nodes
         cl_adjust = 90
@@ -533,14 +536,16 @@ class Program_work(work_win.Work_win):
                     if ((bot > 0) and win_data.program().get_next_id(bric_id, 1) != (bric_id+1)):
                         self.connect(dc, self.connections[bric_id][2], (x,new_cl[1]))
                                      
-
-                    
                     if (new_cl[1] > cl_max):
                         cl_max = new_cl[1]
 
                 i += 1
 
         #print "paint_flow returns", (x,1)
+
+        # now do the final bric - Last
+        if (flow[0] == 0):
+            new_x, bmap_size = self.draw_bmap(dc, "Last", x, cl, 0)
         
         self.in_paint = False
 
@@ -592,7 +597,7 @@ class Program_work(work_win.Work_win):
         new_x, bmap_size = self.draw_bmap(dc, bric_name, x, cl, bric_id)
 
         # add the location but skip "Start Main" and "End" tokens
-        if ((bric_id > 1) and (bric_name != "End")):
+        if ((bric_id > 1) and (bric_name != "End") and (bric_name != "Last")):
             self.pickup_locations.append((bric_id, bric_name, which_id,
                                           wx.Rect(x, cl-bmap_size[1]/2, bmap_size[0], bmap_size[1])))
         

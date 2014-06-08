@@ -79,12 +79,12 @@ EVENT_DICT = {MOTHERBOARD:(('Button 1', ('_devices', 0), 'button'),
               'Motor A' : (('Strain detected', (None, 0), 'motor'),),
               'Motor B' : (('Strain detected', (None, 0), 'motor'),),
               'Sounder' : (('Tune Finished', (None, 0), 'timer'),
-                           ('Clap detected', (None, 1), 'timer'),),
+                           ('Clap detected', (None, 1), 'clap'),),
               'IR Receiver': (('IR Character', (None, 0), 'irrx'),
-                              ('Any Obstacle detected', (None,6), 'irrx'),
-                              ('Obstacle detected on left', (None,5), 'irrx'),
-                              ('Obstacle detected ahead', (None,4), 'irrx'),
-                              ('Obstacle detected on right', (None,3), 'irrx'),
+                              ('Any Obstacle detected', (None,6), 'obstacle'),
+                              ('Obstacle detected on left', (None,5), 'obstacle'),
+                              ('Obstacle detected ahead', (None,4), 'obstacle'),
+                              ('Obstacle detected on right', (None,3), 'obstacle'),
                               ('Any RC match', (None, 1), 'remote'),
                               ('RC match 1', (None, 1), 'remote'),
                               ('RC match 2', (None, 1), 'remote'),
@@ -3050,6 +3050,8 @@ class Detail_win(wx.ScrolledWindow):
         value = event.GetEventObject().GetValue()
         self.do_event_change(value)
         self.update_dirty(True)
+        if (self.cb_special):
+            self.cb_special()
 
     def create_compare_code(self, code_lines, input, label):
         if (input == '='):
@@ -3068,6 +3070,19 @@ class Detail_win(wx.ScrolledWindow):
 
         return
 
+    def find_if_variant(self, module, event):
+        events = self.get_event_choices(module)
+        
+        for title, details, if_variant in events:
+            if (title == event):
+                mod, bit = details
+                break
+            
+        if (bit == -1):
+            raise KeyError, "%s not a valid event in module %s" % (input[1], input[0])
+        
+        return if_variant
+        
     def create_event_code(self, code_lines, module, event, label):
         match = None
         value = None
@@ -3127,6 +3142,7 @@ class Detail_win(wx.ScrolledWindow):
             code_lines.append("cmpb $%s" % (match,))
             code_lines.append('brne %s' % (label,))
 
+        print "if_variant:", if_variant
         return if_variant
 
     def create_event_header(self, code_lines, module, event):
@@ -3614,6 +3630,7 @@ class Detail_win(wx.ScrolledWindow):
         self.conv_func = self.if_convert
         self.dirty = False
         self.name = win_data.program().get_bric_name(bric_id)
+        self.bricId = bric_id
         self.bad_events = []
         if (not win_data.get_adv_mode()):
             self.bad_events.append("Serial Character")
@@ -3645,6 +3662,8 @@ class Detail_win(wx.ScrolledWindow):
         self.cons_cb = (self.event_choice, test[0], test[1])
         self.rbs = rbs
 
+        self.cb_special = self.if_special_cb_change
+        
         grid.Add(wx.StaticText(self, -1, "Take the top (True) branch if:"), (0,1),
                  span=(1,2), flag=wx.ALIGN_LEFT)
 
@@ -3678,8 +3697,24 @@ class Detail_win(wx.ScrolledWindow):
             
             self.old_data = self.save_initial()
             
+        self.cb_special()
         return grid
 
+    def if_special_cb_change(self):
+        # a combo box has changed
+        # make sure the correct if-variant is selected
+        print "In if_special"
+        ifVar = "var"
+        if (self.rbs[1].GetValue() == 1):
+            module = self.groups[1][1][0].GetValue()
+            event = self.event_choice.GetValue()
+            print "Mod:", module, "Event:", event
+            ifVar = self.find_if_variant(module, event)
+            
+        print "ifVar:", ifVar
+        win_data.program().set_bric_if_variant(self.bricId, ifVar)
+        win_data.force_redraw("pwork")
+    
     def if_convert(self, input, command, name, bric_id):
         """Data: rb, test-var, test-op, test-cons, module, event, in-event, end-of-loopif"""
         
@@ -3692,7 +3727,7 @@ class Detail_win(wx.ScrolledWindow):
             else:
                 if (input[4]):
                     output[4] = win_data.config_name_from_id(input[4])
-            #print output
+            print "if_convert:", output
             return output
 
         elif (command == 'to_ids_add_refs'):
@@ -3725,6 +3760,7 @@ class Detail_win(wx.ScrolledWindow):
                     output[4] = win_data.config_id_from_name(output[4])
                     win_data.config_add_use(output[4])
 
+            print "if_to_ids:", output
             return output
 
         elif (command == 'rm_refs'):

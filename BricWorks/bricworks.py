@@ -197,7 +197,7 @@ class Bricworks_frame(wx.Frame):
         # set up for program
         gui.win_data.verify_registry()
         
-        gui.win_data.set_zoom(0.7)
+        gui.win_data.set_zoom(1.0)
  
         # get the last session and apply those values
         self.session_load()
@@ -504,7 +504,7 @@ class Bricworks_frame(wx.Frame):
         #self.tool_bar.AddSeparator()
 
         self.zoom_id = wx.NewId()
-        self.zoom_combo_box = wx.ComboBox(self.tool_bar, self.zoom_id, "70%",
+        self.zoom_combo_box = wx.ComboBox(self.tool_bar, self.zoom_id, "100%",
                                           choices = ["50%", "60%", "70%", "80%", "90%", 
                                                      "100%", "120%", "150%"], size=(100, -1))
         self.tool_bar.AddControl(wx.StaticText(self.tool_bar, -1, " Zoom "))
