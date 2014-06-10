@@ -256,7 +256,7 @@ class Program(object):
                 self.brics[prev_id].next_id[0] = next_id
 
         if (next_id >= 0):
-            if (self.brics[next_id].bric_name.StartsWith("End")):
+            if (self.brics[next_id].bric_name.startswith("End")):
                 # next bric is an End bric
                 self.brics[next_id].prev_id[which_id] = prev_id
             else:

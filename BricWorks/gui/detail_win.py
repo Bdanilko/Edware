@@ -499,9 +499,9 @@ class Detail_win(wx.ScrolledWindow):
         self.cons_cb = (mod_choice,)+note_and_dur
         self.rbs = rbs
 
-        #self.add_with_prompt(grid, (0,0), MODULE_PROMPT, (mod_choice,))
-        self.add_with_prompt(grid, (0,0), "", (mod_choice,))
-        mod_choice.Hide()
+        self.add_with_prompt(grid, (0,0), MODULE_PROMPT, (mod_choice,))
+        #self.add_with_prompt(grid, (0,0), "", (mod_choice,))
+        #mod_choice.Hide()
         
         grid.Add(rbs[0], (2,0), flag=wx.ALIGN_CENTRE_VERTICAL)
         self.add_with_prompt(grid, (2,1), "", note_and_dur)
@@ -651,9 +651,9 @@ class Detail_win(wx.ScrolledWindow):
         self.cons_cb = (mod_choice,)
         self.rbs = None
 
-        #self.add_with_prompt(grid, (0,0), MODULE_PROMPT, (mod_choice,))
-        self.add_with_prompt(grid, (0,0), "", (mod_choice,))
-        mod_choice.Hide()
+        self.add_with_prompt(grid, (0,0), MODULE_PROMPT, (mod_choice,))
+        #self.add_with_prompt(grid, (0,0), "", (mod_choice,))
+        #mod_choice.Hide()
 
         self.bind_event_handlers()
 
