@@ -289,7 +289,7 @@ class Program_work(work_win.Work_win):
                 if (prev_0 > 0):
                     prev_name_0 = win_data.program().get_bric_name(prev_0)
 
-                if (name not in ("If","Loop", "End")):
+                if (name not in ("If","Loop", "EndIf", "EndLoop")):
                     # draw the bric, then the arrow
                     connections[bric_id][0] = (x,cl)
                     connections[bric_id][1] = (x,cl)
@@ -299,7 +299,7 @@ class Program_work(work_win.Work_win):
                     x += self.arrow_w
                     connections[bric_id][2] = (x,cl)
 
-                elif (name == "End"):
+                elif (name in ("EndIf", "EndLoop")):
                     # draw the bric, then the arrow
                     connections[bric_id][0] = (x, cl-cl_adjust)
                     connections[bric_id][1] = (x, cl+cl_adjust)
@@ -414,7 +414,7 @@ class Program_work(work_win.Work_win):
                 if (prev_0 > 0):
                     prev_name_0 = win_data.program().get_bric_name(prev_0)
 
-                if (name not in ("If","Loop", "End")):
+                if (name not in ("If","Loop", "EndIf", "EndLoop")):
                     # draw the bric, then the arrow
                     self.connections[bric_id][0] = (x,cl)
                     self.connections[bric_id][1] = (x,cl)
@@ -432,7 +432,7 @@ class Program_work(work_win.Work_win):
 ##                        else:
 ##                            self.connect(dc, self.connections[prev_0][2], self.connections[bric_id][0])
 
-                elif (name == "End"):
+                elif (name in ("EndIf", "EndLoop")):
                     # draw the bric, then the arrow
                     self.connections[bric_id][0] = (x, cl-cl_adjust)
                     self.connections[bric_id][1] = (x, cl+cl_adjust)
@@ -597,7 +597,7 @@ class Program_work(work_win.Work_win):
         new_x, bmap_size = self.draw_bmap(dc, bric_name, x, cl, bric_id)
 
         # add the location but skip "Start Main" and "End" tokens
-        if ((bric_id > 1) and (bric_name != "End") and (bric_name != "Last")):
+        if ((bric_id > 1) and (not bric_name.startswith("End")) and (bric_name != "Last")):
             self.pickup_locations.append((bric_id, bric_name, which_id,
                                           wx.Rect(x, cl-bmap_size[1]/2, bmap_size[0], bmap_size[1])))
         

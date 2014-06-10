@@ -126,7 +126,10 @@ class Program(object):
             ids = self.new_ids(2)
             
             start_bric = Bric(ids[0], bric_name)
-            end_bric = Bric(ids[1], "End")
+            if (bric_name == "Loop"):
+                end_bric = Bric(ids[1], "EndLoop")
+            else:
+                end_bric = Bric(ids[1], "EndIf")
             
             self.brics[ids[0]] = start_bric
             self.brics[ids[1]] = end_bric
@@ -180,7 +183,7 @@ class Program(object):
                     self.brics[prev_id].next_id[0] = new_id
                         
                 if (next_id >= 0):
-                    if (self.brics[next_id].bric_name == "End"):
+                    if (self.brics[next_id].bric_name.startswith("End")):
                         # next bric is an end
                         self.brics[next_id].prev_id[which_id] = end_id
                     else:
@@ -199,7 +202,7 @@ class Program(object):
                     self.brics[prev_id].next_id[0] = new_id
                         
                 if (next_id >= 0):
-                    if (self.brics[next_id].bric_name == "End"):
+                    if (self.brics[next_id].bric_name.startswith("End")):
                         # next bric is an end
                         self.brics[next_id].prev_id[which_id] = new_id
                     else:
@@ -253,7 +256,7 @@ class Program(object):
                 self.brics[prev_id].next_id[0] = next_id
 
         if (next_id >= 0):
-            if (self.brics[next_id].bric_name == "End"):
+            if (self.brics[next_id].bric_name.StartsWith("End")):
                 # next bric is an End bric
                 self.brics[next_id].prev_id[which_id] = prev_id
             else:

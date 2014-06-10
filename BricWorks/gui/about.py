@@ -29,14 +29,14 @@ import wx.html
 class AboutBox(wx.Dialog):
 
     def __init__(self, parent):
-        wx.Dialog.__init__(self, parent, -1, "About Bric Works", size=(600,500))
+        wx.Dialog.__init__(self, parent, -1, "About Edison EdWare", size=(600,500))
         self.html_text = '''
         <html>
         <body>
         <center>
-        <h1>Microbric Bric Works</h1>
-        <h2>Version 1.5.2</h2>
-        Programming your Microbric Robot<br>
+        <h1>Edison EdWare</h1>
+        <h2>Version 0.0.0</h2>
+        Programming your Edison Robot<br>
         http://www.microbric.com/ai2
         </center>
         <p>
@@ -92,12 +92,12 @@ import webbrowser
 class SimpleHelpBox(wx.Dialog):
 
     def __init__(self, parent):
-        wx.Dialog.__init__(self, parent, -1, "Bric Works Help", size=(600,300))
+        wx.Dialog.__init__(self, parent, -1, "Edison EdWare Help", size=(600,300))
         self.help_text = '''
         <html>
         <body>
         <center>
-        <h1>Microbric Bric Works Help</h1>
+        <h1>Edison EdWare Help</h1>
 
         <h4>
         Help is available at the Microbric web site at:<br>

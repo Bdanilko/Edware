@@ -79,7 +79,7 @@ sdata_changed = True
 
 
 class Bricworks_frame(wx.Frame):
-    def __init__(self, parent, title="Microbric EdWare"):
+    def __init__(self, parent, title="Edison EdWare"):
         wx.Frame.__init__(self, parent, title=title, size=(800, 500))
 
 ##        splash_bmap = wx.Bitmap("gui/devices/motherboard.png", wx.BITMAP_TYPE_ANY)
@@ -133,8 +133,8 @@ class Bricworks_frame(wx.Frame):
                             self.menu_check_program),
                            ),
                           ("&Help",
-                           ("&Help", "Display help for Microbric's EdWare", self.menu_help),
-                           ("&About", "Display information about EdWare", self.menu_about)))
+                           ("&Help", "Display help for Edison EdWare", self.menu_help),
+                           ("&About", "Display information about Edison EdWare", self.menu_about)))
                          
 
         self.init_status_bar()
@@ -205,7 +205,7 @@ class Bricworks_frame(wx.Frame):
         # Initialise status fields
         gui.win_data.status_file("")
         gui.win_data.status_space(0, 20)
-        gui.win_data.status_info("Microbric EdWare")
+        gui.win_data.status_info("Edison EdWare")
 
 
         self.Bind(wx.EVT_SIZE, self.on_size)
@@ -262,8 +262,8 @@ class Bricworks_frame(wx.Frame):
         gui.win_data.config_change_name(3, "RIGHT_MOTOR")
         gui.win_data.config_change_name(8, "LEFT_MOTOR")
         
-        gui.win_data.config_change_name(1, "RIGHT_LED")
-        gui.win_data.config_change_name(11, "LEFT_LED")
+        gui.win_data.config_change_name(1, "Right LED")
+        gui.win_data.config_change_name(11, "Left LED")
 
 
     def set_adv_mode(self):

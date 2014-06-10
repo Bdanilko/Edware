@@ -53,7 +53,7 @@ MATH_AND = "and (bitwise)"
 MATH_OR = "or (bitwise)"
 MATH_XOR = "xor (bitwise)"
 
-MODULE_PROMPT = "Module Label:"
+MODULE_PROMPT = "Control:"
 
 CONST_SIZE = (130,-1)
 SAVE_LABEL = "Save changes"
@@ -499,8 +499,10 @@ class Detail_win(wx.ScrolledWindow):
         self.cons_cb = (mod_choice,)+note_and_dur
         self.rbs = rbs
 
-        self.add_with_prompt(grid, (0,0), MODULE_PROMPT, (mod_choice,))
-
+        #self.add_with_prompt(grid, (0,0), MODULE_PROMPT, (mod_choice,))
+        self.add_with_prompt(grid, (0,0), "", (mod_choice,))
+        mod_choice.Hide()
+        
         grid.Add(rbs[0], (2,0), flag=wx.ALIGN_CENTRE_VERTICAL)
         self.add_with_prompt(grid, (2,1), "", note_and_dur)
 
@@ -649,7 +651,9 @@ class Detail_win(wx.ScrolledWindow):
         self.cons_cb = (mod_choice,)
         self.rbs = None
 
-        self.add_with_prompt(grid, (0,0), MODULE_PROMPT, (mod_choice,))
+        #self.add_with_prompt(grid, (0,0), MODULE_PROMPT, (mod_choice,))
+        self.add_with_prompt(grid, (0,0), "", (mod_choice,))
+        mod_choice.Hide()
 
         self.bind_event_handlers()
 
@@ -703,9 +707,14 @@ class Detail_win(wx.ScrolledWindow):
         self.conv_func = self.digital_convert
         self.dirty = False
         self.name = win_data.program().get_bric_name(bric_id)
-
+        self.prop_title = bric_data.get_bric_prop_title(self.name)
+        print self.prop_title
+        
         values = None
-        self.title.SetLabel("%s - properties:" % (self.name))
+        if (self.prop_title):
+            self.title.SetLabel(self.prop_title)
+        else:
+            self.title.SetLabel("%s - properties:" % (self.name))
 
         grid = wx.GridBagSizer(5, 5)
         

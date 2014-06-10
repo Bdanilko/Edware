@@ -67,6 +67,11 @@ class Bric(Detail_parser):
             if (self.help):
                 self.help = self.help.replace('BLANKLINE', '')
 
+            if (cp.has_option(cp_name, 'proptitle')):
+                self.prop_title = cp.get(cp_name, 'proptitle')
+                print "Found proptitle:", self.prop_title
+            else:
+                self.prop_title = None
             # get the bitmaps
             
             bmp = cp.get(cp_name, 'bmap')
@@ -133,6 +138,9 @@ class Bric(Detail_parser):
     def get_help(self):
         return self.help
 
+    def get_prop_title(self):
+        return self.prop_title
+    
     def get_detail(self):
         return self.detail
 
@@ -283,6 +291,9 @@ def get_new_bmap(selected=False):
 
 def get_bric_help(name):
     return data.bric_dict[name].get_help()
+
+def get_bric_prop_title(name):
+    return data.bric_dict[name].get_prop_title()
 
 def is_enabled(name):
     return enable_check(data.bric_dict[name].enable)

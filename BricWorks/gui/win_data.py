@@ -308,7 +308,7 @@ def config_new_id():
         return 1
 
 def config_change_name(loc, new_name):
-    new_name = new_name.replace(' ', '_')
+    #new_name = new_name.replace(' ', '_')
     dtype, dump = pdata.configuration[loc]
     pdata.configuration[loc] = (dtype, new_name)
     config_dirty(True)
