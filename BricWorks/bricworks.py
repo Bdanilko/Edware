@@ -259,8 +259,8 @@ class Bricworks_frame(wx.Frame):
         gui.win_data.config_add(8, "Motor B")
         gui.win_data.config_add(11, "LED")
 
-        gui.win_data.config_change_name(3, "RIGHT_MOTOR")
-        gui.win_data.config_change_name(8, "LEFT_MOTOR")
+        gui.win_data.config_change_name(3, "Right Motor")
+        gui.win_data.config_change_name(8, "Left Motor")
         
         gui.win_data.config_change_name(1, "Right LED")
         gui.win_data.config_change_name(11, "Left LED")

@@ -105,7 +105,6 @@ EVENT_DICT = {MOTHERBOARD:(('Button 1', ('_devices', 0), 'button'),
 MOTOR_FWD = "forward"
 MOTOR_STP = "stop"
 MOTOR_BCK = "backward"
-MOTOR_CST = "coast"
 
 MOTOR_P_RT = "right"
 MOTOR_P_LT = "left"
@@ -117,9 +116,9 @@ MOTOR_P_RT_90 = "turn right 90"
 MOTOR_P_LT_90 = "turn left 90"
 
 
-MOTOR_CODE = {"F":0x80, "C":0x00, "B":0x40, "S":0xc0, "FD":0xa0, "BD":0x60}
-DIRECTION_CODE = {MOTOR_FWD:0x80, MOTOR_CST:0x00, MOTOR_BCK:0x40, MOTOR_STP:0xC0}
-DIRECTION_WITH_DIST_CODE = {MOTOR_FWD:0xa0, MOTOR_CST:0x20, MOTOR_BCK:0x60, MOTOR_STP:0xC0}
+MOTOR_CODE = {"F":0x80, "B":0x40, "S":0xc0, "FD":0xa0, "BD":0x60}
+DIRECTION_CODE = {MOTOR_FWD:0x80, MOTOR_BCK:0x40, MOTOR_STP:0xC0}
+DIRECTION_WITH_DIST_CODE = {MOTOR_FWD:0xa0, MOTOR_BCK:0x60, MOTOR_STP:0xC0}
 
 class Detail_win(wx.ScrolledWindow):
     def __init__(self, parent):
@@ -139,7 +138,7 @@ class Detail_win(wx.ScrolledWindow):
                             'Obstacle Detection':self.digital_details,
                             'Serial Data Out':self.txserial_details,
                             'Light Level':self.readlight_details,
-                            'Motor Distance Count':self.readdist_details,
+                            'Read Distance':self.readdist_details,
                             'Line Tracker':self.readsmall_details,
                             'Bumper':self.readsmall_details, 'Infrared Data In':self.readsmall_details,
                             'Remote':self.readsmall_details, 'Analogue In':self.readsmall_details,
@@ -167,7 +166,7 @@ class Detail_win(wx.ScrolledWindow):
                              'Obstacle Detection':self.digital_convert,
                              'Serial Data Out':self.txserial_convert,
                              'Light Level':self.readlight_convert,
-                             'Motor Distance Count':self.readdist_convert,
+                             'Read Distance':self.readdist_convert,
                              'Line Tracker':self.readsmall_convert,
                              'Bumper':self.readsmall_convert, 'Infrared Data In':self.readsmall_convert,
                              'Remote':self.readsmall_convert, 'Analogue In':self.readsmall_convert,
@@ -2166,8 +2165,6 @@ class Detail_win(wx.ScrolledWindow):
         # dirs now has -1 or 1 for each motor
         if (command == MOTOR_STP):
             codes = [MOTOR_CODE["S"], MOTOR_CODE["S"]]
-        elif (command == MOTOR_CST):
-            codes = [MOTOR_CODE["C"], MOTOR_CODE["C"]]
         elif (command == MOTOR_FWD):
             for i in (0, 1):
                 if (dirs[i] == 1):
@@ -2250,7 +2247,7 @@ class Detail_win(wx.ScrolledWindow):
         dist_units = self.cb_special_vars[1]
         dist_value = self.cb_special_vars[2]
 
-        if (dirs[0].GetValue() in (MOTOR_STP, MOTOR_CST, MOTOR_P_RT_90, MOTOR_P_LT_90)) and (dirs[1].GetValue() == CONSTANT):
+        if (dirs[0].GetValue() in (MOTOR_STP, MOTOR_P_RT_90, MOTOR_P_LT_90)) and (dirs[1].GetValue() == CONSTANT):
             dist_units[0].Enable(False)
             dist_value[0].Enable(False)
             dist_value[1].Enable(False)
@@ -2281,7 +2278,7 @@ class Detail_win(wx.ScrolledWindow):
 
         if (self.name == 'Motor Pair'):
             modules = win_data.config_motor_pairs()
-            directions = [MOTOR_STP, MOTOR_FWD, MOTOR_BCK, MOTOR_CST,
+            directions = [MOTOR_STP, MOTOR_FWD, MOTOR_BCK,
                           MOTOR_P_RT, MOTOR_P_RT_90, MOTOR_P_LT, MOTOR_P_LT_90,
                           MOTOR_P_SR, MOTOR_P_SL,
                           MOTOR_P_BR, MOTOR_P_BL]
@@ -2289,7 +2286,7 @@ class Detail_win(wx.ScrolledWindow):
             modules = []
             modules.extend(win_data.config_device_names('Motor A'))
             modules.extend(win_data.config_device_names('Motor B'))
-            directions = [MOTOR_STP, MOTOR_FWD, MOTOR_BCK, MOTOR_CST]
+            directions = [MOTOR_STP, MOTOR_FWD, MOTOR_BCK]
 
         #print modules
         mod_choice = self.make_combo(modules)
@@ -2300,7 +2297,7 @@ class Detail_win(wx.ScrolledWindow):
 
         speeds = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
 
-        distance_units = ["unlimited", "mm", "1/10 inch", "degree", "raw"]
+        distance_units = ["unlimited", "mm", "inch", "degree", "raw"]
         
         dirs = (self.make_combo(directions, sort=False),
                  self.make_combo(d_choices, add_const=True))
@@ -2345,9 +2342,9 @@ class Detail_win(wx.ScrolledWindow):
         return grid
     
 
-    def motor_distance(self, input, code_lines):
+    def single_motor_distance(self, input, single, code_lines):
         if ((input[5] == "unlimited") or ((input[2] == CONSTANT) and
-                                          (input[1] in (MOTOR_STP, MOTOR_CST)))): 
+                                          (input[1] in (MOTOR_STP,)))): 
             # use the unlimited version of the direction
             distance_cmd = False
         else:
@@ -2364,10 +2361,10 @@ class Detail_win(wx.ScrolledWindow):
                     # round to the nearest integer
                     rotations = int((dist / 2.5) + 0.5)
                 
-                elif (input[5] == "1/10 inch"):
-                    # 1/10 of an inch is 2.54mm, which is pretty close
-                    # to 1 rotation. 
-                    rotations = dist
+                elif (input[5] == "inch"):
+                    # an inch is 25.4mm, which is pretty close
+                    # to 10 rotation. 
+                    rotations = dist * 10
                 elif (input[5] == "degree"):
                     # each rotation is 7.5 degrees
                     # round to the nearest integer
@@ -2382,20 +2379,19 @@ class Detail_win(wx.ScrolledWindow):
             else:
                 # this must be raw, as raw is the only one allowed
                 # with variables
-                code_lines.append("movw @%s %%_cpu:acc" % (input[7],))
-                        
-                code_lines.append("movw %%_cpu:acc %s" % (win_data.make_mod_reg(input[0], 'distance'),))
+                code_lines.append("movw $%s %s" % (input[7],win_data.make_mod_reg(input[0], 'distance')))
 
-        if (input[2] == CONSTANT):
-            if (distance_cmd):
-                dir = DIRECTION_WITH_DIST_CODE[input[1]]
+        if (single):
+            if (input[2] == CONSTANT):
+                if (distance_cmd):
+                    dir = DIRECTION_WITH_DIST_CODE[input[1]]
+                else:
+                    dir = DIRECTION_CODE[input[1]]
+                code_lines.append("movb $%s %%_cpu:acc" % (dir,))
             else:
-                dir = DIRECTION_CODE[input[1]]
-            code_lines.append("movb $%s %%_cpu:acc" % (dir,))
-        else:
-            code_lines.append("movb @%s %%_cpu:acc" % (input[2],))
+                code_lines.append("movb @%s %%_cpu:acc" % (input[2],))
 
-
+        return distance_cmd
     
     def motor_convert(self, input, command, name, bric_id):
         """Data: mod, dir_cons, var, speed_cons, var, dist_unit, dist_cons, var, [, other motor mod]"""
@@ -2466,37 +2462,44 @@ class Detail_win(wx.ScrolledWindow):
             if (name == "Motor Pair"):
                 motors = input[0].split('+')
                 s_dirs = self.motor_pair_directions(motors, input[1])
-
+                command = input[1]
                 for i in (0, 1):
-                    
-                    if ((s_dirs[i] & 0x20) == 0x20):
-                        # distance not speed -- no need to do an or
-                        
-                        # first the distance for 90 degrees -- 12 times 7.5 degrees
-                        code_lines.append("movw $12 %s" % (win_data.make_mod_reg(motors[i], 'distance'),))
-                        # then the command to use the distance
-                        code_lines.append("movb $%d %s" % (s_dirs[i], win_data.make_mod_reg(motors[i], 'control')))
-
+                    if (s_dirs[i] == 0):
                         continue
-                    new_input = input
-                    new_input[0] = motors[i]
-                    
-                    self.motor_distance(new_input, code_lines)
 
-                    if (input[4] == CONSTANT):
-                        number = win_data.conv_to_number(input[3], 'b', 0, 10)
-                        if (number == None):
-                            return []
-                        if (number != 0):
-                            code_lines.append("or $%s" % (number,))
+                    if ((s_dirs[i] & 0x20) == 0x20):
+                        # rt/left 90% - so rotation by 12 revolutions
+                        code_lines.append("movw $%s %s" % (12,win_data.make_mod_reg(motors[i], 'distance')))
+                        code_lines.append("movb $%s %s" % (s_dirs[i] ,win_data.make_mod_reg(motors[i], 'control')))
+
                     else:
-                        code_lines.append("or @%s" % (input[4],))
+                        # not right or left by 90%!
+
+                        new_input = input
+                        new_input[0] = motors[i]
+                        new_input[1] = s_dirs[i]
+                    
+                        dist = self.single_motor_distance(new_input, False, code_lines)
+                        if (dist):
+                            s_dirs[i] |= 0x20
+                            
+                        # Set up control
+                        code_lines.append("movb $%d %%_cpu:acc" % (s_dirs[i],))
+
+                        if (input[4] == CONSTANT):
+                            number = win_data.conv_to_number(input[3], 'b', 0, 10)
+                            if (number == None):
+                                return []
+                            if (number != 0):
+                                code_lines.append("or $%s" % (number,))
+                        else:
+                            code_lines.append("or @%s" % (input[4],))
                 
-                    code_lines.append("movb %%_cpu:acc %s" % (win_data.make_mod_reg(motors[i], 'control'),))
+                        code_lines.append("movb %%_cpu:acc %s" % (win_data.make_mod_reg(motors[i], 'control'),))
 
             else:
                 # single motor
-                self.motor_distance(input, code_lines)
+                self.single_motor_distance(input, True, code_lines)
 
                 # BED - don't shift because the basic interpreter doesn't have room
                 # for the shift. Document for the user instead.
