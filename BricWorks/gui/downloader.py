@@ -764,7 +764,7 @@ class hex_downloader(wx.Dialog):
 
 
 def convert(binString, outFilePath):
-    print "Debug: in convert() with binString of length", len(binString)
+    #print "Debug: in convert() with binString of length", len(binString)
     waveWriter = wave.open(outFilePath, 'wb')
     waveWriter.setnchannels(2)
     waveWriter.setsampwidth(1)

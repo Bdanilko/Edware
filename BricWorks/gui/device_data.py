@@ -61,19 +61,22 @@ def load_devices(big = True):
     cp = ConfigParser.RawConfigParser()
     cp.read(DEVICE_CONTROL)
 
-    data.mb_bmap = wx.Bitmap(os.path.join(base, cp.get('motherboard', 'bmap')), wx.BITMAP_TYPE_ANY)
+    #data.mb_bmap = wx.Bitmap(os.path.join(base, cp.get('motherboard', 'bmap')), wx.BITMAP_TYPE_ANY)
+    data.mb_bmap = ""
     data.groups = []
     data.devices = []
     data.device_dict.clear()
     data.fullsize_dict.clear()
 
     # do the overlays
-    data.mb_overlay = wx.Bitmap(os.path.join(base, cp.get('motherboard', 'overlay')), wx.BITMAP_TYPE_ANY)
+    #data.mb_overlay = wx.Bitmap(os.path.join(base, cp.get('motherboard', 'overlay')), wx.BITMAP_TYPE_ANY)
+    data.mb_overlay = ""
     data.overlays = []
     
     for i in range(12):
         name = "overlay%d" % (i,)
-        overlay = wx.Bitmap(os.path.join(base, cp.get('motherboard', name)), wx.BITMAP_TYPE_ANY)
+        #overlay = wx.Bitmap(os.path.join(base, cp.get('motherboard', name)), wx.BITMAP_TYPE_ANY)
+        overlay = ""
         data.overlays.append(overlay)
         
     group = 1
@@ -83,9 +86,10 @@ def load_devices(big = True):
             expname = cp.get(g_name, 'expbmap')
             colname = cp.get(g_name, 'colbmap')
             
-            g_tuple = (cp.get(g_name, 'name'),
-                       wx.Bitmap(os.path.join(base, expname), wx.BITMAP_TYPE_ANY),
-                       wx.Bitmap(os.path.join(base, colname), wx.BITMAP_TYPE_ANY),)
+            # g_tuple = (cp.get(g_name, 'name'),
+            #            wx.Bitmap(os.path.join(base, expname), wx.BITMAP_TYPE_ANY),
+            #            wx.Bitmap(os.path.join(base, colname), wx.BITMAP_TYPE_ANY),)
+            g_tuple = (cp.get(g_name, 'name'), "", "",)
             data.groups.append(g_tuple)
             
         else:
@@ -109,8 +113,10 @@ def load_devices(big = True):
             if (not sbmp_name):
                 sbmp_name = "sel_"+bmp_name
                 
-            bmp = wx.Bitmap(os.path.join(base, bmp_name), wx.BITMAP_TYPE_ANY)
-            sbmp = wx.Bitmap(os.path.join(base, sbmp_name), wx.BITMAP_TYPE_ANY)
+            # bmp = wx.Bitmap(os.path.join(base, bmp_name), wx.BITMAP_TYPE_ANY)
+            # sbmp = wx.Bitmap(os.path.join(base, sbmp_name), wx.BITMAP_TYPE_ANY)
+            bmp = ""
+            sbmp = ""
 
             data.device_dict[cp.get(d_name, 'name')] = (bmp, sbmp, cp.get(d_name, 'help'))
 
@@ -121,20 +127,22 @@ def load_devices(big = True):
             if (not fssname):
                 fssname = "fss_"+bmp_name
                 
-            f_tuple = (wx.Image(os.path.join(base, fsnname), wx.BITMAP_TYPE_ANY),
-                       wx.Image(os.path.join(base, fssname), wx.BITMAP_TYPE_ANY),)
+            # f_tuple = (wx.Image(os.path.join(base, fsnname), wx.BITMAP_TYPE_ANY),
+            #            wx.Image(os.path.join(base, fssname), wx.BITMAP_TYPE_ANY),)
+            f_tuple = ("", "")
 
             if (cp.has_option(d_name, 'fsncorner')):
                 crnname = cp.get(d_name, 'fsncorner')
                 crsname = cp.get(d_name, 'fsscorner')
                 cr2nname = cp.get(d_name, 'fsncorner2')
                 cr2sname = cp.get(d_name, 'fsscorner2')
-                f_tuple = (wx.Image(os.path.join(base, fsnname), wx.BITMAP_TYPE_ANY),
-                           wx.Image(os.path.join(base, fssname), wx.BITMAP_TYPE_ANY),
-                           wx.Image(os.path.join(base, crnname), wx.BITMAP_TYPE_ANY),
-                           wx.Image(os.path.join(base, crsname), wx.BITMAP_TYPE_ANY),
-                           wx.Image(os.path.join(base, cr2nname), wx.BITMAP_TYPE_ANY),
-                           wx.Image(os.path.join(base, cr2sname), wx.BITMAP_TYPE_ANY),)
+                # f_tuple = (wx.Image(os.path.join(base, fsnname), wx.BITMAP_TYPE_ANY),
+                #            wx.Image(os.path.join(base, fssname), wx.BITMAP_TYPE_ANY),
+                #            wx.Image(os.path.join(base, crnname), wx.BITMAP_TYPE_ANY),
+                #            wx.Image(os.path.join(base, crsname), wx.BITMAP_TYPE_ANY),
+                #            wx.Image(os.path.join(base, cr2nname), wx.BITMAP_TYPE_ANY),
+                #            wx.Image(os.path.join(base, cr2sname), wx.BITMAP_TYPE_ANY),)
+                f_tuple = ("", "", "", "", "", "")
 
             data.fullsize_dict[cp.get(d_name, 'name')] = f_tuple
             
