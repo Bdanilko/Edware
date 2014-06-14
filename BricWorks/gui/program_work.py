@@ -544,8 +544,8 @@ class Program_work(work_win.Work_win):
         #print "paint_flow returns", (x,1)
 
         # now do the final bric - Last
-        #if (flow[0] == 0):
-        #    new_x, bmap_size = self.draw_bmap(dc, "Last", x, cl, 0)
+        if (flow[0] == 0):
+            new_x, bmap_size = self.draw_bmap(dc, "Last", x, cl, 0)
         
         self.in_paint = False
 

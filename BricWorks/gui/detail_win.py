@@ -795,26 +795,41 @@ class Detail_win(wx.ScrolledWindow):
             win_data.vars_rm_use(input[2])
 
         elif (command == 'gen_code'):
-            if (self.name == "Obstacle Detection"):
+            code_lines = []
+            if (name == "Obstacle Detection"):
                 output = "action"
             else:
                 output = "output"
             
+            #print "digital_convert - self.name:", self.name, "name:", name, " output:", output
+            
+            if (name == "Obstacle Detection"):
+                bit = 1
+                mask = 2
+            else:
+                bit = 0
+                mask = 1
+                    
             if (input[2] == CONSTANT):
                 if (input[1] == 'Off'):
-                    value = 0
+                    code_lines.append("bitclr $%d %s" % (bit, win_data.make_mod_reg(input[0], output)))
                 else:
-                    if (self.name == "Obstacle Detection"):
-                        value = 2
-                    else:
-                        value = 1
-
-                code = "movb $%d %s" % (value, (win_data.make_mod_reg(input[0], output)))
+                    code_lines.append("bitset $%d %s" % (bit, win_data.make_mod_reg(input[0], output)))
                 
             else:
-                code = "movb @%s %s" % (input[2], (win_data.make_mod_reg(input[0], output)))
+                labels = win_data.make_labels(bric_id, 0, 2)
+                code_lines.append("movb @%s %%_cpu:acc" % (input[2]))
+                code_lines.append("and $%d" % (mask,))
+                code_lines.append("brz %s" % (labels[0],))  # branch if setting to 0
+                # this code if setting to 1
+                code_lines.append("bitset $%d %s" % (bit, win_data.make_mod_reg(input[0], output)))
+                code_lines.append("bra %s" % (labels[1],))
+                code_lines.append(labels[0])
+                # handle setting to 0
+                code_lines.append("bitclr $%d %s" % (bit, win_data.make_mod_reg(input[0], output)))
+                code_lines.append(labels[1])
 
-            return [code]
+            return code_lines
 
         else:
             raise SyntaxError, "Unknown command: " + command
@@ -1135,7 +1150,7 @@ class Detail_win(wx.ScrolledWindow):
         ctrl = self.make_combo(choices, add_const=False)
 
         # debug
-        #print "readsmall_details:", self.name, mod_type, modules
+        print "readsmall_details:", self.name, mod_type, modules
        
         self.data_order = (mod_choice, ctrl)
         self.groups = None
