@@ -375,7 +375,7 @@ class Program_work(work_win.Work_win):
 
         
     def paint_flow(self, dc, x, cl_base, flow, branch):
-        print "paint_flow() x:", x, "cl_base:", cl_base, "flow:", flow
+        #print "paint_flow() x:", x, "cl_base:", cl_base, "flow:", flow
         
         # flow starts with cl adjustment then nodes
         cl_adjust = 90

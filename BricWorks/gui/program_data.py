@@ -120,7 +120,7 @@ class Program(object):
             print self.brics
         
     def add_new_bric(self, prev_id, which_id, bric_name):
-        print "add_new_bric() prev_id:",prev_id, "which_id:",which_id,"bric_name:",bric_name
+        #print "add_new_bric() prev_id:",prev_id, "which_id:",which_id,"bric_name:",bric_name
         if (bric_name in ['Loop', 'If']):
             self.bric_count += 2
             ids = self.new_ids(2)

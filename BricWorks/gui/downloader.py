@@ -781,7 +781,7 @@ def convert(binString, outFilePath):
         
     while (index < len(binString)):
         data = binString[index]
-        print "..debug: coding value", data
+        #print "..debug: coding value", data
         # add start
         waveWriter.writeframes(createAudio(6))
         

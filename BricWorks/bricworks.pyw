@@ -890,7 +890,7 @@ class BricworksApp(wx.App):
         return True
 
     def load(self, file_path):
-        print "Loading", file_path
+        #print "Loading", file_path
         self.frame.load_existing_path(file_path)
         self.frame.Update()
     

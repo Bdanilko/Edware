@@ -707,7 +707,7 @@ class Detail_win(wx.ScrolledWindow):
         self.dirty = False
         self.name = win_data.program().get_bric_name(bric_id)
         self.prop_title = bric_data.get_bric_prop_title(self.name)
-        print self.prop_title
+        #print self.prop_title
         
         values = None
         if (self.prop_title):
@@ -3154,7 +3154,7 @@ class Detail_win(wx.ScrolledWindow):
             code_lines.append("cmpb $%s" % (match,))
             code_lines.append('brne %s' % (label,))
 
-        print "if_variant:", if_variant
+        #print "if_variant:", if_variant
         return if_variant
 
     def create_event_header(self, code_lines, module, event):
@@ -3715,12 +3715,12 @@ class Detail_win(wx.ScrolledWindow):
     def if_special_cb_change(self):
         # a combo box has changed
         # make sure the correct if-variant is selected
-        print "In if_special"
+        #print "In if_special"
         ifVar = "var"
         if (self.rbs[1].GetValue() == 1):
             module = self.groups[1][1][0].GetValue()
             event = self.event_choice.GetValue()
-            print "Mod:", module, "Event:", event
+            #print "Mod:", module, "Event:", event
             ifVar = self.find_if_variant(module, event)
             
         print "ifVar:", ifVar
@@ -3739,7 +3739,7 @@ class Detail_win(wx.ScrolledWindow):
             else:
                 if (input[4]):
                     output[4] = win_data.config_name_from_id(input[4])
-            print "if_convert:", output
+            #print "if_convert:", output
             return output
 
         elif (command == 'to_ids_add_refs'):
@@ -3772,7 +3772,7 @@ class Detail_win(wx.ScrolledWindow):
                     output[4] = win_data.config_id_from_name(output[4])
                     win_data.config_add_use(output[4])
 
-            print "if_to_ids:", output
+            #print "if_to_ids:", output
             return output
 
         elif (command == 'rm_refs'):

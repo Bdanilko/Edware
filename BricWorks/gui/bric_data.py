@@ -69,7 +69,7 @@ class Bric(Detail_parser):
 
             if (cp.has_option(cp_name, 'proptitle')):
                 self.prop_title = cp.get(cp_name, 'proptitle')
-                print "Found proptitle:", self.prop_title
+                #print "Found proptitle:", self.prop_title
             else:
                 self.prop_title = None
             # get the bitmaps
