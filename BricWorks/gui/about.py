@@ -35,13 +35,13 @@ class AboutBox(wx.Dialog):
         <body>
         <center>
         <h1>Edison EdWare</h1>
-        <h2>Version 0.0.0</h2>
+        <h2>Version 0.8.0</h2>
         Programming your Edison Robot<br>
-        http://www.microbric.com/ai2
+        http://www.microbric.com/
         </center>
         <p>
         <font size="-2">
-        Copyright 2006, Microbric Pty Ltd<br>
+        Copyright 2006,2014 Microbric Pty Ltd<br>
         This program is distributed under the terms of the Gnu General Public License, version 2
         (for the full text, see gpl.txt in the docs directory)
         </font>
@@ -60,14 +60,16 @@ class AboutBox(wx.Dialog):
         
         <p>
         <font size="-2">
-        This program was developed using the following open-source components:
+        This program, and previous versions, were developed using the following open-source components:
         <ul>
         <li><b>Python</b> (http://www.python.org)
         <li><b>wxPython</b> (http://www.wxpython.org)
         <li><b>pyWin32</b> (http://pywin32.sourceforge.net)
+        <li><b>Inno Setup</b> (http://www.jrsoftware.org)
+        <li><b>pyInstaller</b> (http://www.pyinstaller.org)
+        <li>----------- previous version components ----------------
         <li><b>pySerial</b> (http://pyserial.sourceforge.net)
         <li><b>comscan.py</b> from bitpim (http://www.bitpim.org)
-        <li><b>Inno Setup</b> (http://www.jrsoftware.org)
         </font>
         </ul>
         
@@ -99,30 +101,31 @@ class SimpleHelpBox(wx.Dialog):
         <center>
         <h1>Edison EdWare Help</h1>
 
-        <h4>
-        Help is available at the Microbric web site at:<br>
-        http://www.i-bot.com.au/ai2/sitefiles/File/BricWorkshelp.pdf
-        </h4>
-
-        <p>
-        <font size="2">
-        You can either download it and display it in your favourite pdf viewer or
-        you can open it with your browser.
-        </font>
-        </p>
         </body>
         </html>
         '''
 
+        # <h4>
+        # Help is available at the Microbric web site at:<br>
+        # http://www.i-bot.com.au/ai2/sitefiles/File/BricWorkshelp.pdf
+        # </h4>
+
+        # <p>
+        # <font size="2">
+        # You can either download it and display it in your favourite pdf viewer or
+        # you can open it with your browser.
+        # </font>
+        # </p>
+
         html = wx.html.HtmlWindow(self)
         html.SetPage(self.help_text)
         cancel = wx.Button(self, wx.ID_CANCEL, "Cancel")
-        open_button = wx.Button(self, wx.ID_OK, "Open in browser")
+        #open_button = wx.Button(self, wx.ID_OK, "Open in browser")
         
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
         hsizer.Add(cancel, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
-        hsizer.Add((10, -1))
-        hsizer.Add(open_button, 0, wx.ALIGN_LEFT|wx.ALL, 5)
+        #hsizer.Add((10, -1))
+        #hsizer.Add(open_button, 0, wx.ALIGN_LEFT|wx.ALL, 5)
         
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(html, 1, wx.EXPAND|wx.ALL, 5)
@@ -131,7 +134,7 @@ class SimpleHelpBox(wx.Dialog):
         self.SetSizer(sizer)
         self.Layout()
         
-        self.Bind(wx.EVT_BUTTON, self.on_open_clicked, open_button)
+        #self.Bind(wx.EVT_BUTTON, self.on_open_clicked, open_button)
 
 
     def on_open_clicked(self, event):
