@@ -21,6 +21,8 @@
 # Svn: $Id: README.txt 51 2006-12-02 01:14:52Z briand $
 # * **************************************************************** */
 
+29/Jun/2014 -- THIS FILE IS OUT OF DATE -- WILL BE UPDATED BEFORE EDWARE VERSION 1.0
+
 Microbric Bric Works
 ---------------------
 This program will enable you to:
