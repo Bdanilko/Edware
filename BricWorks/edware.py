@@ -147,12 +147,13 @@ class Bricworks_frame(wx.Frame):
 ##        self.SetIcons(ib)
 
 
-        icon = wx.Icon("bricworks.ico", wx.BITMAP_TYPE_ICO)
-        if (sys.platform == 'darwin'):
-            self.dockicon = wx.TaskBarIcon()
-            self.dockicon.SetIcon(icon)
-        else:
-            self.SetIcon(icon)
+        # Not needed as pyInstaller sets up the icon
+        # icon = wx.Icon("bricworks.ico", wx.BITMAP_TYPE_ICO)
+        # if (sys.platform == 'darwin'):
+        #     self.dockicon = wx.TaskBarIcon()
+        #     self.dockicon.SetIcon(icon)
+        # else:
+        #     self.SetIcon(icon)
         
         
 
@@ -906,4 +907,4 @@ if __name__ == '__main__':
     if (len(sys.argv) > 1):
         file_path = sys.argv[1]
 
-    main(file_path)
+    main2(file_path)
