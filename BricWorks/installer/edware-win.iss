@@ -24,7 +24,7 @@ DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 OutputDir=C:\Documents and Settings\Brian\My Documents\EdWare\inno
 OutputBaseFilename=setup
-SetupIconFile=C:\Documents and Settings\Brian\My Documents\EdWare\EdWare\bricworks.ico
+SetupIconFile=C:\Documents and Settings\Brian\My Documents\EdWare\EdWare\EdWare.ico
 Compression=lzma
 SolidCompression=yes
 
@@ -36,8 +36,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
 
 [Files]
-Source: "C:\Documents and Settings\Brian\My Documents\EdWare9\EdWare\dist\edware\edware.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Documents and Settings\Brian\My Documents\EdWare9\EdWare\dist\edware\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Documents and Settings\Brian\My Documents\EdWare\EdWare\dist\edware\edware.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Documents and Settings\Brian\My Documents\EdWare\EdWare\dist\edware\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -48,4 +48,3 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
-

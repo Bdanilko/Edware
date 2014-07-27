@@ -226,7 +226,7 @@ class Program_work(work_win.Work_win):
             bottom_adjust = y_range - (-1 * y_offset) + 100
 
             #print "Centre_line", centre_line
-            (x_max, cl_max) = self.paint_flow(dc, x, centre_line, tree_data, 0)
+            (x_max, cl_max) = self.paint_flow(dc, x, centre_line, tree_data, 0, stream)
             #print "from paint_flow():", x_max, cl_max
 
             x_offset = limits[visible_stream][1] + 20
@@ -374,7 +374,7 @@ class Program_work(work_win.Work_win):
         
 
         
-    def paint_flow(self, dc, x, cl_base, flow, branch):
+    def paint_flow(self, dc, x, cl_base, flow, branch, stream):
         #print "paint_flow() x:", x, "cl_base:", cl_base, "flow:", flow
         
         # flow starts with cl adjustment then nodes
@@ -393,8 +393,8 @@ class Program_work(work_win.Work_win):
         while (i < end):
             
             if (flow[i] == -2):
-                (big_x_1, new_cl_1) = self.paint_flow(dc, x, new_cl[0], flow[i+1], 0)
-                (big_x_2, new_cl_2) = self.paint_flow(dc, x, new_cl[1], flow[i+2], 1)
+                (big_x_1, new_cl_1) = self.paint_flow(dc, x, new_cl[0], flow[i+1], 0, stream)
+                (big_x_2, new_cl_2) = self.paint_flow(dc, x, new_cl[1], flow[i+2], 1, stream)
                 i += 3
 
                 # Next one will be the End so can connect up unequal branches then
@@ -545,7 +545,12 @@ class Program_work(work_win.Work_win):
 
         # now do the final bric - Last
         if (flow[0] == 0):
-            new_x, bmap_size = self.draw_bmap(dc, "Last", x, cl, 0)
+            #print "Flow:", flow[0], "i:", i, "Stream:", stream
+            if (stream == 0):
+                new_x, bmap_size = self.draw_bmap(dc, "Last", x, cl, 0)
+            else:
+                new_x, bmap_size = self.draw_bmap(dc, "EndEvent", x, cl, 0)
+                
         
         self.in_paint = False
 
