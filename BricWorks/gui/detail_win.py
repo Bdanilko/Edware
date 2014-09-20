@@ -79,7 +79,7 @@ EVENT_DICT = {MOTHERBOARD:(('Button 1', ('_devices', 0), 'button'),
               'Motor A' : (('Strain detected', (None, 0), 'motor'),),
               'Motor B' : (('Strain detected', (None, 0), 'motor'),),
               'Sounder' : (('Tune Finished', (None, 0), 'timer'),
-                           ('Clap detected', (None, 1), 'clap'),),
+                           ('Clap detected', (None, 2), 'clap'),),
               'IR Receiver': (('IR Character', (None, 0), 'irrx'),
                               ('Any Obstacle detected', (None,6), 'obstacle'),
                               ('Obstacle detected on left', (None,5), 'obstacle'),
@@ -1233,9 +1233,9 @@ class Detail_win(wx.ScrolledWindow):
             elif (name == 'Read Clap Detect'):
                 code_lines.append("movb %s %%_cpu:acc" % (win_data.make_mod_reg(input[0], 'status'),))
                 # clear the register bits now that we've captured them
-                code_lines.append("bitclr $1 %s" % (win_data.make_mod_reg(input[0], 'status'),))
+                code_lines.append("bitclr $2 %s" % (win_data.make_mod_reg(input[0], 'status'),))
                 
-                code_lines.append("and $1")
+                code_lines.append("and $4")
                 code_lines.append("movb %%_cpu:acc @%s" % (input[1]))
                 
             elif (name == 'Read Obstacle Detect'):
