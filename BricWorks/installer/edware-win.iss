@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "EdWare"
-#define MyAppVersion "0.8"
+#define MyAppVersion "0.9.2"
 #define MyAppPublisher "Microbric"
 #define MyAppURL "http://www.microbric.com/"
 #define MyAppExeName "edware.exe"
