@@ -35,6 +35,7 @@ import os.path
 import gui.token_assembler
 import gui.token_downloader
 import gui.tokens
+import gui.downloader
 import gui.hl_parser
 
 
@@ -76,7 +77,7 @@ def assemble(options, f_name):
         token_analysis.dump_extras()
 
     download_type, version, header = token_analysis.create_header()
-    #print download_type, version, header
+    print download_type, version, header
     
     #gui.logging_utils.dump_object(token_analysis, "Token_analyser")
 
@@ -100,7 +101,8 @@ def assemble(options, f_name):
     
     # now output to a file and/or a comms channel
     if (options.filename):
-        download_str = gui.token_downloader.serial_wakeup_bytes(download_type, version) + download_str
+        #download_str = gui.downloader.TOKEN_DOWNLOAD_STR + \
+        #               gui.downloader.TOKEN_VERSION_STR + download_str
         print "Writing %d bytes to file: %s" % (len(download_str), options.filename)
         fh = file(options.filename, 'wb')
         fh.write(download_str)

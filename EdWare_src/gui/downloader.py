@@ -46,8 +46,17 @@ import os.path
 import time
 import wave
 
-EDISON_VERSION_STR = "\x20"
-EDISON_VERSION_BYTE = 0x20
+TOKEN_VERSION_STR = "\x20"
+TOKEN_VERSION_BYTE = 0x20
+
+TOKEN_DOWNLOAD_STR = "\xf1"
+TOKEN_DOWNLOAD_BYTE = 0xf1
+
+FIRMWARE_DOWNLOAD_STR = "\xf2"
+FIRMWARE_DOWNLOAD_BYTE = 0xf2
+
+FIRMWARE_VERSION_STR = "\x20"
+FIRMWARE_VERSION_BYTE = 0x20
 
 if sys.platform.startswith("linux"):
     PLATFORM="linux"
@@ -118,8 +127,8 @@ def assemble(f_name):
     #print download_type, version, header
 
     # get the token bytes
-    download_str = EDISON_VERSION_STR
-    download_bytes = [EDISON_VERSION_BYTE]
+    download_str = TOKEN_DOWNLOAD_STR + TOKEN_VERSION_STR
+    download_bytes = [TOKEN_DOWNLOAD_BYTE, TOKEN_VERSION_BYTE]
     for t in header:
         download_bytes.append(t)
         download_str += chr(t)
@@ -764,7 +773,7 @@ class hex_downloader(wx.Dialog):
 
 
 def convert(binString, outFilePath):
-    #print "Debug: in convert() with binString of length", len(binString)
+    print "Debug: in convert() with binString of length", len(binString)
     waveWriter = wave.open(outFilePath, 'wb')
     waveWriter.setnchannels(2)
     waveWriter.setsampwidth(1)
@@ -781,7 +790,7 @@ def convert(binString, outFilePath):
         
     while (index < len(binString)):
         data = binString[index]
-        #print "..debug: coding value", data
+        print "..debug: coding value", data
         # add start
         waveWriter.writeframes(createAudio(6))
         

@@ -75,10 +75,12 @@ def detectedState(newState, count):
         return False, 1
 
     if (newState == "mid"):
-        if (((count % 22) == 0) and (((count / 22) == 2) or ((count / 22) == 6))):
+        if (((count % 22) == 0) and (((count / 22) == 2) or
+                                     ((count / 22) == 6) or
+                                     ((count / 22) == 8))):
             pass
         else:
-            print "ERROR -- mid is wrong length -- should be either 2 * 22 or 6 * 22, but it's %d" % (count,)
+            print "ERROR -- mid is wrong length -- should be either 2,6 or 8 * 22, but it's %d" % (count,)
             return False, 1
     
     if (newState == "far"):
@@ -87,22 +89,26 @@ def detectedState(newState, count):
             BitCount += 1
             DecodeState = START | FAR
         elif (DecodeState & NEAR):
-            # wrong order
-            print "ERROR near seen before far"
+            # pre/post amble
+            #DecodeState = 0
             return False, 1
         else:
             # start of a bit or start/stop
             DecodeState |= FAR
 
     if (newState == "near"):
+        # if (DecodeState == START):
+        #     # ignore as it could be pre or post amble
+        #     pass
         if (DecodeState & NEAR):
-            # wrong order
-            print "ERROR two nears seen together"
+            # wrong order if inside byte
+            if (BitCount > 0):
+                print "ERROR two nears seen together", hex(DecodeState), BitCount
             DecodeState = 0
             return False, 1
         elif not (DecodeState & FAR):
             # should have had "far"
-            print "ERROR near with far"
+            print "ERROR near with far", hex(DecodeState), BitCount
             DecodeState = 0
             return False, 1
         else:
@@ -115,7 +121,7 @@ def detectedState(newState, count):
             print "ERROR mid without far and near"
             return False, 1
         else:
-            if ((count / 22) == 6):
+            if ((count / 22) == 8):
                 # start or stop
                 if (DecodeState & START):  # stop
                     if (BitCount != 8):
@@ -127,8 +133,10 @@ def detectedState(newState, count):
                         Byte = 0
                         DecodeState = 0
                 else:
-                    # start
-                    DecodeState = START
+                    print "ERROR stop bit not in STOP state!"
+            elif ((count / 22) == 6):
+                # start
+                DecodeState = START
             else: #((count / 22) == 2)
                 # 1-bit
                 Byte |= (1 << BitCount)
@@ -237,7 +245,11 @@ def convert(hexString, outFilePath):
 
     # now generate the file
     index = 0
-    
+    preamble = 0
+    while (preamble < 20):
+        waveWriter.writeframes(createAudio(0))
+        preamble += 1
+        
     while (index < len(hexString)):
         data = int(hexString[index:index+2], 16)
         # add start
@@ -253,16 +265,25 @@ def convert(hexString, outFilePath):
             mask <<= 1
             
         # add stop
-        waveWriter.writeframes(createAudio(6))
+        waveWriter.writeframes(createAudio(8))
 
         index += 2
 
+    preamble = 0
+    while (preamble < 20):
+        waveWriter.writeframes(createAudio(0))
+        preamble += 1
+
+        
 def usage():
     progName = os.path.basename(sys.argv[0])
     print "Usage: %s <hex-string> <output-file-name>" % (progName)
     print "\twhere hex-string is a sequence of 2 character hex bytes"
     print "\t\tExample 1020AABBCCDDEEFFA55A"
-    print "\tand output-file-name is the name of a file to save the wav into"
+    print "\tand output-file-name is the name of a file to save the wav into\n"
+    print "\tTwo special hex strings are also supported:"
+    print "\tDECODE <input-file-name> which reads and prints the audio data, and"
+    print "\tTOBIN <input-file-name> which reads, converts to original, and prints it."
     
     
 def main(args):
@@ -280,7 +301,7 @@ def main(args):
         usage()
         sys.exit(1)
 
-    hexString = args[0]
+    hexString = args[0].lower()
     outFilePath = os.path.abspath(args[1])
 
     # is hex string the special 'decode' string?
