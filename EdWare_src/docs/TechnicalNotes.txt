@@ -272,7 +272,7 @@ Which leads to:
 - Start bit  : 1q-Far, 1q-Near, 6q-Mid
 - 0-data bit : 1q-Far, 1q-Near
 - 1-data bit : 1q-Far, 1q-Near, 2q-Mid
-- Stop bit   : 1q-Far, 1q-Near, 6q-Mid  (same as start)
+- Stop bit   : 1q-Far, 1q-Near, 8q-Mid
 
 In a total audio file, a preamble and postscript of 20 0-data-bits are output. This allows
 for Edison to sync with the incoming data stream, and to make sure that the computer doesn't

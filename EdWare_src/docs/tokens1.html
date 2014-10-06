@@ -300,9 +300,9 @@ ul.auto-toc {
 <col class="docinfo-content" />
 <tbody valign="top">
 <tr><th class="docinfo-name">Date:</th>
-<td>2014-05-18</td></tr>
+<td>2014-10-06</td></tr>
 <tr><th class="docinfo-name">Version:</th>
-<td>3.8</td></tr>
+<td>3.9</td></tr>
 <tr><th class="docinfo-name">Author:</th>
 <td>Brian Danilko, Likeable Software</td></tr>
 <tr><th class="docinfo-name">Copyright:</th>
@@ -375,6 +375,7 @@ ul.auto-toc {
 <li><a class="reference" href="#download-triggering-flashing-rectangle" id="id43" name="id43">Download triggering - Flashing Rectangle</a></li>
 <li><a class="reference" href="#versioning" id="id44" name="id44">Versioning</a></li>
 <li><a class="reference" href="#download-format" id="id45" name="id45">Download format</a></li>
+<li><a class="reference" href="#download-edison" id="id101" name="id101">Download Specifics for Edison</a></li>
 <li><a class="reference" href="#special-characters" id="id46" name="id46">Special Characters</a></li>
 <li><a class="reference" href="#flashing-rectangle-communications" id="id47" name="id47">Flashing Rectangle communications</a></li>
 <li><a class="reference" href="#usb-cable-communications" id="id48" name="id48">USB cable communications</a></li>
@@ -397,6 +398,13 @@ ul.auto-toc {
 </tr>
 </thead>
 <tbody valign="top">
+<tr><td>3.9</td>
+<td>2014-10-06</td>
+<td><p class="first">Edison download formats:</p>
+<p>Documented download format for tokens and firmware</p>
+  <p class="last">Documented audio download technique</p>
+</td>
+</tr>
 <tr><td>3.8</td>
 <td>2014-05-18</td>
 <td><p class="first">More changes for the new Edison robot:</p>
@@ -2689,6 +2697,91 @@ It is just used to mark the end of table.</li>
 (so may be absent).</li>
 </ul>
 </div>
+
+<div class="section">
+  <h2><a class="toc-backref" href="#id101" id="download-edison" name="download-edison">Download Specifics for Edison</h2>
+  <p>Edison uses an audio-to-light communications method which is much more reliable then the flashing
+    rectangle, but doesn't need USB transceiver hardware. It does mean that downloads are one-way, but
+    as they are faster and more accurate, that isn't a problem.
+  </p>
+  <p>The format for the download header for Edison is the same as detailed above,
+    but with the addition of a DOWNLOAD_TYPE_BYTE in front. The format for tokens downloads is then:</p>
+  <ul class="simple">
+    <li>DOWNLOAD_TYPE_BYTE -- 0xf1 (tokens)</li>
+    <li>VERSION_BYTE -- for Edison this will always have the major version of 0x20</li>
+    <li>data size n (size of all data not including this size and crc) (16bits, LE)</li>
+    <li>crc (of all data not including size and this crc) (16bits, LE)</li>
+    <li>module table offset (MUST be 0 for Edison)</li>
+    <li>event table offset (0 means not used) (8bits)</li>
+    <li>main program offset (16bits)</li>
+    <li>table data (optional, size t)</li>
+    <li>program tokens (n - t - 4 bytes)</li>
+  </ul>
+
+    <p>The format for firmware downloads is:</p>
+  <ul class="simple">
+    <li>DOWNLOAD_TYPE_BYTE -- 0xf2 (firmware)</li>
+    <li>VERSION_BYTE -- for Edison this will always have the major version of 0x20</li>
+    <li>data size n (size of all firmware data) (16bits, LE)</li>
+    <li>crc (of all firmware data) (16bits, LE)</li>
+    <li>firmware data (n bytes)</li>
+  </ul>
+
+  <h3>Audio downloading specifics</h3>
+  <p>Binary data to be communicated to Edison is converted to an audio 'wav' file first.
+    The audio file is a 2 channel, 8-bit per channel, file with a frame rate of 44100Hz.
+    Each byte is encoded with a start bit, 8 data bits (LSB first) and then a stop bit.</p>
+  <p>Each bit uses a sequence where the left and right channels are set to: left=255,
+    right=0 called FAR; left=0, right=255 called NEAR; and left=128, right=128 called MID.</p>
+  <p>The sequence representing the bits and preambles are:</p>
+  <ul class="simple">
+    <li>preamble:</li>
+    <ul class="simple">
+      <li>Repeated 20 times:</li>
+      <li>FAR for 0.5ms</li>
+      <li>NEAR for 0.5ms</li>
+    </ul>
+    <li>start bit:</li>
+    <ul class="simple">
+      <li>FAR for 0.5ms</li>
+      <li>NEAR for 0.5ms</li>
+      <li>MID for 3ms</li>
+    </ul>
+    <li>0 bit:</li>
+    <ul class="simple">
+      <li>FAR for 0.5ms</li>
+      <li>NEAR for 0.5ms</li>
+    </ul>
+    <li>1 bit:</li>
+    <ul class="simple">
+      <li>FAR for 0.5ms</li>
+      <li>NEAR for 0.5ms</li>
+      <li>MID for 1ms</li>
+    </ul>
+    <li>stop bit:</li>
+    <ul class="simple">
+      <li>FAR for 0.5ms</li>
+      <li>NEAR for 0.5ms</li>
+      <li>MID for 4ms</li>
+    </ul>
+    <li>postscript:</li>
+    <ul class="simple">
+      <li>Repeated 20 times:</li>
+      <li>FAR for 0.5ms</li>
+      <li>NEAR for 0.5ms</li>
+    </ul>
+  </ul>
+  
+  <p>The data is downloaded over the audio hardware in this order:</p>
+  <ul class="simple">
+    <li>Preamble</li>
+    <li>Header</li>
+    <li>Data</li>
+    <li>Postscript</li>
+  </ul>
+</div>
+
+
 <div class="section">
 <h2><a class="toc-backref" href="#id46" id="special-characters" name="special-characters">Special Characters</a></h2>
 <p>No characters are escaped (no framing controls) but the following are used for
