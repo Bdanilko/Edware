@@ -2195,6 +2195,7 @@ class Detail_win(wx.ScrolledWindow):
                     codes[i] = MOTOR_CODE["F"]
 
         elif (command == MOTOR_P_RT):
+            codes[right_most] = MOTOR_CODE["S"]
             if (dirs[left_most] == 1):
                 codes[left_most] = MOTOR_CODE["F"]
             else:
@@ -2209,6 +2210,7 @@ class Detail_win(wx.ScrolledWindow):
                 codes[right_most] = MOTOR_CODE["F"]
 
         elif (command == MOTOR_P_LT):
+            codes[left_most] = MOTOR_CODE["S"]
             if (dirs[right_most] == 1):
                 codes[right_most] = MOTOR_CODE["F"]
             else:
@@ -2223,12 +2225,14 @@ class Detail_win(wx.ScrolledWindow):
                 codes[left_most] = MOTOR_CODE["F"]
 
         elif (command == MOTOR_P_BR):
+            codes[right_most] = MOTOR_CODE["S"]
             if (dirs[left_most] == 1):
                 codes[left_most] = MOTOR_CODE["B"]
             else:
                 codes[left_most] = MOTOR_CODE["F"]
                     
         elif (command == MOTOR_P_BL):
+            codes[left_most] = MOTOR_CODE["S"]
             if (dirs[right_most] == 1):
                 codes[right_most] = MOTOR_CODE["B"]
             else:
@@ -2480,6 +2484,8 @@ class Detail_win(wx.ScrolledWindow):
                 command = input[1]
                 for i in (0, 1):
                     if (s_dirs[i] == 0):
+                        # This should not happen!
+                        print "ERROR -- motor pair didn't give a command for every command!"
                         continue
 
                     if ((s_dirs[i] & 0x20) == 0x20):
