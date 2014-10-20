@@ -824,6 +824,69 @@ def convert(binString, outFilePath):
         waveWriter.writeframes(createAudio(0))
         preamble += 1
 
+def convert2(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
+    print "Debug: in convert() with binString of length", len(binString)
+    waveWriter = wave.open(outFilePath, 'wb')
+    waveWriter.setnchannels(2)
+    waveWriter.setsampwidth(1)
+    waveWriter.setframerate(44100)
+    waveWriter.setcomptype("NONE", "")
+
+    # now generate the file
+    index = 0
+    preamble = 0
+    pauseCount = 0
+
+    while (preamble < 20):
+        waveWriter.writeframes(createAudio(0))
+        preamble += 1
+        
+    while (index < len(binString)):
+        if (pauseCount == bytesBetweenPauses):
+            # insert more preamble -- one preamble is 1ms
+            print "Debug -- pausing for", pauseMsecs, "msecs, after", index, "bytes"
+            preamble = 0
+            while (preamble < pauseMsecs):
+                waveWriter.writeframes(createAudio(0))
+                preamble += 1
+            pauseCount = 0
+        
+        data = binString[index]
+        #print "..debug: coding value", data
+        # add start
+        waveWriter.writeframes(createAudio(6))
+        
+        # now the actual data -- big endian or little endian
+        mask = 1
+        ones = 0
+        while (mask <= 0x80):
+            if (data & mask):
+                waveWriter.writeframes(createAudio(2))
+                ones += 1
+            else:
+                waveWriter.writeframes(createAudio(0))
+            mask <<= 1
+
+        # add parity
+        # if (ones % 2 == 1):
+        #     # odd so need to add a one
+        #     waveWriter.writeframes(createAudio(2))
+        # else:
+        #     # even so add a zero
+        #     waveWriter.writeframes(createAudio(0))
+
+        # add stop - BBB Changed to 8 - differs from start 
+        waveWriter.writeframes(createAudio(8))
+
+        index += 1
+        pauseCount += 1
+
+    #added to end as well - to ensure entire data is played. - ## BBB
+    preamble = 0    
+    while (preamble < 20):
+        waveWriter.writeframes(createAudio(0))
+        preamble += 1
+
 def createAudio(midQuantas):
     data = ""
     

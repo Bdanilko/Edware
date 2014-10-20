@@ -194,16 +194,16 @@ def audioToBin(inFilePath):
             byteList.append(byte)
 
     # now binaryList should have the decoded binary
-    print "Binary from audio:"
+    print len(byteList), "bytes decoded from the audio file :"
     count = 0
     for b in byteList:
         if (count == 0):
-            print "%x" % (b),
+            print "%02x" % (b),
         elif (count % 16 == 0):
-            print ",%x" % (b)
+            print ",%02x" % (b)
             count = -1
         else:
-            print ", %x" % (b),
+            print ", %02x" % (b),
         count += 1
 
     if (count != 0):
