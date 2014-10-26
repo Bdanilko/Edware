@@ -693,6 +693,11 @@ class Bricworks_frame(wx.Frame):
             fh = file(os.path.join(path, filename), 'wb')
             gui.win_data.save(fh)
             fh.close()
+
+            #fh = file(os.path.join(path, filename+'JSON'), 'wb')
+            #gui.win_data.saveJson(fh)
+            #fh.close()
+
         except Exception,e:
             wx.MessageBox("Error saving the program. Maybe the disk is full?",
                           "Error while saving.", wx.OK | wx.ICON_ERROR)

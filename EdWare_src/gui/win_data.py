@@ -25,6 +25,7 @@
 
 
 import pickle
+import json
 import os
 import os.path
 import string
@@ -108,6 +109,11 @@ def save(file_obj):
     #print "Pickling"
     pickle.dump(pdata, file_obj, 2)
     update_dirty(False)
+
+def saveJson(file_obj):
+    # Test the jason pickling
+    json.dump(pdata, json_file_obj)
+    
 
 def load(file_obj, strict):
     global pdata

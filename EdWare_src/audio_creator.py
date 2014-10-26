@@ -113,7 +113,7 @@ def main(args):
     else:
         outFh = tempfile.NamedTemporaryFile(delete=False)
    
-    gui.downloader.convert2(binCode, outFh.name, options.pause, options.bytes)
+    gui.downloader.convertWithPause(binCode, outFh.name, options.pause, options.bytes)
     outFh.flush()
     outName = outFh.name
     outFh.close()

@@ -52,11 +52,14 @@ TOKEN_VERSION_BYTE = 0x20
 TOKEN_DOWNLOAD_STR = "\xf1"
 TOKEN_DOWNLOAD_BYTE = 0xf1
 
-FIRMWARE_DOWNLOAD_STR = "\xf2"
-FIRMWARE_DOWNLOAD_BYTE = 0xf2
+FIRMWARE_DOWNLOAD_STR = "\xac"
+FIRMWARE_DOWNLOAD_BYTE = 0xac
 
 FIRMWARE_VERSION_STR = "\x20"
 FIRMWARE_VERSION_BYTE = 0x20
+
+DOWNLOAD_BYTES_BETWEEN_PAUSES = 1536
+DOWNLOAD_PAUSE_MSECS = 2000
 
 if sys.platform.startswith("linux"):
     PLATFORM="linux"
@@ -290,7 +293,8 @@ class audio_downloader(wx.Dialog):
         self.help_text.SetLabel("Download size is %d bytes." % (self.byte_count,))
 
         # convert to wav file
-        convert(self.download_bytes, "program.wav");
+        convertWithPause(self.download_bytes, "program.wav",
+                         DOWNLOAD_PAUSE_MSECS, DOWNLOAD_BYTES_BETWEEN_PAUSES);
         
     def on_cancel(self, event):
         self.EndModal(wx.ID_CANCEL)
@@ -824,7 +828,7 @@ def convert(binString, outFilePath):
         waveWriter.writeframes(createAudio(0))
         preamble += 1
 
-def convert2(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
+def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
     print "Debug: in convert() with binString of length", len(binString)
     waveWriter = wave.open(outFilePath, 'wb')
     waveWriter.setnchannels(2)

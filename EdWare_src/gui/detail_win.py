@@ -83,9 +83,10 @@ EVENT_DICT = {MOTHERBOARD:(('Button 1', ('_devices', 0), 'button'),
               'IR Receiver': (('IR Character', (None, 0), 'irrx'),
                               ('Any Obstacle detected', (None,6), 'obstacle'),
                               ('Obstacle detected on left', (None,5), 'obstacle'),
-                              ('Obstacle detected ahead', (None,4), 'obstacle'),
+                              #('Obstacle detected ahead', (None,4), 'obstacle'),
                               ('Obstacle detected on right', (None,3), 'obstacle'),
                               ('Any RC match', (None, 1), 'remote'),
+                              ('RC match 0', (None, 1), 'remote'),
                               ('RC match 1', (None, 1), 'remote'),
                               ('RC match 2', (None, 1), 'remote'),
                               ('RC match 3', (None, 1), 'remote'),
@@ -1243,10 +1244,10 @@ class Detail_win(wx.ScrolledWindow):
                 # clear the register bits now that we've captured them
                 code_lines.append("bitclr $3 %s" % (win_data.make_mod_reg(input[0], 'status'),))
                 code_lines.append("bitclr $4 %s" % (win_data.make_mod_reg(input[0], 'status'),))
-                code_lines.append("bitclr $5 %s" % (win_data.make_mod_reg(input[0], 'status'),))
+                #code_lines.append("bitclr $5 %s" % (win_data.make_mod_reg(input[0], 'status'),))
                 code_lines.append("bitclr $6 %s" % (win_data.make_mod_reg(input[0], 'status'),))
                 
-                code_lines.append("and $78/16")
+                code_lines.append("and $58/16")
                 code_lines.append("movb %%_cpu:acc @%s" % (input[1]))
 
                 ## alternate implementation
@@ -3223,7 +3224,7 @@ class Detail_win(wx.ScrolledWindow):
         self.conv_func = self.event_convert
         self.dirty = False
         self.name = win_data.program().get_bric_name(bric_id)
-        self.bad_events = ['RC match 1', 'RC match 2', 'RC match 3', 'RC match 4',
+        self.bad_events = ['RC match 0', 'RC match 1', 'RC match 2', 'RC match 3', 'RC match 4',
                            'RC match 5', 'RC match 6', 'RC match 7', 'RC match 8']
 
         if (not win_data.get_adv_mode()):
