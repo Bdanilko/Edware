@@ -83,7 +83,7 @@ EVENT_DICT = {MOTHERBOARD:(('Button 1', ('_devices', 0), 'button'),
               'IR Receiver': (('IR Character', (None, 0), 'irrx'),
                               ('Any Obstacle detected', (None,6), 'obstacle'),
                               ('Obstacle detected on left', (None,5), 'obstacle'),
-                              #('Obstacle detected ahead', (None,4), 'obstacle'),
+                              ('Obstacle detected ahead', (None,4), 'obstacle'),
                               ('Obstacle detected on right', (None,3), 'obstacle'),
                               ('Any RC match', (None, 1), 'remote'),
                               ('RC match 0', (None, 1), 'remote'),
@@ -160,7 +160,7 @@ class Detail_win(wx.ScrolledWindow):
                             'Wait':self.wait_details, 'Advanced':self.cpu_details,
                             'Draw to LCD':self.lcddraw_details,
                             }
-        
+
         self.convert_dict = {'Tone':self.tones_convert, 'Beep':self.beep_convert,
                              'Digital Out':self.digout_convert, 'LED': self.digital_convert,
                              'LineTracker':self.digital_convert, 'Infrared Data Out':self.txir_convert,
@@ -189,8 +189,8 @@ class Detail_win(wx.ScrolledWindow):
                              'Draw to LCD':self.lcddraw_convert,
                              }
 
-        
-        
+
+
 
     def update_dirty(self, dirty):
         if (dirty != self.dirty):
@@ -216,12 +216,12 @@ class Detail_win(wx.ScrolledWindow):
     def switch_constants(self, obj=None):
         if (not self.vars):
             return
-        
+
         if (obj):
             for var, cons in self.vars:
                 if (var == obj):
                     cons.Enable(obj.GetValue() == CONSTANT)
-                
+
         else:
             for var, cons in self.vars:
                 cons.Enable(var.GetValue() == CONSTANT)
@@ -236,7 +236,7 @@ class Detail_win(wx.ScrolledWindow):
         if (self.cb_special):
             self.cb_special()
         self.update_dirty(True)
-        
+
     def on_cons_tc(self, event):
         self.update_dirty(True)
 
@@ -260,7 +260,7 @@ class Detail_win(wx.ScrolledWindow):
         if (self.vars and len(self.vars) > 0):
             for var, con in self.vars:
                 self.Bind(wx.EVT_COMBOBOX, self.on_cb_vars, var)
-        
+
         if (self.groups and len(self.groups)>1):
             for grp, children in self.groups:
                 self.Bind(wx.EVT_RADIOBUTTON, self.on_rb, grp)
@@ -280,7 +280,7 @@ class Detail_win(wx.ScrolledWindow):
 
 
     def set_details(self, name, bric_id):
-        
+
         if (self.dirty):
             #print "Saving", bric_id
             self.save_changes()
@@ -290,16 +290,16 @@ class Detail_win(wx.ScrolledWindow):
         self.cb_special = None
         self.bric_type = name
         self.bric_id = bric_id
-        
+
         self.vbox.Clear(True)
 
         if (name in self.detail_dict):
             self.bric_id = bric_id
             #self.buttons = (wx.Button(self, -1, CANCEL_LABEL), wx.Button(self, -1, SAVE_LABEL))
-                
+
             self.title = wx.StaticText(self, -1, "")
             self.old_data = win_data.program().get_bric_data(bric_id)
-        
+
 ##            hbox = wx.BoxSizer(wx.HORIZONTAL)
 ##            hbox.Add(self.title, 0)
 ##            hbox.Add((5,5), 1, flag=wx.EXPAND)
@@ -307,14 +307,14 @@ class Detail_win(wx.ScrolledWindow):
 ##                hbox.Add(b, 0)
 ##            self.vbox.Add(hbox, flag=wx.EXPAND)
             self.vbox.Add(self.title, 0)
-            
+
 
             # set new details
             self.vbox.Add(self.detail_dict[name](bric_id, self.old_data))
 
             # start out not dirty
             self.update_dirty(False)
-            
+
         self.SetVirtualSize(self.GetBestSize())
         #self.FitInside()
         self.Layout()
@@ -336,7 +336,7 @@ class Detail_win(wx.ScrolledWindow):
     def make_combo(self, choices, add_const = False, size=(-1,-1), sort=True, add_no_var=False):
         if (sort):
             choices.sort()
-            
+
         if (add_const):
             choices.insert(0, CONSTANT)
             size = CONST_SIZE
@@ -344,7 +344,7 @@ class Detail_win(wx.ScrolledWindow):
         if (add_no_var):
             choices.insert(0, NO_VAR)
             size = CONST_SIZE
-            
+
         cb = wx.ComboBox(self, -1, choices[0], choices=choices,
                          style=wx.CB_READONLY, size=size)
         return cb
@@ -374,18 +374,18 @@ class Detail_win(wx.ScrolledWindow):
                 grid.Add(c, loc, flag=flag, span=ctrl_span)
             else:
                 grid.Add(c, loc, flag=flag)
-                
+
             loc = (loc[0], loc[1]+1)
-            
+
         if (extra_info):
             grid.Add(wx.StaticText(self, -1, '(%s)' % (extra_info,)), extra_loc, span=(1,2), flag=flag)
-            
+
 
     def make_headings(self, grid, loc):
         grid.Add(wx.StaticText(self, -1, "Constant"), loc, flag=wx.ALIGN_CENTRE)
         loc = (loc[0], loc[1]+1)
         grid.Add(wx.StaticText(self, -1, "Variable"), loc, flag=wx.ALIGN_CENTRE)
-        
+
 
     def save_initial(self):
         data = self.conv_func(None, 'to_ids_add_refs', self.name, self.bric_id)
@@ -415,9 +415,9 @@ class Detail_win(wx.ScrolledWindow):
 
         # add on the event or not field (not event is fine here)
         data.append(False)
-        
+
         #print "Checking:", data
-        
+
         check = self.conv_func(data, 'gen_code', self.name, self.bric_id)
         if (len(check) > 0):
             return True
@@ -428,7 +428,7 @@ class Detail_win(wx.ScrolledWindow):
         # check values first
         if (not self.check_constants()):
             return
-        
+
         self.conv_func(self.old_data, 'rm_refs', self.name, self.bric_id)
         new_data = self.conv_func(None, 'to_ids_add_refs', self.name, self.bric_id)
         win_data.program().set_bric_data(self.bric_id, new_data)
@@ -445,7 +445,7 @@ class Detail_win(wx.ScrolledWindow):
             self.switch_group(self.rbs[values[0]])
         self.update_dirty(False)
 
-    
+
     def remove_bric_refs(self, name, old_data):
         if (name in self.convert_dict):
             self.convert_dict[name](old_data, 'rm_refs', name, 0)
@@ -453,7 +453,7 @@ class Detail_win(wx.ScrolledWindow):
 
     def generate_code(self, bric_id, in_event=False):
         name = win_data.program().get_bric_name(bric_id)
-        
+
         if (name in self.convert_dict):
             data = win_data.program().get_bric_data(bric_id)
             converted = self.convert_dict[name](data, 'from_ids', name, bric_id)
@@ -462,8 +462,8 @@ class Detail_win(wx.ScrolledWindow):
 
         else:
             raise KeyError, "Unknown bric name: %s (id:%d)" % (name, bric_id)
-        
-    
+
+
 # =======================================================================================
 # ---------------------------- bric details ---------------------------------------------
 # =======================================================================================
@@ -480,18 +480,18 @@ class Detail_win(wx.ScrolledWindow):
         self.title.SetLabel("%s - properties:" % (self.name))
 
         grid = wx.GridBagSizer(5, 5)
-        
+
         rbs = self.make_radio_buttons(["Musical note", "Tune string"])
         modules = win_data.config_device_names('Sounder')
         mod_choice = self.make_combo(modules)
 
-        
+
         note_and_dur = (self.make_combo(tone_notes, sort=False),
                         self.make_combo(tone_durations, sort=False))
         note_and_dur[0].SetValue("C")
-        
+
         tune = (self.make_text_ctrl(""),)
-                               
+
         self.data_order = (None,mod_choice)+note_and_dur+tune
         self.groups = ((rbs[0], note_and_dur), (rbs[1], tune))
         self.vars = None
@@ -502,7 +502,7 @@ class Detail_win(wx.ScrolledWindow):
         self.add_with_prompt(grid, (0,0), MODULE_PROMPT, (mod_choice,))
         #self.add_with_prompt(grid, (0,0), "", (mod_choice,))
         #mod_choice.Hide()
-        
+
         grid.Add(rbs[0], (2,0), flag=wx.ALIGN_CENTRE_VERTICAL)
         self.add_with_prompt(grid, (2,1), "", note_and_dur)
 
@@ -521,9 +521,9 @@ class Detail_win(wx.ScrolledWindow):
             self.switch_constants()
             self.switch_group(rbs[0])
             self.old_data = self.save_initial()
-            
+
         return grid
-    
+
 
     def tones_convert(self, input, command, name, bric_id):
         """Data: radio_button, module, note_cb, dur_cb, tune_const"""
@@ -534,7 +534,7 @@ class Detail_win(wx.ScrolledWindow):
             # get names from ids
             # input[1] is the module id
             output[1] = win_data.config_name_from_id(input[1])
-                
+
             return output
 
         elif (command == 'to_ids_add_refs'):
@@ -552,7 +552,7 @@ class Detail_win(wx.ScrolledWindow):
 
             # Validate values - change notes to codes
             # ??????
-            
+
             # convert to ids
             output[1] = win_data.config_id_from_name(output[1])
             win_data.config_add_use(output[1])
@@ -574,13 +574,13 @@ class Detail_win(wx.ScrolledWindow):
                     if (input[2] == tone_notes[i]):
                         note_code = i
                         break
-                
+
                 dur_code = 1
                 for i in range(len(tone_durations)):
                     if (tone_durations[i] == input[3]):
                         dur_code = i+1
                         break
-                    
+
                 code = "datb @_tune_store * "
                 if (note_code > 15):
                     # Make it a rest
@@ -599,7 +599,7 @@ class Detail_win(wx.ScrolledWindow):
                 if (pairs > MAX_TUNE_STORE-1):
                     win_data.constant_error("Too many tune notes/durations (max 16 pairs).")
                     return []
-                
+
                 for i in range(pairs):
                     note = input[4][i*2]
                     dur = input[4][i*2+1]
@@ -607,7 +607,7 @@ class Detail_win(wx.ScrolledWindow):
                         dur_code = -1
                     else:
                         dur_code = int(dur)
-                    
+
                     note_code = notes.find(note)
                     if (note_code < 0 or note_code > 17 or dur_code < 0):
                         win_data.constant_error("Tune string is not valid. Check help for the format.")
@@ -640,10 +640,10 @@ class Detail_win(wx.ScrolledWindow):
         self.title.SetLabel("%s - properties:" % (self.name))
 
         grid = wx.GridBagSizer(5, 5)
-        
+
         modules = win_data.config_device_names('Sounder')
         mod_choice = self.make_combo(modules)
-          
+
         self.data_order = (mod_choice,)
         self.groups = None
         self.vars = None
@@ -663,13 +663,13 @@ class Detail_win(wx.ScrolledWindow):
             self.set_control_values(self.data_order, values)
         else:
             self.old_data = self.save_initial()
-            
+
         return grid
-    
+
 
     def beep_convert(self, input, command, name, bric_id):
         """Data: module"""
-        
+
         if (command == 'from_ids'):
             output = [input[0]]
             output[0] = win_data.config_name_from_id(input[0])
@@ -682,7 +682,7 @@ class Detail_win(wx.ScrolledWindow):
                 if (not ctrl):
                     continue
                 output.append(ctrl.GetValue())
-            
+
             # convert to ids
             output[0] = win_data.config_id_from_name(output[0])
             win_data.config_add_use(output[0])
@@ -699,9 +699,9 @@ class Detail_win(wx.ScrolledWindow):
         else:
             raise SyntaxError, "Unknown command: " + command
 
-            
-            
-# ---------------------------- digital, ctrlled and linetracker brics ----------------------------------------
+
+
+# ---------------------------- digital, ctrlled, linetracker, onstacle detect brics ----------------------------------------
 
     def digital_details(self, bric_id, data):
         self.conv_func = self.digital_convert
@@ -709,7 +709,7 @@ class Detail_win(wx.ScrolledWindow):
         self.name = win_data.program().get_bric_name(bric_id)
         self.prop_title = bric_data.get_bric_prop_title(self.name)
         #print self.prop_title
-        
+
         values = None
         if (self.prop_title):
             self.title.SetLabel(self.prop_title)
@@ -717,12 +717,12 @@ class Detail_win(wx.ScrolledWindow):
             self.title.SetLabel("%s - properties:" % (self.name))
 
         grid = wx.GridBagSizer(5, 5)
-        
+
         if (self.name == 'LED'):
             mod_type = 'LED'
             levels = ['On', 'Off']
             prompt = "LED Setting:"
-            
+
         elif (self.name == "Obstacle Detection"):
             mod_type = 'IR Transmitter'
             levels = ['On', 'Off']
@@ -731,14 +731,14 @@ class Detail_win(wx.ScrolledWindow):
             mod_type = 'Line Tracker'
             levels = ['On', 'Off']
             prompt = "Line Tracker LED:"
-            
+
         modules = win_data.config_device_names(mod_type)
         mod_choice = self.make_combo(modules)
 
         choices = win_data.vars_names(U_NAME)
         ctrl = (self.make_combo(levels),
                  self.make_combo(choices, add_const=True))
-        
+
         self.data_order = (mod_choice,)+ctrl
         self.groups = None
         self.vars = ((ctrl[1], ctrl[0]),)
@@ -760,13 +760,13 @@ class Detail_win(wx.ScrolledWindow):
         else:
             self.switch_constants()
             self.old_data = self.save_initial()
-            
+
         return grid
-    
+
 
     def digital_convert(self, input, command, name, bric_id):
         """Data: module, output_level, var"""
-        
+
         if (command == 'from_ids'):
             output= [win_data.config_name_from_id(input[0]), input[1], CONSTANT]
             if (input[2]):
@@ -781,7 +781,7 @@ class Detail_win(wx.ScrolledWindow):
                 if (not ctrl):
                     continue
                 output.append(ctrl.GetValue())
-            
+
             # convert to ids
             output[0] = win_data.config_id_from_name(output[0])
             output[2] = win_data.vars_get_id(output[2])
@@ -801,22 +801,22 @@ class Detail_win(wx.ScrolledWindow):
                 output = "action"
             else:
                 output = "output"
-            
+
             #print "digital_convert - self.name:", self.name, "name:", name, " output:", output
-            
+
             if (name == "Obstacle Detection"):
                 bit = 1
                 mask = 2
             else:
                 bit = 0
                 mask = 1
-                    
+
             if (input[2] == CONSTANT):
                 if (input[1] == 'Off'):
                     code_lines.append("bitclr $%d %s" % (bit, win_data.make_mod_reg(input[0], output)))
                 else:
                     code_lines.append("bitset $%d %s" % (bit, win_data.make_mod_reg(input[0], output)))
-                
+
             else:
                 labels = win_data.make_labels(bric_id, 0, 2)
                 code_lines.append("movb @%s %%_cpu:acc" % (input[2]))
@@ -850,10 +850,10 @@ class Detail_win(wx.ScrolledWindow):
 
         sleep_choices = ['on inactivity', 'never']
         #stop_choices = ['warnings', 'errors']
-        
+
         sleep = (self.make_combo(sleep_choices, sort=False, size=(150,-1)),)
         #stop = (self.make_combo(stop_choices, sort=False),)
-        
+
         self.data_order = sleep
         self.groups = None
         self.vars = None
@@ -872,13 +872,13 @@ class Detail_win(wx.ScrolledWindow):
             self.set_control_values(self.data_order, values)
         else:
             self.old_data = self.save_initial()
-            
+
         return grid
-    
+
 
     def cpu_convert(self, input, command, name, bric_id):
         """Data: sleep"""
-        
+
         if (command == 'from_ids'):
             return input
 
@@ -889,7 +889,7 @@ class Detail_win(wx.ScrolledWindow):
                 if (not ctrl):
                     continue
                 output.append(ctrl.GetValue())
-            
+
             return output
 
         elif (command == 'rm_refs'):
@@ -926,10 +926,10 @@ class Detail_win(wx.ScrolledWindow):
         self.title.SetLabel("%s - properties:" % (self.name))
 
         grid = wx.GridBagSizer(5, 5)
-        
+
         mod_type = 'IR Transmitter'
         prompt = "Character to send:"
-            
+
         modules = win_data.config_device_names(mod_type)
         mod_choice = self.make_combo(modules)
 
@@ -937,7 +937,7 @@ class Detail_win(wx.ScrolledWindow):
         ctrl = (self.make_text_ctrl("A"),
                  self.make_combo(choices, add_const=True))
 
-       
+
         self.data_order = (mod_choice,)+ctrl
         self.groups = None
         self.vars = ((ctrl[1], ctrl[0]),)
@@ -959,13 +959,13 @@ class Detail_win(wx.ScrolledWindow):
         else:
             self.switch_constants()
             self.old_data = self.save_initial()
-            
+
         return grid
-    
+
 
     def txir_convert(self, input, command, name, bric_id):
         """Data: module, char-cons, char-var"""
-        
+
         if (command == 'from_ids'):
             output= [win_data.config_name_from_id(input[0]), input[1], CONSTANT]
             if (input[2]):
@@ -980,7 +980,7 @@ class Detail_win(wx.ScrolledWindow):
                 if (not ctrl):
                     continue
                 output.append(ctrl.GetValue())
-            
+
             # convert to ids
             output[0] = win_data.config_id_from_name(output[0])
             output[2] = win_data.vars_get_id(output[2])
@@ -998,10 +998,10 @@ class Detail_win(wx.ScrolledWindow):
             code_lines = []
             if (input[2] == CONSTANT):
                 character = win_data.conv_to_tx_char(input[1])
-                
+
                 if (character == None):
                     return []
-                
+
                 code_lines.append("movb $%s %s" % (character, win_data.make_mod_reg(input[0], 'char')))
             else:
                 code_lines.append("movb @%s %s" % (input[2], win_data.make_mod_reg(input[0], 'char')))
@@ -1025,17 +1025,17 @@ class Detail_win(wx.ScrolledWindow):
         self.title.SetLabel("%s - properties:" % (self.name))
 
         grid = wx.GridBagSizer(5, 5)
-        
+
         if (self.name == 'Serial Data Out'):
             prompt = "Character to send:"
         else:
             pass
-            
+
         choices = win_data.vars_names(U_NAME)
         ctrl = (self.make_text_ctrl("A"),
                  self.make_combo(choices, add_const=True))
 
-       
+
         self.data_order = ctrl
         self.groups = None
         self.vars = ((ctrl[1], ctrl[0]),)
@@ -1056,13 +1056,13 @@ class Detail_win(wx.ScrolledWindow):
         else:
             self.switch_constants()
             self.old_data = self.save_initial()
-            
+
         return grid
-    
+
 
     def txserial_convert(self, input, command, name, bric_id):
         """Data: char-const, char-var"""
-        
+
         if (command == 'from_ids'):
             output= [input[0], CONSTANT]
             if (input[1]):
@@ -1077,7 +1077,7 @@ class Detail_win(wx.ScrolledWindow):
                 if (not ctrl):
                     continue
                 output.append(ctrl.GetValue())
-            
+
             # convert to ids
             output[1] = win_data.vars_get_id(output[1])
             win_data.vars_add_use(output[1])
@@ -1117,7 +1117,7 @@ class Detail_win(wx.ScrolledWindow):
         self.title.SetLabel("%s - properties:" % (self.name))
 
         grid = wx.GridBagSizer(5, 5)
-        
+
         if (self.name == 'Digital In'):
             mod_type = 'Digital In'
             v_type = U_NAME
@@ -1143,7 +1143,8 @@ class Detail_win(wx.ScrolledWindow):
             # Line status
             mod_type = 'Line Tracker'
             v_type = U_NAME
-            
+            clearAfterReading = False
+
         modules = win_data.config_device_names(mod_type)
         mod_choice = self.make_combo(modules)
 
@@ -1151,8 +1152,8 @@ class Detail_win(wx.ScrolledWindow):
         ctrl = self.make_combo(choices, add_const=False)
 
         # debug
-        print "readsmall_details:", self.name, mod_type, modules
-       
+        #print "readsmall_details:", self.name, mod_type, modules
+
         self.data_order = (mod_choice, ctrl)
         self.groups = None
         self.vars = None
@@ -1171,13 +1172,13 @@ class Detail_win(wx.ScrolledWindow):
             self.set_control_values(self.data_order, values)
         else:
             self.old_data = self.save_initial()
-            
+
         return grid
-    
+
 
     def readsmall_convert(self, input, command, name, bric_id):
         """Data: mod, var"""
-        
+
         if (command == 'from_ids'):
             output= [win_data.config_name_from_id(input[0]), win_data.vars_get_name(input[1])]
             return output
@@ -1189,7 +1190,7 @@ class Detail_win(wx.ScrolledWindow):
                 if (not ctrl):
                     continue
                 output.append(ctrl.GetValue())
-            
+
             # convert to ids
             output[0] = win_data.config_id_from_name(output[0])
             output[1] = win_data.vars_get_id(output[1])
@@ -1211,20 +1212,35 @@ class Detail_win(wx.ScrolledWindow):
                 code_lines.append("movb %s %%_cpu:acc" % (win_data.make_mod_reg(input[0], 'status'),))
                 code_lines.append("and $1")
                 code_lines.append("movb %%_cpu:acc @%s" % (input[1]))
-                
+
             elif (name == 'Bumper'):
                 #code_lines.append("movb %s @%s" % (win_data.make_mod_reg(input[0], 'status'), input[1]))
                 # if we have math then do the below
                 code_lines.append("movb %s %%_cpu:acc" % (win_data.make_mod_reg(input[0], 'status'),))
                 code_lines.append("and $1")
                 code_lines.append("movb %%_cpu:acc @%s" % (input[1]))
-                
+
             elif (name == 'Infrared Data In'):
+                # Have to clear the status bit for IR received
+                code_lines.append("bitclr $0 %s" % (win_data.make_mod_reg(input[0], 'status'),))
+
+                # read the actual character in (which may be 0)
                 code_lines.append("movb %s @%s" % (win_data.make_mod_reg(input[0], 'char'), input[1]))
-                
+
+                # clear the data so that the next read won't return the same data
+                code_lines.append("movb $0 %s" % (win_data.make_mod_reg(input[0], 'char')))
+
             elif (name == 'Remote'):
+                # Have to clear the status bit for the remote match
+                code_lines.append("bitclr $1 %s" % (win_data.make_mod_reg(input[0], 'status'),))
+
+                # read the match (which may be 0)
                 code_lines.append("movb %s @%s" % (win_data.make_mod_reg(input[0], 'match'), input[1]))
-                
+
+                # clear the data so that the next read won't return the same data
+                code_lines.append("movb $0 %s" % (win_data.make_mod_reg(input[0], 'match')))
+
+
             elif (name == 'Analogue In'):
                 code_lines.append("movw %s @%s" % (win_data.make_mod_reg(input[0], 'level'), input[1]))
 
@@ -1233,20 +1249,22 @@ class Detail_win(wx.ScrolledWindow):
 
             elif (name == 'Read Clap Detect'):
                 code_lines.append("movb %s %%_cpu:acc" % (win_data.make_mod_reg(input[0], 'status'),))
+
                 # clear the register bits now that we've captured them
                 code_lines.append("bitclr $2 %s" % (win_data.make_mod_reg(input[0], 'status'),))
-                
+
                 code_lines.append("and $4")
                 code_lines.append("movb %%_cpu:acc @%s" % (input[1]))
-                
+
             elif (name == 'Read Obstacle Detect'):
                 code_lines.append("movb %s %%_cpu:acc" % (win_data.make_mod_reg(input[0], 'status'),))
+
                 # clear the register bits now that we've captured them
                 code_lines.append("bitclr $3 %s" % (win_data.make_mod_reg(input[0], 'status'),))
                 code_lines.append("bitclr $4 %s" % (win_data.make_mod_reg(input[0], 'status'),))
-                #code_lines.append("bitclr $5 %s" % (win_data.make_mod_reg(input[0], 'status'),))
+                code_lines.append("bitclr $5 %s" % (win_data.make_mod_reg(input[0], 'status'),))
                 code_lines.append("bitclr $6 %s" % (win_data.make_mod_reg(input[0], 'status'),))
-                
+
                 code_lines.append("and $58/16")
                 code_lines.append("movb %%_cpu:acc @%s" % (input[1]))
 
@@ -1262,7 +1280,7 @@ class Detail_win(wx.ScrolledWindow):
                 #code_lines.append("movb  @%s %%_cpu:acc" % (input[1]))
                 #code_lines.append("and $78/16")
                 #code_lines.append("movb %%_cpu:acc @%s" % (input[1]))
-                  
+
             else:
                 # line tracker
                 #code_lines.append("movb %s @%s" % (win_data.make_mod_reg(input[0], 'status'), input[1]))
@@ -1270,7 +1288,7 @@ class Detail_win(wx.ScrolledWindow):
                 code_lines.append("movb %s %%_cpu:acc" % (win_data.make_mod_reg(input[0], 'status'),))
                 code_lines.append("and $1")
                 code_lines.append("movb %%_cpu:acc @%s" % (input[1]))
-                
+
             return code_lines
 
         else:
@@ -1287,7 +1305,7 @@ class Detail_win(wx.ScrolledWindow):
         self.title.SetLabel("%s - properties:" % (self.name))
 
         grid = wx.GridBagSizer(5, 5)
-        
+
         modules = win_data.config_device_names("LED")
         modules.extend(win_data.config_device_names('Line Tracker'))
 
@@ -1314,13 +1332,13 @@ class Detail_win(wx.ScrolledWindow):
             self.set_control_values(self.data_order, values)
         else:
             self.old_data = self.save_initial()
-            
+
         return grid
-    
+
 
     def readlight_convert(self, input, command, name, bric_id):
         """Data: mod, var"""
-        
+
         if (command == 'from_ids'):
             output= [win_data.config_name_from_id(input[0]), win_data.vars_get_name(input[1])]
             return output
@@ -1332,7 +1350,7 @@ class Detail_win(wx.ScrolledWindow):
                 if (not ctrl):
                     continue
                 output.append(ctrl.GetValue())
-            
+
             # convert to ids
             output[0] = win_data.config_id_from_name(output[0])
             output[1] = win_data.vars_get_id(output[1])
@@ -1350,7 +1368,7 @@ class Detail_win(wx.ScrolledWindow):
             code_lines = []
             code_lines.append("movw %s @%s" % (win_data.make_mod_reg(input[0], 'lightlevel'), input[1]))
             return code_lines
-        
+
         else:
             raise SyntaxError, "Unknown command: " + command
 
@@ -1365,7 +1383,7 @@ class Detail_win(wx.ScrolledWindow):
         self.title.SetLabel("%s - properties:" % (self.name))
 
         grid = wx.GridBagSizer(5, 5)
-        
+
         modules = []
         modules.extend(win_data.config_device_names('Motor A'))
         modules.extend(win_data.config_device_names('Motor B'))
@@ -1393,9 +1411,9 @@ class Detail_win(wx.ScrolledWindow):
             self.set_control_values(self.data_order, values)
         else:
             self.old_data = self.save_initial()
-            
+
         return grid
-    
+
 
     def readdist_convert(self, input, command, name, bric_id):
         """Data: mod, var"""
@@ -1411,7 +1429,7 @@ class Detail_win(wx.ScrolledWindow):
                 if (not ctrl):
                     continue
                 output.append(ctrl.GetValue())
-            
+
             # convert to ids
             output[0] = win_data.config_id_from_name(output[0])
             output[1] = win_data.vars_get_id(output[1])
@@ -1444,7 +1462,7 @@ class Detail_win(wx.ScrolledWindow):
         self.title.SetLabel("%s - properties:" % (self.name))
 
         grid = wx.GridBagSizer(5, 5)
-        
+
         if (self.name == 'Serial Data In'):
             extra = 'Last character received'
             v_type = U_NAME
@@ -1454,7 +1472,7 @@ class Detail_win(wx.ScrolledWindow):
         else:
             extra = 'Button pressed'
             v_type = U_NAME
-            
+
         choices = win_data.vars_names(v_type)
         ctrl = self.make_combo(choices, add_const=False)
 
@@ -1475,13 +1493,13 @@ class Detail_win(wx.ScrolledWindow):
             self.set_control_values(self.data_order, values)
         else:
             self.old_data = self.save_initial()
-            
+
         return grid
-    
+
 
     def readinternal_convert(self, input, command, name, bric_id):
         """Data: var"""
-        
+
         if (command == 'from_ids'):
             output= [win_data.vars_get_name(input[0])]
             return output
@@ -1493,7 +1511,7 @@ class Detail_win(wx.ScrolledWindow):
                 if (not ctrl):
                     continue
                 output.append(ctrl.GetValue())
-            
+
             # convert to ids
             output[0] = win_data.vars_get_id(output[0])
             win_data.vars_add_use(output[0])
@@ -1508,14 +1526,15 @@ class Detail_win(wx.ScrolledWindow):
             code_lines = []
             if (name == 'Serial Data In'):
                 code_lines.append("movb %%_devices:serrx @%s" % (input[0],))
-                
+
             elif (name == 'Read Timer'):
                 code_lines.append("movw %%_timers:oneshot @%s" % (input[0],))
-                
+
             else:
                 # Button
                 code_lines.append("movb %%_devices:button @%s" % (input[0],))
-                
+                code_lines.append("movb $0 %_devices:button")
+
             return code_lines
 
         else:
@@ -1533,13 +1552,13 @@ class Detail_win(wx.ScrolledWindow):
         self.title.SetLabel("%s - properties:" % (self.name))
 
         grid = wx.GridBagSizer(5, 5)
-        
+
         if (self.name == 'Set Timer'):
             prompt = "Seconds:"
             extra_info = "Range is 0.00 to 327.67 seconds."
         else:
             pass
-            
+
         choices = win_data.vars_names(S_NAME)
         ctrl = (self.make_text_ctrl("0"),
                  self.make_combo(choices, add_const=True))
@@ -1564,13 +1583,13 @@ class Detail_win(wx.ScrolledWindow):
         else:
             self.switch_constants()
             self.old_data = self.save_initial()
-            
+
         return grid
-    
+
 
     def settimer_convert(self, input, command, name, bric_id):
         """Data: output_time, var"""
-        
+
         if (command == 'from_ids'):
             output= [input[0], CONSTANT]
             if (input[1]):
@@ -1585,7 +1604,7 @@ class Detail_win(wx.ScrolledWindow):
                 if (not ctrl):
                     continue
                 output.append(ctrl.GetValue())
-            
+
             # convert to ids
             output[1] = win_data.vars_get_id(output[1])
             win_data.vars_add_use(output[1])
@@ -1595,14 +1614,14 @@ class Detail_win(wx.ScrolledWindow):
         elif (command == 'rm_refs'):
             """Input is the stored data, with refs"""
             win_data.vars_rm_use(input[1])
-            
+
         elif (command == 'gen_code'):
             code_lines = []
             if (input[1] == CONSTANT):
                 time = win_data.conv_to_time(input[0])
                 if (time == None):
                     return []
-                
+
                 code_lines.append("movw $%d %%_timers:oneshot" % (time,))
             else:
                 code_lines.append("movw @%s %%_timers:oneshot" % (input[1],))
@@ -1626,7 +1645,7 @@ class Detail_win(wx.ScrolledWindow):
         self.title.SetLabel("%s - properties:" % (self.name))
 
         grid = wx.GridBagSizer(5, 5)
-        
+
         modules = win_data.config_device_names('Digital In')
         mod_choice = self.make_combo(modules)
 
@@ -1634,12 +1653,12 @@ class Detail_win(wx.ScrolledWindow):
 
         wait = (self.make_text_ctrl("0"),
                  self.make_combo(choices, add_const=True))
-        
+
         choices = win_data.vars_names(S_NAME)
         ctrl = (wx.StaticText(self, -1, ""),
             self.make_combo(choices, add_const=False))
 
-       
+
         self.data_order = (mod_choice,)+wait+(ctrl[1],)
         self.groups = None
         self.vars = ((wait[1],wait[0]),)
@@ -1663,19 +1682,19 @@ class Detail_win(wx.ScrolledWindow):
         else:
             self.switch_constants()
             self.old_data = self.save_initial()
-            
+
         return grid
-    
+
 
     def digpulse_convert(self, input, command, name, bric_id):
         """Data: module, wait, var, read_var"""
-        
+
         if (command == 'from_ids'):
             output= [win_data.config_name_from_id(input[0]), input[1],
                      CONSTANT, win_data.vars_get_name(input[3])]
             if (input[2]):
                 output[2] = win_data.vars_get_name(input[2])
-            
+
             return output
 
         elif (command == 'to_ids_add_refs'):
@@ -1685,12 +1704,12 @@ class Detail_win(wx.ScrolledWindow):
                 if (not ctrl):
                     continue
                 output.append(ctrl.GetValue())
-            
+
             # convert to ids
             output[0] = win_data.config_id_from_name(output[0])
             output[2] = win_data.vars_get_id(output[2])
             output[3] = win_data.vars_get_id(output[3])
-            
+
             win_data.config_add_use(output[0])
             win_data.vars_add_use(output[2])
             win_data.vars_add_use(output[3])
@@ -1709,11 +1728,11 @@ class Detail_win(wx.ScrolledWindow):
                 time = win_data.conv_to_time(input[1])
                 if (time == None):
                     return []
-                
+
                 code_lines.append("movw $%d %s" % (time, win_data.make_mod_reg(input[0], 'pulsetime')))
             else:
                 code_lines.append("movw @%s %s" % (input[2], win_data.make_mod_reg(input[0], 'pulsetime')))
-                
+
             # trigger the capture
             code_lines.append("bitset 0 %s" % (win_data.make_mod_reg(input[0], 'action'),))
 
@@ -1735,7 +1754,7 @@ class Detail_win(wx.ScrolledWindow):
             # good capture
             code_lines.append("movw %s @%s" % (win_data.make_mod_reg(input[0], 'pulsetime'),input[3]))
             code_lines.append(labels[2])
-            
+
             return code_lines
 
         else:
@@ -1752,7 +1771,7 @@ class Detail_win(wx.ScrolledWindow):
         self.title.SetLabel("%s - properties:" % (self.name))
 
         grid = wx.GridBagSizer(5, 5)
-        
+
         rbs = self.make_radio_buttons(["Level", "Pulse"])
 
         modules = win_data.config_device_names("Digital Out")
@@ -1760,14 +1779,14 @@ class Detail_win(wx.ScrolledWindow):
 
         level_choices = win_data.vars_names(U_NAME)
         pulse_choices = win_data.vars_names(S_NAME)
-        
+
         levels = ['Low', 'High']
         ctrl = (self.make_combo(levels),
                  self.make_combo(level_choices, add_const=True))
-        
+
         pulse = (self.make_text_ctrl("0"),
                  self.make_combo(pulse_choices, add_const=True))
-        
+
         self.data_order = (None,mod_choice)+ctrl+pulse
         self.groups = ((rbs[0], ctrl), (rbs[1], pulse))
         self.vars = ((ctrl[1], ctrl[0]), (pulse[1], pulse[0]))
@@ -1777,7 +1796,7 @@ class Detail_win(wx.ScrolledWindow):
 
         self.add_with_prompt(grid, (0,1), MODULE_PROMPT, (mod_choice,))
         self.make_headings(grid, (1,2))
-        
+
         grid.Add(rbs[0], (2,0), flag=wx.ALIGN_CENTRE_VERTICAL)
         self.add_with_prompt(grid, (2,1), "Output Level:", ctrl)
 
@@ -1797,13 +1816,13 @@ class Detail_win(wx.ScrolledWindow):
             self.switch_constants()
             self.switch_group(rbs[0])
             self.old_data = self.save_initial()
-            
+
         return grid
-    
+
 
     def digout_convert(self, input, command, name, bric_id):
         """Data: rb, module, output_level, var, time-cons, time-var"""
-        
+
         vars = [(0, 3), (1, 5)]
         if (command == 'from_ids'):
             output= [input[0], win_data.config_name_from_id(input[1]), input[2], CONSTANT,
@@ -1828,7 +1847,7 @@ class Detail_win(wx.ScrolledWindow):
                 if (not ctrl):
                     continue
                 output.append(ctrl.GetValue())
-            
+
             # convert to ids
             output[1] = win_data.config_id_from_name(output[1])
             win_data.config_add_use(output[1])
@@ -1870,7 +1889,7 @@ class Detail_win(wx.ScrolledWindow):
                     code_lines.append("movw @%s %s" % (input[5], (win_data.make_mod_reg(input[1], 'pulsetime'))))
 
                 code_lines.append("bitset 0 %s" % (win_data.make_mod_reg(input[1], 'action')))
-                
+
             return code_lines
 
         else:
@@ -1888,12 +1907,12 @@ class Detail_win(wx.ScrolledWindow):
         self.title.SetLabel("%s - properties:" % (self.name))
 
         grid = wx.GridBagSizer(5, 5)
-        
+
         if (self.name == 'Increment'):
             prompt = "Variable to increment"
         else:
             prompt = "Variable to decrement"
-            
+
         choices = win_data.vars_names()
         ctrl = self.make_combo(choices, add_const=False)
 
@@ -1914,13 +1933,13 @@ class Detail_win(wx.ScrolledWindow):
             self.set_control_values(self.data_order, values)
         else:
             self.old_data = self.save_initial()
-            
+
         return grid
-    
+
 
     def incdec_convert(self, input, command, name, bric_id):
         """Data: var"""
-        
+
         if (command == 'from_ids'):
             output= [win_data.vars_get_name(input[0])]
             return output
@@ -1932,7 +1951,7 @@ class Detail_win(wx.ScrolledWindow):
                 if (not ctrl):
                     continue
                 output.append(ctrl.GetValue())
-            
+
             # convert to ids
             output[0] = win_data.vars_get_id(output[0])
             win_data.vars_add_use(output[0])
@@ -1942,7 +1961,7 @@ class Detail_win(wx.ScrolledWindow):
         elif (command == 'rm_refs'):
             """Input is the stored data, with refs"""
             win_data.vars_rm_use(input[0])
-            
+
         elif (command == 'gen_code'):
             code_lines = []
             size = win_data.vars_get_type_letter_from_name(input[0])
@@ -1956,7 +1975,7 @@ class Detail_win(wx.ScrolledWindow):
         else:
             raise SyntaxError, "Unknown command: " + command
 
-            
+
 
 # ---------------------------- Variable Set bric ----------------------------------------
 
@@ -1992,13 +2011,13 @@ class Detail_win(wx.ScrolledWindow):
             self.set_control_values(self.data_order, values)
         else:
             self.old_data = self.save_initial()
-            
+
         return grid
-    
+
 
     def varset_convert(self, input, command, name, bric_id):
         """Data: value, var"""
-        
+
         if (command == 'from_ids'):
             output= [input[0], win_data.vars_get_name(input[1])]
             return output
@@ -2010,7 +2029,7 @@ class Detail_win(wx.ScrolledWindow):
                 if (not ctrl):
                     continue
                 output.append(ctrl.GetValue())
-            
+
             # convert to ids
             output[1] = win_data.vars_get_id(output[1])
             win_data.vars_add_use(output[1])
@@ -2068,13 +2087,13 @@ class Detail_win(wx.ScrolledWindow):
             self.set_control_values(self.data_order, values)
         else:
             self.old_data = self.save_initial()
-            
+
         return grid
-    
+
 
     def varcopy_convert(self, input, command, name, bric_id):
         """Data: var, var"""
-        
+
         if (command == 'from_ids'):
             output= [win_data.vars_get_name(input[0]), win_data.vars_get_name(input[1])]
             return output
@@ -2086,7 +2105,7 @@ class Detail_win(wx.ScrolledWindow):
                 if (not ctrl):
                     continue
                 output.append(ctrl.GetValue())
-            
+
             # convert to ids
             output[0] = win_data.vars_get_id(output[0])
             output[1] = win_data.vars_get_id(output[1])
@@ -2135,7 +2154,7 @@ class Detail_win(wx.ScrolledWindow):
         dirs = [0,0]
         codes = [0,0]
         right_most = -1
-        
+
         for i in range(len(locs)):
             if (dtypes[i] == "Motor A"):
                 if (locs[i] in [2, 3, 4, 5, 6]):
@@ -2158,7 +2177,7 @@ class Detail_win(wx.ScrolledWindow):
                     dirs[i] = win_data.config_orient_from_loc(i)
                 else:
                     dirs[i] = -1 * win_data.config_orient_from_loc(locs[i])
-                    
+
         if (right_most < 0):
             # must be a corner case
             if (locs[0] == 1 and win_data.config_orient_from_loc(1) == -1):
@@ -2172,7 +2191,7 @@ class Detail_win(wx.ScrolledWindow):
                 right_most = 1
 
         #print "Motor pairs: %s locs:%s dirs:%s" % (motors, locs, dirs)
-        
+
         left_most = 0
         if (right_most == 0):
             left_most = 1
@@ -2187,7 +2206,7 @@ class Detail_win(wx.ScrolledWindow):
                     codes[i] = MOTOR_CODE["F"]
                 else:
                     codes[i] = MOTOR_CODE["B"]
-                    
+
         elif (command == MOTOR_BCK):
             for i in (0, 1):
                 if (dirs[i] == 1):
@@ -2231,7 +2250,7 @@ class Detail_win(wx.ScrolledWindow):
                 codes[left_most] = MOTOR_CODE["B"]
             else:
                 codes[left_most] = MOTOR_CODE["F"]
-                    
+
         elif (command == MOTOR_P_BL):
             codes[left_most] = MOTOR_CODE["S"]
             if (dirs[right_most] == 1):
@@ -2246,7 +2265,7 @@ class Detail_win(wx.ScrolledWindow):
             else:
                 codes[left_most] = MOTOR_CODE["BD"]
                 codes[right_most] = MOTOR_CODE["FD"]
-            
+
         elif (command == MOTOR_P_LT_90):
             if (dirs[right_most] == 1):
                 codes[right_most] = MOTOR_CODE["FD"]
@@ -2254,7 +2273,7 @@ class Detail_win(wx.ScrolledWindow):
             else:
                 codes[right_most] = MOTOR_CODE["BD"]
                 codes[left_most] = MOTOR_CODE["FD"]
-            
+
 
         #print "Motorpairdir", motors[left_most], motors[right_most], dirs, command, codes
         return codes
@@ -2281,10 +2300,10 @@ class Detail_win(wx.ScrolledWindow):
                 e1,e2 = True, True
             else:
                 dist_value[1].SetValue(CONSTANT)
-                
+
             dist_value[0].Enable(e1)
             dist_value[1].Enable(e2)
-                
+
 
     def motor_details(self, bric_id, data):
         self.conv_func = self.motor_convert
@@ -2310,7 +2329,7 @@ class Detail_win(wx.ScrolledWindow):
 
         #print modules
         mod_choice = self.make_combo(modules)
-        
+
         d_choices = win_data.vars_names(U_NAME)
         s_choices = win_data.vars_names(U_NAME)
         dist_choices = win_data.vars_names(S_NAME)
@@ -2318,7 +2337,7 @@ class Detail_win(wx.ScrolledWindow):
         speeds = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
 
         distance_units = ["unlimited", "mm", "inch", "degree", "raw"]
-        
+
         dirs = (self.make_combo(directions, sort=False),
                  self.make_combo(d_choices, add_const=True))
         speed = (self.make_combo(speeds, sort=False),
@@ -2326,11 +2345,11 @@ class Detail_win(wx.ScrolledWindow):
         dist_units = (self.make_combo(distance_units, sort=False),)
         dist_value = (self.make_text_ctrl("0"),
                       self.make_combo(dist_choices, add_const=True))
-        
+
         # Can't control a motor pair direction from a variable (too complex)
         if (self.name == 'Motor Pair'):
             dirs[1].Enable(False)
-        
+
         self.data_order = (mod_choice,)+dirs+speed+dist_units+dist_value
         self.groups = None
         self.vars = ((dirs[1], dirs[0]),(speed[1], speed[0]), (dist_value[1], dist_value[0]))
@@ -2346,7 +2365,7 @@ class Detail_win(wx.ScrolledWindow):
         self.add_with_prompt(grid, (3,0), "Speed:", speed)
         self.add_with_prompt(grid, (4,0), "Distance:", dist_units)
         self.add_with_prompt(grid, (5,0), "Distance:", dist_value)
-        
+
         self.bind_event_handlers()
 
         if (data):
@@ -2360,11 +2379,11 @@ class Detail_win(wx.ScrolledWindow):
             #print self.old_data
         self.cb_special()
         return grid
-    
+
 
     def single_motor_distance(self, input, single, code_lines):
         if ((input[5] == "unlimited") or ((input[2] == CONSTANT) and
-                                          (input[1] in (MOTOR_STP,)))): 
+                                          (input[1] in (MOTOR_STP,)))):
             # use the unlimited version of the direction
             distance_cmd = False
         else:
@@ -2380,10 +2399,10 @@ class Detail_win(wx.ScrolledWindow):
                     # each rotation is 2.5mm
                     # round to the nearest integer
                     rotations = int((dist / 2.5) + 0.5)
-                
+
                 elif (input[5] == "inch"):
                     # an inch is 25.4mm, which is pretty close
-                    # to 10 rotation. 
+                    # to 10 rotation.
                     rotations = dist * 10
                 elif (input[5] == "degree"):
                     # each rotation is 7.5 degrees
@@ -2394,7 +2413,7 @@ class Detail_win(wx.ScrolledWindow):
                     rotations = dist
                 else:
                     rotations = dist
-                        
+
                 code_lines.append("movw $%s %s" % (rotations,win_data.make_mod_reg(input[0], 'distance')))
             else:
                 # this must be raw, as raw is the only one allowed
@@ -2412,21 +2431,21 @@ class Detail_win(wx.ScrolledWindow):
                 code_lines.append("movb @%s %%_cpu:acc" % (input[2],))
 
         return distance_cmd
-    
+
     def motor_convert(self, input, command, name, bric_id):
         """Data: mod, dir_cons, var, speed_cons, var, dist_unit, dist_cons, var, [, other motor mod]"""
-        
+
         if (command == 'from_ids'):
             output= [win_data.config_name_from_id(input[0]), input[1], CONSTANT, input[3], CONSTANT,
                      input[5], input[6], CONSTANT]
-            
+
             if (name == 'Motor Pair'):
                 output[0] += '+'+win_data.config_name_from_id(input[8])
 
             for index in [2, 4, 7]:
                 if (input[index]):
                     output[index] = win_data.vars_get_name(input[index])
-            
+
             return output
 
         elif (command == 'to_ids_add_refs'):
@@ -2436,10 +2455,10 @@ class Detail_win(wx.ScrolledWindow):
                 if (not ctrl):
                     continue
                 output.append(ctrl.GetValue())
-                
+
             # debug
             #print "to_ids_add_refs - output1", output
-            
+
             if (name == 'Motor Pair'):
                 motors = output[0].split('+')
                 output[0] = win_data.config_id_from_name(motors[0])
@@ -2448,11 +2467,11 @@ class Detail_win(wx.ScrolledWindow):
 
             else:
                 output[0] = win_data.config_id_from_name(output[0])
-                
+
             output[2] = win_data.vars_get_id(output[2])
             output[4] = win_data.vars_get_id(output[4])
             output[7] = win_data.vars_get_id(output[7])
-            
+
             # debug
             #print "to_ids_add_refs - output2", output
 
@@ -2460,10 +2479,10 @@ class Detail_win(wx.ScrolledWindow):
             win_data.vars_add_use(output[2])
             win_data.vars_add_use(output[4])
             win_data.vars_add_use(output[7])
-            
+
             # debug
             #print "to_ids_add_refs - output3", output
-            
+
             return output
 
         elif (command == 'rm_refs'):
@@ -2471,7 +2490,7 @@ class Detail_win(wx.ScrolledWindow):
             win_data.config_rm_use(input[0])
             if (len(input) == 9):
                 win_data.config_rm_use(input[8])
-                
+
             win_data.vars_rm_use(input[2])
             win_data.vars_rm_use(input[4])
             win_data.vars_rm_use(input[7])
@@ -2500,11 +2519,11 @@ class Detail_win(wx.ScrolledWindow):
                         new_input = input
                         new_input[0] = motors[i]
                         new_input[1] = s_dirs[i]
-                    
+
                         dist = self.single_motor_distance(new_input, False, code_lines)
                         if (dist):
                             s_dirs[i] |= 0x20
-                            
+
                         # Set up control
                         code_lines.append("movb $%d %%_cpu:acc" % (s_dirs[i],))
 
@@ -2516,7 +2535,7 @@ class Detail_win(wx.ScrolledWindow):
                                 code_lines.append("or $%s" % (number,))
                         else:
                             code_lines.append("or @%s" % (input[4],))
-                
+
                         code_lines.append("movb %%_cpu:acc %s" % (win_data.make_mod_reg(motors[i], 'control'),))
 
             else:
@@ -2526,7 +2545,7 @@ class Detail_win(wx.ScrolledWindow):
                 # BED - don't shift because the basic interpreter doesn't have room
                 # for the shift. Document for the user instead.
                 #code_lines.append("shlb $6")
-                
+
                 if (input[4] == CONSTANT):
                     number = win_data.conv_to_number(input[3], 'b', 0, 10)
                     if (number == None):
@@ -2536,9 +2555,9 @@ class Detail_win(wx.ScrolledWindow):
                         code_lines.append("or $%s" % (number,))
                 else:
                     code_lines.append("or @%s" % (input[4],))
-                
+
                 code_lines.append("movb %%_cpu:acc %s" % (win_data.make_mod_reg(input[0], 'control'),))
-                
+
             return code_lines
 
         else:
@@ -2559,7 +2578,7 @@ class Detail_win(wx.ScrolledWindow):
         basic_ops = [MATH_PLUS, MATH_SUB, MATH_MULT, MATH_NOT]
         shift_ops = [MATH_DIV, MATH_MOD, MATH_LSHIFT, MATH_RSHIFT]
         logical_ops = [MATH_AND, MATH_OR, MATH_XOR]
-        
+
         if (self.name == 'Maths Basic'):
             main_choices = win_data.vars_names(U_NAME)
             basic_choices = win_data.vars_names(U_NAME)
@@ -2570,7 +2589,7 @@ class Detail_win(wx.ScrolledWindow):
             basic_choices = win_data.vars_names(S_NAME)
             shift_choices = win_data.vars_names(S_NAME)
             buttons = ["Basic", "Divide"]
-            
+
         rbs = self.make_radio_buttons(buttons)
 
         main_var=(self.make_combo(main_choices),)
@@ -2588,14 +2607,14 @@ class Detail_win(wx.ScrolledWindow):
             logical_op=(self.make_combo(logical_ops, sort=False),)
             logical_arg=(self.make_text_ctrl("0"),
                          self.make_combo(small_choices, add_const=True))
-            
+
         self.data_order = (None,)+main_var+basic_op+basic_arg+shift_op+shift_arg
         self.groups = ((rbs[0], (basic_op+basic_arg)),(rbs[1], (shift_op+shift_arg)))
         self.vars = ((basic_arg[1], basic_arg[0]), (shift_arg[1], shift_arg[0]))
         self.cons_tc = (main_var[0], basic_arg[0], shift_arg[0])
         self.cons_cb = (basic_op[0], shift_op[0])
         self.rbs = rbs
-        
+
         if (self.name == 'Maths Basic'):
             self.data_order = self.data_order + logical_op+logical_arg
             self.groups = self.groups+((rbs[2], (logical_op+logical_arg)),)
@@ -2610,7 +2629,7 @@ class Detail_win(wx.ScrolledWindow):
 ##        print self.rbs
 
         self.add_with_prompt(grid, (0,1), "Variable:", main_var)
-        
+
         grid.Add(rbs[0], (1,0), flag=wx.ALIGN_CENTRE_VERTICAL)
         self.add_with_prompt(grid, (1,1), "Operation:", basic_op)
         self.add_with_prompt(grid, (2,1), "Argument:", basic_arg)
@@ -2632,25 +2651,25 @@ class Detail_win(wx.ScrolledWindow):
             self.set_control_values(self.data_order, values)
             self.switch_constants()
             self.switch_group(rbs[values[0]])
-            
+
         else:
             self.switch_constants()
             self.switch_group(rbs[0])
             self.old_data = self.save_initial()
-            
+
         return grid
-    
+
 
     def math_convert(self, input, command, name, bric_id):
         """Data: rb, main_var, basic_op, b_cons, b_var, shift_op, s_cons, s_var
         and with Unsigned Math add: logical_op, l_cons, l_var"""
         #print "math_convert():", input, command
-        
+
         if (command == 'from_ids'):
             output= [input[0], win_data.vars_get_name(input[1]),
                      input[2], input[3], CONSTANT, input[5], input[6], CONSTANT]
             vars = [(0,4), (1,7)]
-            
+
             if (name == 'Maths Basic'):
                 output.extend([input[8], input[9], CONSTANT])
                 vars.append((2,10))
@@ -2681,7 +2700,7 @@ class Detail_win(wx.ScrolledWindow):
 
             output[1] = win_data.vars_get_id(output[1])
             win_data.vars_add_use(output[1])
-            
+
             vars = [(0,4), (1,7), (2,10)]
             for rb, index in vars:
                 if (output[0] == rb):
@@ -2698,7 +2717,7 @@ class Detail_win(wx.ScrolledWindow):
             for rb, index in vars:
                 if (input[0] == rb):
                     win_data.vars_rm_use(input[index])
-                    
+
         elif (command == 'gen_code'):
 ##            """Data: rb, main_var, basic_op, b_cons, b_var, shift_op, s_cons, s_var
 ##            and with Unsigned Math add: logical_op, l_cons, l_var"""
@@ -2711,7 +2730,7 @@ class Detail_win(wx.ScrolledWindow):
             code_lines = []
             size = win_data.vars_get_type_letter_from_name(input[1])
             code_lines.append("mov%s @%s %%_cpu:acc" % (size, input[1]))
-            
+
             if (input[0] == 0):
                 # Basic ops - plus, minus, mult, not
                 if (input[4] == CONSTANT):
@@ -2739,7 +2758,7 @@ class Detail_win(wx.ScrolledWindow):
                     code_lines.append("%s%s $%s" % (op_dict[input[5]], size, number))
                 else:
                     code_lines.append("%s%s @%s" % (op_dict[input[5]], size, input[7]))
-            
+
             else:
                 # logical ops - and, or, xor
                 if (input[10] == CONSTANT):
@@ -2749,7 +2768,7 @@ class Detail_win(wx.ScrolledWindow):
                     code_lines.append("%s $%s" % (op_dict[input[8]], number))
                 else:
                     code_lines.append("%s @%s" % (op_dict[input[8]], input[10]))
-            
+
 
             code_lines.append("mov%s %%_cpu:acc @%s" % (size, input[1]))
             return code_lines
@@ -2769,12 +2788,12 @@ class Detail_win(wx.ScrolledWindow):
         self.title.SetLabel("%s - properties:" % (self.name))
 
         grid = wx.GridBagSizer(5, 5)
-        
+
         rbs = self.make_radio_buttons(["ASCII","String", "Number", "Cursor", "Control"])
         controls = [LCD_CLEAR_SCREEN, LCD_SCROLL_LINE]
         ascii_vars = win_data.vars_names(U_NAME)
         other_vars = win_data.vars_names()
-        
+
         ascii = (self.make_text_ctrl("A"),
                  self.make_combo(ascii_vars, add_const=True))
 
@@ -2787,7 +2806,7 @@ class Detail_win(wx.ScrolledWindow):
         cursor = (self.make_text_ctrl("0"), self.make_text_ctrl("0"))
 
         control = (self.make_combo(controls),)
-                               
+
         self.data_order = (None,)+ascii+string+(number[1],)+cursor+control+string_cursor
         self.groups = ((rbs[0], ascii), (rbs[1], string+string_cursor), (rbs[2], (number[1],)),
                        (rbs[3], cursor), (rbs[4], control))
@@ -2799,7 +2818,7 @@ class Detail_win(wx.ScrolledWindow):
         self.make_headings(grid, (0,2))
 
         # BED - swapped order without changing _convert!
-        
+
         grid.Add(rbs[1], (1,0), flag=wx.ALIGN_CENTRE_VERTICAL)
         self.add_with_prompt(grid, (1,1), "String:", string)
         self.add_with_prompt(grid, (2,1), "Row / Column:", string_cursor)
@@ -2829,18 +2848,18 @@ class Detail_win(wx.ScrolledWindow):
             # BED because of swap above
             self.switch_group(rbs[1])
             self.old_data = self.save_initial()
-            
+
         return grid
 
 
     def lcd_convert(self, input, command, name, bric_id):
         """Data: radio_button, as-cons, as-var, string-cons,
         num-var, row-cons, col-cons, cmd-cons, row-string, col-string"""
-        
+
         if (command == 'from_ids'):
             output = [input[0], input[1], CONSTANT, input[3], NO_VAR, input[5],
                       input[6], input[7], input[8], input[9]]
-            
+
             if (input[0] == 0):
                 # ascii-var
                 if (input[2]):
@@ -2866,7 +2885,7 @@ class Detail_win(wx.ScrolledWindow):
 
             # Validate values - change notes to codes
             # ??????
-            
+
             # convert to ids
 
             if (output[0] == 0):
@@ -2904,7 +2923,7 @@ class Detail_win(wx.ScrolledWindow):
                     code_lines.append("movb $%s %%_devices:lcdbyte" % (character,))
                 else:
                     code_lines.append("movb @%s %%_devices:lcdbyte" % (input[2],))
-                    
+
                 code_lines.append("bitset 3 %_devices:action")
 
             elif (input[0] == 1):
@@ -2920,9 +2939,9 @@ class Detail_win(wx.ScrolledWindow):
                 num_str = win_data.conv_to_lcd_string(row*col, input[3])
                 if (num_str == None):
                     return []
-                
+
                 code_lines.append("DATA %s %s * %s" % (row,col,num_str))
-            
+
             elif (input[0] == 2):
                 # a number
                 if (input[4] == NO_VAR):
@@ -2963,7 +2982,7 @@ class Detail_win(wx.ScrolledWindow):
 
         else:
             raise SyntaxError, "Unknown command: " + command
-        
+
 # ---------------------------- LCD draw bric ----------------------------------------
 
     def lcddraw_details(self, bric_id, data):
@@ -2975,8 +2994,8 @@ class Detail_win(wx.ScrolledWindow):
         self.title.SetLabel("%s - properties:" % (self.name))
 
         grid = wx.GridBagSizer(5, 5)
-        
-        
+
+
 
         settings = ["Light", "Dark"]
         state = (self.make_combo(settings),)
@@ -3000,13 +3019,13 @@ class Detail_win(wx.ScrolledWindow):
             self.set_control_values(self.data_order, values)
         else:
             self.old_data = self.save_initial()
-            
+
         return grid
 
 
     def lcddraw_convert(self, input, command, name, bric_id):
         """Data: pixel, row-cons, col-cons"""
-        
+
         if (command == 'from_ids'):
             output = [input[0], input[1], input[2]]
             return output
@@ -3018,7 +3037,7 @@ class Detail_win(wx.ScrolledWindow):
                 if (not ctrl):
                     continue
                 output.append(ctrl.GetValue())
-                
+
             return output
 
         elif (command == 'rm_refs'):
@@ -3046,8 +3065,8 @@ class Detail_win(wx.ScrolledWindow):
 
         else:
             raise SyntaxError, "Unknown command: " + command
-        
-        
+
+
 # ---------------------------- Event/Wait/If/Loop Brics ----------------------------------------
 
     def get_event_modules(self):
@@ -3065,12 +3084,12 @@ class Detail_win(wx.ScrolledWindow):
             dtype = win_data.config_dtype_from_id(id)
 
         return EVENT_DICT[dtype]
-        
+
     def do_event_change(self, value):
         if (not self.event_choice):
             #print "No event choice yet"
             return
-        
+
         # Load up event choice
         events = self.get_event_choices(value)
         self.event_choice.Clear()
@@ -3106,17 +3125,17 @@ class Detail_win(wx.ScrolledWindow):
 
     def find_if_variant(self, module, event):
         events = self.get_event_choices(module)
-        
+
         for title, details, if_variant in events:
             if (title == event):
                 mod, bit = details
                 break
-            
+
         if (bit == -1):
             raise KeyError, "%s not a valid event in module %s" % (input[1], input[0])
-        
+
         return if_variant
-        
+
     def create_event_code(self, code_lines, module, event, label):
         match = None
         value = None
@@ -3124,7 +3143,7 @@ class Detail_win(wx.ScrolledWindow):
         mod = None
         clear_status = True
         events = self.get_event_choices(module)
-        
+
         for title, details, if_variant in events:
             if (title == event):
                 mod, bit = details
@@ -3158,15 +3177,15 @@ class Detail_win(wx.ScrolledWindow):
             match = int(event[8:])
         else:
             mask = 1 << int(bit)
-            
+
         code_lines.append("and $%s" % (mask,))
-        
+
         if (value != None):
             code_lines.append("cmpb $%s" % (value,))
             code_lines.append('brne %s' % (label,))
         else:
             code_lines.append("brz %s" % (label,))
-            
+
         # clear the bit
         if (clear_status):
             code_lines.append("bitclr $%s %s" % (bit, win_data.make_mod_reg(mod, 'status')))
@@ -3185,7 +3204,7 @@ class Detail_win(wx.ScrolledWindow):
         bit = -1
         mod = None
         events = self.get_event_choices(module)
-        
+
         for title, details, if_variant in events:
             if (title == event):
                 mod, bit = details
@@ -3212,7 +3231,7 @@ class Detail_win(wx.ScrolledWindow):
         else:
             mask = 1 << int(bit)
             value = mask
-            
+
         code_lines.append("BEGIN EVENT %s, %s, %s" % (win_data.make_mod_reg(mod, 'status'),
                                                           mask, value))
         code_lines.append("bitclr $%s %s" % (bit, win_data.make_mod_reg(mod, 'status')))
@@ -3220,7 +3239,7 @@ class Detail_win(wx.ScrolledWindow):
 
 
     def event_details(self, bric_id, data):
-        
+
         self.conv_func = self.event_convert
         self.dirty = False
         self.name = win_data.program().get_bric_name(bric_id)
@@ -3234,7 +3253,7 @@ class Detail_win(wx.ScrolledWindow):
         self.title.SetLabel("%s - properties:" % (self.name))
 
         grid = wx.GridBagSizer(5, 5)
-        
+
         modules = self.get_event_modules()
         mod_choice = self.make_combo(modules, size=(150,-1))
         self.event_choice = wx.ComboBox(self, -1, "", style=wx.CB_READONLY, size=(150,-1))
@@ -3261,19 +3280,19 @@ class Detail_win(wx.ScrolledWindow):
             mod_choice.SetValue(values[0])
             self.do_event_change(values[0])
             self.event_choice.SetValue(values[1])
-            
+
 
         else:
             mod_choice.SetValue(MOTHERBOARD)
             self.do_event_change(MOTHERBOARD)
             self.old_data = self.save_initial()
-            
+
         return grid
 
 
     def event_convert(self, input, command, name, bric_id):
         """Data: module, event  (note: module can be MOTHERBOARD)"""
-        
+
         if (command == 'from_ids'):
             output = [MOTHERBOARD, input[1]]
             if (input[0]):
@@ -3290,7 +3309,7 @@ class Detail_win(wx.ScrolledWindow):
 
             # Validate values - change notes to codes
             # ??????
-            
+
             # convert to ids
             if (output[0] == MOTHERBOARD):
                 output[0] = None
@@ -3310,7 +3329,7 @@ class Detail_win(wx.ScrolledWindow):
             self.create_event_header(code_lines, input[0], input[1])
 
             return code_lines
-        
+
         else:
             raise SyntaxError, "Unknown command: " + command
 
@@ -3326,7 +3345,7 @@ class Detail_win(wx.ScrolledWindow):
 
         values = None
         self.title.SetLabel("%s - properties:" % (self.name))
-        
+
         grid = wx.GridBagSizer(5, 5)
 
         rbs = self.make_radio_buttons(["Seconds pass", "Event happens"])
@@ -3336,7 +3355,7 @@ class Detail_win(wx.ScrolledWindow):
         self.event_choice = wx.ComboBox(self, -1, "", style=wx.CB_READONLY, size=(150,-1))
 
         self.Bind(wx.EVT_COMBOBOX, self.on_event_mod_change, mod_choice)
-        
+
         choices = win_data.vars_names(S_NAME)
         time = (self.make_text_ctrl("0"),
                 self.make_combo(choices, add_const=True))
@@ -3353,7 +3372,7 @@ class Detail_win(wx.ScrolledWindow):
 
         grid.Add(rbs[0], (1,0), flag=wx.ALIGN_CENTRE_VERTICAL)
         self.add_with_prompt(grid, (1,1), "", time)
-        
+
         grid.Add(rbs[1], (2,0), flag=wx.ALIGN_CENTRE_VERTICAL)
 
         self.add_with_prompt(grid, (2,1), "", (mod_choice,))
@@ -3377,14 +3396,14 @@ class Detail_win(wx.ScrolledWindow):
             self.do_event_change(MOTHERBOARD)
             self.switch_constants()
             self.switch_group(rbs[0])
-            
+
             self.old_data = self.save_initial()
-            
+
         return grid
 
     def wait_convert(self, input, command, name, bric_id):
         """Data: rb, time-cons, time-var, module, event  (note: module can be MOTHERBOARD)"""
-        
+
         if (command == 'from_ids'):
             output = [input[0], input[1], CONSTANT, MOTHERBOARD, input[4]]
 
@@ -3411,7 +3430,7 @@ class Detail_win(wx.ScrolledWindow):
 
             # Validate values - change notes to codes
             # ??????
-            
+
             # convert to ids
             if (output[0] == 0):
                 output[2] = win_data.vars_get_id(output[2])
@@ -3436,14 +3455,14 @@ class Detail_win(wx.ScrolledWindow):
         elif (command == 'gen_code'):
             #"""Data: rb, time-cons, time-var, module, event, in_event"""
             code_lines = []
-            
+
             if (input[0] == 0):
                 # pause for a time
                 if (input[5]):
                     time_buff = "_event_time_buffer"
                 else:
                     time_buff = "_main_time_buffer"
-                    
+
                 if (input[2] == CONSTANT):
                     #code_lines.append("movw $%s %%_timers:pause" % (input[1],))
                     time = win_data.conv_to_time(input[1])
@@ -3469,13 +3488,13 @@ class Detail_win(wx.ScrolledWindow):
                 self.create_event_code(code_lines, input[3], input[4], label)
 
             return code_lines
-        
+
         else:
             raise SyntaxError, "Unknown command: " + command
 
 
     # ----- Loop brics ---------------------------------
-    
+
     def loop_details(self, bric_id, data):
         self.conv_func = self.loop_convert
         self.dirty = False
@@ -3486,17 +3505,17 @@ class Detail_win(wx.ScrolledWindow):
 
         values = None
         self.title.SetLabel("%s - properties:" % (self.name))
-        
+
         grid = wx.GridBagSizer(5, 5)
 
         rbs = self.make_radio_buttons(["Test passes", "Event happens", "Loop forever"])
-        
+
         modules = self.get_event_modules()
         mod_choice = self.make_combo(modules, size=(150, -1))
         self.event_choice = wx.ComboBox(self, -1, "", style=wx.CB_READONLY, size=(150,-1))
 
         self.Bind(wx.EVT_COMBOBOX, self.on_event_mod_change, mod_choice)
-        
+
         choices = win_data.vars_names()
         ops = ['=', '!=', '<', '>', '<=', '>=']
 
@@ -3520,12 +3539,12 @@ class Detail_win(wx.ScrolledWindow):
 
         grid.Add(rbs[0], (2,0), flag=wx.ALIGN_CENTRE_VERTICAL)
         self.add_with_prompt(grid, (2,1), "", test)
-        
+
         grid.Add(rbs[1], (3,0), flag=wx.ALIGN_CENTRE_VERTICAL)
         self.add_with_prompt(grid, (3,1), "", (mod_choice,))
         self.add_with_prompt(grid, (3,2), "", (self.event_choice,))
 
-        
+
         self.bind_event_handlers()
 
         if (data):
@@ -3542,14 +3561,14 @@ class Detail_win(wx.ScrolledWindow):
             self.do_event_change(MOTHERBOARD)
             # special set to loop forever
             self.switch_group(rbs[2])
-            
+
             self.old_data = self.save_initial()
-            
+
         return grid
 
     def loop_convert(self, input, command, name, bric_id):
         """Data: rb, test-var, test-op, test-cons, module, event, in-event, end-of-loopif"""
-        
+
         if (command == 'from_ids'):
             output = [input[0], NO_VAR, input[2], input[3], MOTHERBOARD, input[5]]
 
@@ -3579,7 +3598,7 @@ class Detail_win(wx.ScrolledWindow):
 
             # Validate values - change notes to codes
             # ??????
-            
+
             # convert to ids
             if (output[0] == 0):
                 if (output[1] == NO_VAR):
@@ -3630,7 +3649,7 @@ class Detail_win(wx.ScrolledWindow):
                     number = win_data.conv_to_number(input[3], size)
                     if (number == None):
                         return []
-                    
+
                     code_lines.append("mov%s $%s %%_cpu:acc" % (size, number))
                     code_lines.append("cmp%s @%s" % (size, input[1]))
 
@@ -3639,7 +3658,7 @@ class Detail_win(wx.ScrolledWindow):
 
                     # Test failed, fall through to the body
                     #code_lines.append("bra %s" % (labels[0],))
-                    
+
             elif (input[0] == 1):
 
                 # if test fails then go to the body
@@ -3648,13 +3667,13 @@ class Detail_win(wx.ScrolledWindow):
                 # if it passes then exit the loop
                 code_lines.append("bra %s" % (labels[1],))
 
-                
+
             else:
                 # loop forever
                 code_lines.append("bra %s" % (labels[0],))
-            
+
             return code_lines
-        
+
         else:
             raise SyntaxError, "Unknown command: " + command
 
@@ -3671,17 +3690,17 @@ class Detail_win(wx.ScrolledWindow):
 
         values = None
         self.title.SetLabel("%s - properties:" % (self.name))
-        
+
         grid = wx.GridBagSizer(5, 5)
 
         rbs = self.make_radio_buttons(["Test passes", "Event happens"])
-        
+
         modules = self.get_event_modules()
         mod_choice = self.make_combo(modules, size=(150,-1))
         self.event_choice = wx.ComboBox(self, -1, "", style=wx.CB_READONLY, size=(150,-1))
 
         self.Bind(wx.EVT_COMBOBOX, self.on_event_mod_change, mod_choice)
-        
+
         choices = win_data.vars_names()
         ops = ['=', '!=', '<', '>', '<=', '>=']
 
@@ -3697,13 +3716,13 @@ class Detail_win(wx.ScrolledWindow):
         self.rbs = rbs
 
         self.cb_special = self.if_special_cb_change
-        
+
         grid.Add(wx.StaticText(self, -1, "Take the top (True) branch if:"), (0,1),
                  span=(1,2), flag=wx.ALIGN_LEFT)
 
         grid.Add(rbs[0], (1,0), flag=wx.ALIGN_CENTRE_VERTICAL)
         self.add_with_prompt(grid, (1,1), "", test)
-        
+
         grid.Add(rbs[1], (2,0), flag=wx.ALIGN_CENTRE_VERTICAL)
         self.add_with_prompt(grid, (2,1), "", (mod_choice,))
         self.add_with_prompt(grid, (2,2), "", (self.event_choice,))
@@ -3728,9 +3747,9 @@ class Detail_win(wx.ScrolledWindow):
             self.switch_group(rbs[0])
             win_data.program().set_bric_if_variant(bric_id, "var")
 
-            
+
             self.old_data = self.save_initial()
-            
+
         self.cb_special()
         return grid
 
@@ -3744,14 +3763,14 @@ class Detail_win(wx.ScrolledWindow):
             event = self.event_choice.GetValue()
             #print "Mod:", module, "Event:", event
             ifVar = self.find_if_variant(module, event)
-            
-        print "ifVar:", ifVar
+
+        #print "ifVar:", ifVar
         win_data.program().set_bric_if_variant(self.bricId, ifVar)
         win_data.force_redraw("pwork")
-    
+
     def if_convert(self, input, command, name, bric_id):
         """Data: rb, test-var, test-op, test-cons, module, event, in-event, end-of-loopif"""
-        
+
         if (command == 'from_ids'):
             output = [input[0], NO_VAR, input[2], input[3], MOTHERBOARD, input[5]]
 
@@ -3779,7 +3798,7 @@ class Detail_win(wx.ScrolledWindow):
 
             # Validate values - change notes to codes
             # ??????
-            
+
             # convert to ids
             if (output[0] == 0):
                 if (output[1] == NO_VAR):
@@ -3827,7 +3846,7 @@ class Detail_win(wx.ScrolledWindow):
                     number = win_data.conv_to_number(input[3], size)
                     if (number == None):
                         return []
-                    
+
                     code_lines.append("mov%s $%s %%_cpu:acc" % (size, number))
                     code_lines.append("cmp%s @%s" % (size, input[1]))
 
@@ -3837,20 +3856,18 @@ class Detail_win(wx.ScrolledWindow):
                     code_lines.append("bra %s" % (labels[1],))
 
                     win_data.program().set_bric_if_variant(bric_id, "var")
-                    
+
             else:
                 # check an event
-                
+
                 if_variant = self.create_event_code(code_lines, input[4], input[5], labels[1])
 
                 # test passed
                 code_lines.append("bra %s" % (labels[0],))
 
                 win_data.program().set_bric_if_variant(bric_id, if_variant)
-                
+
             return code_lines
-        
+
         else:
             raise SyntaxError, "Unknown command: " + command
-
-
