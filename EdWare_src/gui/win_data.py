@@ -89,6 +89,9 @@ class Persistent_data(object):
 tdata = Temporary_data()
 pdata = Persistent_data()
 
+unused_events_set = False
+unused_events = {}
+
 def dump():
     print "Data:"
     print "Pdata Version:", pdata.version
@@ -205,7 +208,21 @@ def loadEdisonAsJson(file_obj, strict):
         #dump()
         #pdata.program.dump()
 
+        # update the used events
+        unused_events_set = False;
+        
+def set_unused_events(events):
+    global unused_events
+    global unused_events_set
+    unused_events = events
+    unused_events_set = True
+    print
+    print "Set unused events:", events
+    print
 
+def get_unused_events():
+    return (unused_events_set, unused_events)
+    
 def load(file_obj, strict):
     global pdata
     program_version = pdata.version
@@ -635,20 +652,20 @@ def config_motor_pairs():
 
 def set_edison_configuration():
     config_clear()
-    config_add(0,"Line Tracker")
-    config_add(1, "LED")
-    config_add(3, "Motor A")
-    config_add(5, "IR Receiver")
-    config_add(6, "Sounder")
-    config_add(7, "IR Transmitter")
-    config_add(8, "Motor B")
-    config_add(11, "LED")
+    config_add(0,"Line Tracker")          # id=1
+    config_add(1, "LED")                  # id=2
+    config_add(3, "Motor A")              # id=3
+    config_add(5, "IR Receiver")          # id=4
+    config_add(6, "Sounder")              # id=5
+    config_add(7, "IR Transmitter")       # id=6
+    config_add(8, "Motor B")              # id=7
+    config_add(11, "LED")                 # id=8
 
-    config_change_name(3, "Right Motor")
-    config_change_name(8, "Left Motor")
+    config_change_name(3, "Right Motor")  # id=3
+    config_change_name(8, "Left Motor")   # id=7
 
-    config_change_name(1, "Right LED")
-    config_change_name(11, "Left LED")
+    config_change_name(1, "Right LED")    # id=2
+    config_change_name(11, "Left LED")    # id=8
 
     # Mark in use so that can dispense with saving this info
     # in JSON

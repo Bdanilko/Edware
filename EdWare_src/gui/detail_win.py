@@ -3096,6 +3096,9 @@ class Detail_win(wx.ScrolledWindow):
         for title, stuff, if_variant in events:
             if (title in self.bad_events):
                 continue
+            if (self.good_choices.has_key(value)):
+                if (title not in self.good_choices[value]):
+                    continue
             self.event_choice.Append(title)
         self.event_choice.SetSelection(0)
 
@@ -3237,7 +3240,63 @@ class Detail_win(wx.ScrolledWindow):
         code_lines.append("bitclr $%s %s" % (bit, win_data.make_mod_reg(mod, 'status')))
 
 
+    def get_used_events(self, selected_bric_id):
+        stream = 1                       # start at the first event
+        mod_events = []
+        while (stream < win_data.program().get_stream_count()):
+            stream_id = win_data.program().get_stream_id(stream)
+            bric_data = win_data.program().get_bric_data(stream_id)
+            if (stream_id != selected_bric_id):
+                # convert module id to name
+                if (bric_data[0]):
+                    mod_name = win_data.config_name_from_id(bric_data[0])
+                else:
+                    mod_name = MOTHERBOARD
+                mod_events.append((mod_name, bric_data[0], bric_data[1]))
+            stream += 1
+        print mod_events
+        return mod_events
 
+    def get_unused_events(self, selected_bric_id = None):
+        stream = 1                       # start at the first event
+        used_events = []
+        while (stream < win_data.program().get_stream_count()):
+            stream_id = win_data.program().get_stream_id(stream)
+            bric_data = win_data.program().get_bric_data(stream_id)
+            if (stream_id != selected_bric_id):
+                # convert module id to name
+                if (bric_data[0]):
+                    mod_name = win_data.config_name_from_id(bric_data[0])
+                else:
+                    mod_name = MOTHERBOARD
+                used_events.append((mod_name, bric_data[0], bric_data[1]))
+            stream += 1
+
+        modules = self.get_event_modules()
+        unused_events = {}
+        for m in modules:
+            mod_choices = []
+            choices = self.get_event_choices(m)
+            print m, choices
+            # now remove any that are an bad_events or used_events
+            for c in choices:
+                found = False
+                if (c[0] in self.bad_events):
+                    found = True
+                else:
+                    for um in used_events:
+                        if ((um[0] == m) and (um[2] == c[0])):
+                            #print "Found:", m, c[0]
+                            found = True
+                if (not found):
+                    mod_choices.append(c[0])
+
+            if (mod_choices):
+                unused_events[m] = mod_choices
+
+        #print unused_events
+        return unused_events
+    
     def event_details(self, bric_id, data):
 
         self.conv_func = self.event_convert
@@ -3249,12 +3308,14 @@ class Detail_win(wx.ScrolledWindow):
         if (not win_data.get_adv_mode()):
             self.bad_events.append("Serial Character")
 
+        self.good_choices = self.get_unused_events(bric_id)
+        
         values = None
         self.title.SetLabel("%s - properties:" % (self.name))
 
         grid = wx.GridBagSizer(5, 5)
 
-        modules = self.get_event_modules()
+        modules = self.good_choices.keys()
         mod_choice = self.make_combo(modules, size=(150,-1))
         self.event_choice = wx.ComboBox(self, -1, "", style=wx.CB_READONLY, size=(150,-1))
 
@@ -3283,16 +3344,17 @@ class Detail_win(wx.ScrolledWindow):
 
 
         else:
-            mod_choice.SetValue(MOTHERBOARD)
-            self.do_event_change(MOTHERBOARD)
+            mod_choice.SetValue(self.good_choices.keys()[0])
+            self.do_event_change(self.good_choices.keys()[0])
             self.old_data = self.save_initial()
 
+        win_data.set_unused_events(self.get_unused_events())
         return grid
 
 
     def event_convert(self, input, command, name, bric_id):
         """Data: module, event  (note: module can be MOTHERBOARD)"""
-
+        print "event_convert:", command
         if (command == 'from_ids'):
             output = [MOTHERBOARD, input[1]]
             if (input[0]):

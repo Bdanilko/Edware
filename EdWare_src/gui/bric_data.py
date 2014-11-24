@@ -388,6 +388,12 @@ def enable_check(enable_list):
         elif (etype == 'S'):
             if (not win_data.vars_defined('+/- 32767')):
                 return False
+        elif (etype == 'E'):
+            print '*** checking E ****'
+            (unused_events_set, unused_events) = win_data.get_unused_events()
+            print unused_events_set, unused_events
+            if (unused_events_set and len(unused_events) == 0):
+                return False
         else:
             raise SyntaxError, 'Unknown enable type: ' + etype
 
