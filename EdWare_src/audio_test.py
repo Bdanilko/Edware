@@ -249,7 +249,7 @@ def convert(hexString, outFilePath):
     while (preamble < 20):
         waveWriter.writeframes(createAudio(0))
         preamble += 1
-        
+
     while (index < len(hexString)):
         data = int(hexString[index:index+2], 16)
         # add start
@@ -350,4 +350,15 @@ def main(args):
 #####################################
 if __name__ == "__main__":
     main(sys.argv[1:])
+
+    # Used for creating audo files for the app development.
+    # Note that you have to disable the postfix in convert() when
+    # creating the following files.
+    #
+    # i = 0
+    # while (i < 256):
+    #     hexString = "%02x" % (i)
+    #     outputFilePath = "audio_%02x.wav" % (i)
+    #     convert(hexString, outputFilePath)
+    #     i += 1
     

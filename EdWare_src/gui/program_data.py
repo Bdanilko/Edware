@@ -42,6 +42,7 @@ class Bric(object):
         return self.prev_id[which]
 
     def dump(self):
+        print self
         print "Bric %d - p:%d, n:%d, p2:%d, n2:%d name:%s, if_var: %s, data:%s" % (self.id,
                                                                                    self.prev_id[0], self.next_id[0],
                                                                                    self.prev_id[1], self.next_id[1],

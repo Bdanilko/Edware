@@ -25,11 +25,13 @@
 
 
 import pickle
-import json
+import jsonpickle
 import os
 import os.path
 import string
 import sys
+import re
+import copy
 
 import wx
 import device_data
@@ -76,14 +78,14 @@ class Persistent_data(object):
         self.config_use = {}
         self.config_devices = {}
         self.config_orient = {}
-       
+
         self.variables = {}
         self.var_ids = {}
         self.var_use = {}
-       
+
         self.program = program_data.Program()
 
-       
+
 tdata = Temporary_data()
 pdata = Persistent_data()
 
@@ -110,16 +112,63 @@ def save(file_obj):
     pickle.dump(pdata, file_obj, 2)
     update_dirty(False)
 
-def saveJson(file_obj):
-    # Test the jason pickling
-    json.dump(pdata, json_file_obj)
     
+# change some of the strings in the JSON data to be easier for the Apps
+# (and to protect against changes in the class names)
+# "py/tuple"                                  <--> "Tuple"
+# "py/object":"gui.win_data.Persistent_data"  <--> "Object" : "Data"
+# "py/object:" "gui_program_data.Bric"        <--> "Object" : "Bric"
+# "py/object": "gui.program_data.Program"     <--> "Object" : "Program"
 
-def load(file_obj, strict):
+def convertPythonDataToJson(data):
+    step1 = re.sub(r'"py/tuple":', r'"Tuple":', data)
+    step2 = re.sub(r'"py/object": "gui.win_data.Persistent_data"', r'"Object": "Data"', step1)
+    step3 = re.sub(r'"py/object": "gui.program_data.Bric"', r'"Object": "Bric"', step2)
+    step4 = re.sub(r'"py/object": "gui.program_data.Program"', r'"Object": "Program"', step3)
+    return step4
+    
+def convertJsonToPythonData(json):
+    step1 = re.sub(r'"Tuple":', r'"py/tuple":', json)
+    step2 = re.sub(r'"Object": "Data"', r'"py/object": "gui.win_data.Persistent_data"', step1)
+    step3 = re.sub(r'"Object": "Bric"', r'"py/object": "gui.program_data.Bric"', step2)
+    step4 = re.sub(r'"Object": "Program"', r'"py/object": "gui.program_data.Program"', step3)
+    return step4
+
+def saveEdisonAsJson(file_obj):
+    # Grab a deepcopy as will be doing destructive changes
+    test = copy.deepcopy(pdata)
+    
+    # remove values that don't change as they can be reconstructed
+    del test.configuration
+    del test.config_ids
+    del test.config_use
+    del test.config_orient
+    del test.config_devices
+    del test.advanced_mode
+
+    encoding = jsonpickle.encode(test)
+    fileData = convertPythonDataToJson(encoding)
+    
+    file_obj.write(fileData)
+    update_dirty(False)
+
+def convertKeysToInts(dict):
+    fixed = {}
+    for k in dict:
+        fixed[int(k)] = dict[k]
+    return fixed
+
+def loadEdisonAsJson(file_obj, strict):
     global pdata
     program_version = pdata.version
-    test = pickle.load(file_obj)
+    data = file_obj.read()
     
+    jsonData = convertJsonToPythonData(data)
+    #print "jsonData:", jsonData
+    
+    test = jsonpickle.decode(jsonData)
+    #print "Decoded:", test
+
     if (strict and (test.version != pdata.version)):
         wx.MessageBox("Version of data in file '%s' doesn't match this version of Bricworks." % (file_obj.name,),
                       "Version Mismatch - can't load program",
@@ -133,12 +182,54 @@ def load(file_obj, strict):
                                    wx.OK | wx.CANCEL | wx.ICON_WARNING)
             if (result != wx.OK):
                 return
-        
+
+        # fixup the integer keys
+        #test.configuration = convertKeysToInts(test.configuration)
+        #test.config_ids = convertKeysToInts(test.config_ids)
+        #test.config_use = convertKeysToInts(test.config_use)
+        test.program.brics = convertKeysToInts(test.program.brics)
+        test.var_use = convertKeysToInts(test.var_use)
+
+
         pdata = test
+        pdata.advanced_mode = False
         pdata.version = program_version
+        pdata.configuration = {}
+        pdata.config_ids = {}
+        pdata.config_use = {}
+        pdata.config_orient = {}
+        pdata.config_devices = {}
+        set_edison_configuration()
+
         update_dirty(False)
         #dump()
         #pdata.program.dump()
+
+
+def load(file_obj, strict):
+    global pdata
+    program_version = pdata.version
+    test = pickle.load(file_obj)
+
+    if (strict and (test.version != pdata.version)):
+        wx.MessageBox("Version of data in file '%s' doesn't match this version of Bricworks." % (file_obj.name,),
+                      "Version Mismatch - can't load program",
+                      wx.OK | wx.ICON_ERROR)
+    else:
+        if (test.version != pdata.version):
+            result = wx.MessageBox("Version of data in file '%s' " % (file_obj.name,) +\
+                                   "doesn't match this version of Bricworks. "  +\
+                                   "You may try anyway, or CANCEL to abort the file open.",
+                                   "Version Mismatch Warning",
+                                   wx.OK | wx.CANCEL | wx.ICON_WARNING)
+            if (result != wx.OK):
+                return
+
+        pdata = test
+
+        update_dirty(False)
+        dump()
+        pdata.program.dump()
 
 def is_data_dirty():
     return tdata.dirty
@@ -194,22 +285,22 @@ def force_redraw(name=None):
 
 def get_main_window_type():
     return 'program'
-    
+
 # def switch_to_config():
 #     if (not tdata.program_mode and not tdata.first_mode):
 #         return
-    
+
 #     tdata.program_mode = False
 #     tdata.first_mode = False
-    
+
 #     sp = tdata.windows['splitter1']
 #     sp3 = tdata.windows['splitter3']
-    
+
 #     if (sp.GetWindow1() == tdata.windows['ppallete']):
 #         sp.ReplaceWindow(tdata.windows['ppallete'], tdata.windows['cpallete'])
 #     if (sp3.GetWindow1() == tdata.windows['pwork']):
 #         sp3.ReplaceWindow(tdata.windows['pwork'], tdata.windows['cwork'])
-        
+
 #     tdata.windows['pwork'].Hide()
 #     tdata.windows['cwork'].Show()
 #     tdata.windows['ppallete'].Hide()
@@ -223,7 +314,7 @@ def get_main_window_type():
 
 #     tdata.program_mode = True
 #     tdata.first_mode = False
-    
+
 #     sp = tdata.windows['splitter1']
 #     sp3 = tdata.windows['splitter3']
 
@@ -231,7 +322,7 @@ def get_main_window_type():
 #         sp.ReplaceWindow(tdata.windows['cpallete'], tdata.windows['ppallete'])
 #     if (sp3.GetWindow1() == tdata.windows['cwork']):
 #         sp3.ReplaceWindow(tdata.windows['cwork'], tdata.windows['pwork'])
-        
+
 #     tdata.windows['pwork'].Show()
 #     tdata.windows['cwork'].Hide()
 #     tdata.windows['ppallete'].Show()
@@ -241,7 +332,7 @@ def get_main_window_type():
 
 def inform_pallete_of_frame_rect(rect):
     tdata.windows['ppallete'].update_frame_rect(rect)
-    
+
 def inform_work_of_centre_pt(pt, name, drag_image):
     return tdata.windows['pwork'].update_move_centre_pt(pt, name, drag_image)
 
@@ -255,7 +346,7 @@ def inform_help_win(help_text):
 
 def add_variable():
     tdata.windows['var'].add_variable()
-    
+
 # ---------------------------------------------------------
 # Configuration data
 
@@ -286,19 +377,19 @@ def config_add(location, dtype):
         pdata.configuration[location] = (dtype, name)
         pdata.config_ids[location] = id
         pdata.config_use[id] = (location, 0)
-        
+
         pdata.config_devices[dtype] += 1
 
         # Orientation is needed for the corners
         # BED - do a pop-up for this info
         if (location in [1, 4, 7, 10] and (dtype == "Motor A" or dtype == "Motor B")):
             pdata.config_orient[location] = get_orientation(location)
-            
+
         config_dirty(True)
         return True
     else:
         return False
-        
+
 def config_new_name(dtype):
     num = 1
     for loc in pdata.configuration:
@@ -372,15 +463,15 @@ def config_move_to_trash():
     id = pdata.config_ids[tdata.config_move_old_loc]
     if (config_in_use(id)):
         return False
-    
+
     pdata.config_devices[tdata.config_move_data[0]] -= 1
     del pdata.config_ids[tdata.config_move_old_loc]
     del pdata.config_use[id]
-    
+
     # Orientation data is no longer needed for this location
     if (tdata.config_move_old_loc in pdata.config_orient):
         del pdata.config_orient[tdata.config_move_old_loc]
-        
+
     tdata.config_move_old_loc = -1
     tdata.config_move_data = None
 
@@ -403,17 +494,17 @@ def config_move_end(new_loc):
     pdata.config_ids[new_loc] = id
     old_loc, ref_cnt = pdata.config_use[id]
     pdata.config_use[id] = (new_loc, ref_cnt)
-    
+
     # Orientation data is no longer needed for this location
     if (tdata.config_move_old_loc in pdata.config_orient):
         del pdata.config_orient[tdata.config_move_old_loc]
-        
+
     # Orientation is needed for the corners
     # BED - do a pop-up for this info
     dtype = pdata.configuration[new_loc][0]
     if (new_loc in [1, 4, 7, 10] and (dtype == "Motor A" or dtype == "Motor B")):
         pdata.config_orient[new_loc] = get_orientation(new_loc)
-            
+
     tdata.config_move_old_loc = -1
     tdata.config_move_data = None
     config_dirty(True)
@@ -438,7 +529,7 @@ def config_in_use(id):
         return True
     else:
         return False
-            
+
 def config_add_use(id):
     loc, ref_cnt = pdata.config_use[id]
     pdata.config_use[id] = (loc, ref_cnt+1)
@@ -446,6 +537,9 @@ def config_add_use(id):
 
 
 def config_rm_use(id):
+    if (get_edison_mode()):
+        return
+
     loc, ref_cnt = pdata.config_use[id]
     ref_cnt -= 1
     if (ref_cnt <= 0):
@@ -454,7 +548,7 @@ def config_rm_use(id):
     pdata.config_use[id] = (loc, ref_cnt)
     config_dirty(True)
 
-    
+
 def config_check(location, dtype):
     # not valid if occupied, second half of a wheel or tracker and loc not 0
     prev_loc = location - 1
@@ -472,7 +566,7 @@ def config_check(location, dtype):
         result = False
     elif (dtype == "Line Tracker" and location != 0):
         result = False
-##    *BED* -- motor can go at 11&0 so this is OK 
+##    *BED* -- motor can go at 11&0 so this is OK
 ##    elif ((location == 11) and
 ##          (dtype == "Motor A" or dtype == "Motor B")):
 ##        result = False
@@ -486,12 +580,12 @@ def config_check(location, dtype):
     elif ((dtype == "Sounder") and (pdata.config_devices[dtype] > 0) and  (tdata.config_move_old_loc == -1)):
         # can only have 1 sounder, unless we are currently moving the sounder
         result = False
-    
+
     else:
         result = True
 
     return result
-            
+
 
 def config_name_already_used(loc, name):
     for l in pdata.configuration:
@@ -518,7 +612,7 @@ def config_device_names(dtype):
 
 def config_motor_pairs():
     pairs = []
-    
+
     easy = ((2,9), (3, 8), (5, 0), (6, 11))
     for loc1, loc2 in easy:
         type1, name1 = config_get(loc1)
@@ -536,8 +630,36 @@ def config_motor_pairs():
             if ((type2 == 'Motor A' or type2 == 'Motor B') and
                 config_orient_from_loc(loc2) == or2):
                 pairs.append(name1+'+'+name2)
-        
+
     return pairs
+
+def set_edison_configuration():
+    config_clear()
+    config_add(0,"Line Tracker")
+    config_add(1, "LED")
+    config_add(3, "Motor A")
+    config_add(5, "IR Receiver")
+    config_add(6, "Sounder")
+    config_add(7, "IR Transmitter")
+    config_add(8, "Motor B")
+    config_add(11, "LED")
+
+    config_change_name(3, "Right Motor")
+    config_change_name(8, "Left Motor")
+
+    config_change_name(1, "Right LED")
+    config_change_name(11, "Left LED")
+
+    # Mark in use so that can dispense with saving this info
+    # in JSON
+    config_add_use(config_get_id(0))
+    config_add_use(config_get_id(1))
+    config_add_use(config_get_id(3))
+    config_add_use(config_get_id(5))
+    config_add_use(config_get_id(6))
+    config_add_use(config_get_id(7))
+    config_add_use(config_get_id(8))
+    config_add_use(config_get_id(11))
 
 # ---------------------------------------------------------
 # Variable data
@@ -563,7 +685,7 @@ def vars_new_id():
         return max(pdata.var_use.keys()) + 1
     else:
         return 1
-    
+
 def vars_remove(name):
     if (vars_used_in_program(name)):
         return False
@@ -586,7 +708,7 @@ def vars_change(old_name, new_name, new_type, new_length, new_initial):
         dump, ref_count = pdata.var_use[id]
         pdata.var_use[id] = (new_name, ref_count)
         del pdata.variables[old_name]
-        
+
     pdata.variables[new_name] = (new_type, new_length, new_initial)
     update_dirty(True)
     force_redraw('ppallete')
@@ -636,7 +758,7 @@ def vars_split_initial(in_str):
         comps.append(cur)
 
     return comps
-                
+
 def vars_get_id(name):
     if (name in pdata.var_ids):
         return pdata.var_ids[name]
@@ -673,7 +795,7 @@ def vars_in_use(id):
         return True
     else:
         return False
-            
+
 def vars_add_use(id):
     if (id):
         name, ref_cnt = pdata.var_use[id]
@@ -697,19 +819,19 @@ def vars_used_in_program(name):
 
 def vars_no_room_left(vtype, vlen):
     vars_count = len(vars_names(vtype))
-    
+
     if (get_adv_mode()):
         limits = var_limits[1]
     else:
         limits = var_limits[0]
-    
+
     if (vtype == V_TYPES[0]):
         if (vars_count >= limits[0]):
             return True
     else:
         if (vars_count >= limits[1]):
             return True
-        
+
     return False
 
 def vars_stats():
@@ -722,12 +844,12 @@ def vars_stats():
               len(vars_names(V_TYPES[0])))
 
     return (V_TYPES, counts, limits)
-    
+
 
 def vars_defined(vtype = None):
     if (not vtype):
        return len(pdata.variables) > 0
-   
+
     for name in pdata.variables:
         if (pdata.variables[name][0] == vtype):
             return True
@@ -740,7 +862,7 @@ def vars_names(vtype = None):
             names.append(name)
 
     return names
-    
+
 # ---------------------------------------------------------
 # Program data
 
@@ -766,7 +888,7 @@ def vars_names(vtype = None):
 
 def remove_bric_refs(name, old_data):
     tdata.windows['detail'].remove_bric_refs(name, old_data)
-    
+
 def generate_code(bric_id):
     return tdata.windows['detail'].generate_code(bric_id)
 
@@ -777,7 +899,7 @@ def make_mod_reg(mod_name, reg_name):
 def constant_error(err_string):
     err_string = "Restoring properties to previous values because:\n\n" + err_string
     wx.MessageBox(err_string, caption="Error in constant", style=wx.ICON_ERROR | wx.OK)
-    
+
 def conv_to_time(string_in):
     string_in = string_in.strip()
     try:
@@ -801,16 +923,16 @@ def conv_to_tx_char(string_in):
             string_in = ' '
         else:
             string_in = string_in.strip()
-        
+
     if (len(string_in) == 1):
         value = ord(string_in[0])
-        
+
     elif ((len(string_in) == 4) and
           string_in.startswith("0x") and
           (string_in[2] in string.hexdigits) and
           (string_in[3] in string.hexdigits)):
         value = int(string_in[2:], 16)
-        
+
     else:
         constant_error("Invalid transmit character: %s. Must be a character or 0xhh where h is a hex digit." % (string_in,))
         value = None
@@ -823,7 +945,7 @@ def conv_to_lcd_char(string_in):
             string_in = ' '
         else:
             string_in = string_in.strip()
-        
+
     if (len(string_in) == 1):
         value = ord(string_in[0].upper())
 
@@ -834,7 +956,7 @@ def conv_to_lcd_char(string_in):
     else:
         constant_error("There must be exactly one character")
         value = None
-        
+
     return value
 
 def conv_to_lcd_string(start, string_in):
@@ -843,12 +965,12 @@ def conv_to_lcd_string(start, string_in):
             string_in = ' '
         else:
             string_in = string_in.strip()
-            
+
     string_in = string_in.upper()
     if (len(string_in) + start > 84):
         constant_error("LCD string would overflow the LCD screen")
         return None
-    
+
     data = ""
     for i in range(len(string_in)):
         if (string_in[i] < ' ' or string_in[i]>'Z'):
@@ -859,23 +981,23 @@ def conv_to_lcd_string(start, string_in):
             data += "%d " % (ord(string_in[i]),)
 
     return data
-        
-            
+
+
 
 def conv_to_number(string_in, n_type, n_min=None, n_max=None):
     number = None
     if (len(string_in)<1):
         constant_error("Empty number")
         return None
-    
+
     if (n_type == "b"):
         if (string_in.isdigit()):
             number = int(string_in)
-            
+
         if (number != None and (number < 0 or number >255)):
             constant_error("Number %d is outside of the range: 0 -> 255" % (number,))
             return None
-            
+
     elif (n_type == "w"):
         if (string_in[0] == '-'):
             if (string_in[1:].isdigit()):
@@ -886,7 +1008,7 @@ def conv_to_number(string_in, n_type, n_min=None, n_max=None):
         else:
             if (string_in.isdigit()):
                 number = int(string_in)
-                
+
         if (number != None and (number < -32767 or number > 32767)):
             constant_error("Number %d is outside of the range: -32767 -> +32767" % (number,))
             return None
@@ -895,19 +1017,19 @@ def conv_to_number(string_in, n_type, n_min=None, n_max=None):
 
     if (number == None):
         constant_error("Invalid number: "+string_in)
-        
+
     if (number != None and n_min != None):
         if (number < n_min):
             constant_error("Number %s is less than minimum %s" % (number, n_min))
             number = None
-            
+
     if (number != None and n_max != None):
         if (number > n_max):
             constant_error("Number %s is greater than maximum %s" % (number, n_max))
             number = None
 
     return number
-    
+
 def make_label(bric_id, index):
     return ":Bric%d_%d" % (bric_id, index)
 
@@ -915,7 +1037,7 @@ def make_labels(bric_id, start, number):
     result = []
     for i in range(number):
         result.append(make_label(bric_id, start+i))
-        
+
     return result
 
 def make_if_labels(bric_id):
@@ -956,7 +1078,7 @@ def get_code_stream(bric_id, end_bric, in_event, code_lines):
         #print "Code_lines:", code_lines
         #print "Window:", tdata.windows['detail']
         code_lines.extend(tdata.windows['detail'].generate_code(bric_id, in_event))
-    
+
         if (bric_name == "If"):
             true_path = pdata.program.get_next_id(bric_id, 0)
             false_path = pdata.program.get_next_id(bric_id, 1)
@@ -979,19 +1101,19 @@ def get_code_stream(bric_id, end_bric, in_event, code_lines):
         elif (bric_name == "Loop"):
             true_path = pdata.program.get_next_id(bric_id, 0)
             labels = make_loop_labels(bric_id)
-            
+
             # start label (labels[2]) has been placed by loop bric
 
             # Loop body
             code_lines.append(labels[0])
             get_code_stream(true_path, bric_id+1, in_event, code_lines)
-            
+
             # branch to the beginning and add the label for the end
             code_lines.append("bra %s" % (labels[2],))
             code_lines.append("%s" % (labels[1],))
-            
+
             bric_id += 1
-            
+
         bric_id = pdata.program.get_next_id(bric_id, 0)
 
 
@@ -1019,28 +1141,28 @@ def add_header_code(code_lines):
                                                      config_name_from_id(mod_id).replace(' ', '_')))
 
     code_lines.append("BEGIN MAIN")
-            
+
     # Have one extra for the null terminator
     code_lines.append("DATB _tune_store 0 17")
 
     code_lines.append("DATB _main_time_buffer * 8")
     code_lines.append("DATB _event_time_buffer * 8")
-    
-    
+
+
     for v_name in vars_names():
         if (vars_used_in_program(v_name)):
             v_type = vars_get_type_letter_from_name(v_name).upper()
             v_init = vars_get_initial_from_name(v_name)
             code_lines.append("DAT%s %s * 1 %s" % (v_type, v_name.replace(' ', '_'), v_init))
 
-    
-    
+
+
 def get_all_code(file_handle=None):
     code_lines = []
     # place devices, version, etc
     # put in buffers for timers
     add_header_code(code_lines)
-    
+
     stream = 0
     while (stream < pdata.program.get_stream_count()):
         if (stream > 0):
@@ -1048,7 +1170,7 @@ def get_all_code(file_handle=None):
             in_event = True
         else:
             in_event = False
-        
+
         get_code_stream(pdata.program.get_stream_id(stream), -1, in_event, code_lines)
         code_lines.append("stop")
         if (not in_event):
@@ -1057,14 +1179,14 @@ def get_all_code(file_handle=None):
             code_lines.append("END EVENT")
 
         stream += 1
-        
+
     code_lines.append("FINISH")
     if (not file_handle):
         print "\nCode:\n", code_lines
     else:
         for line in code_lines:
             file_handle.write(line+'\n')
-    
+
 # ------------------- Selection -----------------------------------
 #
 
@@ -1101,8 +1223,8 @@ def selection_take(win_name, name_data, pos_data):
 
     else:
         tdata.windows['detail'].set_details("", -1)
-        
-        
+
+
     tdata.selection_win = tdata.windows[win_name]
     tdata.selection_win_name = win_name
     tdata.selection_name = name_data
@@ -1127,12 +1249,12 @@ def selection_drop_all():
     # update help
     tdata.windows['help'].set_text("")
     tdata.windows['detail'].set_details("", -1)
-        
+
     if (last_win):
         # Refresh the old window so that it updates the lack of a selection
         last_win.Refresh()
 
-        
+
 def selection_check(win_name, name_data, pos_data):
     if ((tdata.selection_win_name == win_name) and
         (not name_data or (tdata.selection_name == name_data)) and
@@ -1174,16 +1296,16 @@ def status_dirty(dirty=True):
     global status_dirty_store
     status_dirty_store = dirty
     status_file(status_file_store)
-        
+
 def status_file(file_name):
     global status_file_store
     status_file_store = file_name
-    
+
     if (status_dirty_store):
         mod = "*"
     else:
         mod = " "
-    
+
     tdata.windows['status'].SetStatusText("%s File: %s" % (mod, file_name), 2)
 
 def status_space(used, total):
@@ -1198,14 +1320,14 @@ def enabled_on_pallete(win_name, name_data):
         return True
     else:
         return False
-    
+
 # -------------------------- Orientation dialog ---------------------------------
 
 def get_orientation(location):
     message = ""
     message += "You are placing a motor at the (%d, %d) corner.\n" % (location, location+1)
     message += "Do you want the corner piece around the corner (at location %d)?\n" % (location+1,)
-    
+
     result = wx.MessageBox(message, caption="Corner motor orientation.", style=wx.YES_NO | wx.ICON_QUESTION)
     if (result == wx.YES):
         return 1
@@ -1216,10 +1338,9 @@ def get_orientation(location):
 def get_ok_to_delete(drop_type):
     message = "Do you want to delete the "+drop_type+" icon?\n"
     #message += "If you press YES the "+drop_type+" will be deleted, NO cancels the delete"
-    
+
     result = wx.MessageBox(message, caption="Delete check", style=wx.YES_NO | wx.ICON_QUESTION)
     if (result == wx.YES):
         return True
     else:
         return False
- 

@@ -85,10 +85,10 @@ class Bricworks_frame(wx.Frame):
 ##        splash_bmap = wx.Bitmap("gui/devices/motherboard.png", wx.BITMAP_TYPE_ANY)
 ##        wx.SplashScreen(splash_bmap, wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT, 2000, self, -1)
 ##        wx.Yield()
-        
+
         self.save_path = os.getcwd()
         self.save_file = ""
-        
+
         self.splitter_done = False
         self.splitter_attempts = 0
 
@@ -118,7 +118,7 @@ class Bricworks_frame(wx.Frame):
 ##                           ("&USB Device", "Set the usb device for downloading", self.menu_usb_device),
 ##                           ("", "", ""),
 #                           ("+&Display toolbar", "Display the toolbar under the menu", self.menu_enable_toolbar),
-                           
+
 ##                           ("", "", ""),
 ##                           ("+&Strict version check", "Make sure saved programs are readable by Bricworks",
 ##                            self.menu_strict_versions),
@@ -135,7 +135,7 @@ class Bricworks_frame(wx.Frame):
                           ("&Help",
                            ("&Help", "Display help for Edison EdWare", self.menu_help),
                            ("&About", "Display information about Edison EdWare", self.menu_about)))
-                         
+
 
         self.init_status_bar()
         self.init_menu()
@@ -154,8 +154,8 @@ class Bricworks_frame(wx.Frame):
         #     self.dockicon.SetIcon(icon)
         # else:
         #     self.SetIcon(icon)
-        
-        
+
+
 
         # get data
         gui.device_data.load_devices()
@@ -166,7 +166,7 @@ class Bricworks_frame(wx.Frame):
         self.splitters.append(wx.SplitterWindow(self, -1, style= wx.SP_3D))                # between pallete and work
         self.splitters.append(wx.SplitterWindow(self.splitters[0], -1, style=wx.SP_3D))
         #self.splitters.append(wx.SplitterWindow(self.splitters[1], -1, style=wx.SP_3D))
-        
+
         pp = gui.program_pallete.Program_pallete(self.splitters[0])       # pallete of brics
         #cp = gui.config_pallete.Config_pallete(self.splitters[0])         # pallete of components
 
@@ -178,7 +178,7 @@ class Bricworks_frame(wx.Frame):
 
         self.splitters[1].SplitHorizontally(pwork, p22, 120)
         self.splitters[0].SplitVertically(pp, self.splitters[1], 200)
-        
+
         # Don't allow losing a window
         for s in self.splitters:
             s.SetMinimumPaneSize(20)
@@ -197,9 +197,9 @@ class Bricworks_frame(wx.Frame):
 
         # set up for program
         gui.win_data.verify_registry()
-        
+
         gui.win_data.set_zoom(1.0)
- 
+
         # get the last session and apply those values
         self.session_load()
 
@@ -227,7 +227,7 @@ class Bricworks_frame(wx.Frame):
 
         #id = self.menu_bar.FindMenuItem("&Settings", "&Advanced mode")
         #self.menu_bar.FindItemById(id).Check(False)
-        
+
         gui.win_data.set_adv_mode(False)
 
 
@@ -250,22 +250,7 @@ class Bricworks_frame(wx.Frame):
         gui.win_data.config_change_name(10, "LEFT_LED")
 
     def set_edison_modules(self):
-        gui.win_data.config_clear()
-        gui.win_data.config_add(0,"Line Tracker")
-        gui.win_data.config_add(1, "LED")
-        gui.win_data.config_add(3, "Motor A")
-        gui.win_data.config_add(5, "IR Receiver")
-        gui.win_data.config_add(6, "Sounder")
-        gui.win_data.config_add(7, "IR Transmitter")
-        gui.win_data.config_add(8, "Motor B")
-        gui.win_data.config_add(11, "LED")
-
-        gui.win_data.config_change_name(3, "Right Motor")
-        gui.win_data.config_change_name(8, "Left Motor")
-        
-        gui.win_data.config_change_name(1, "Right LED")
-        gui.win_data.config_change_name(11, "Left LED")
-
+        gui.win_data.set_edison_configuration()
 
     def set_adv_mode(self):
         # advanced mode
@@ -309,12 +294,12 @@ class Bricworks_frame(wx.Frame):
 ##        id = self.menu_bar.FindMenuItem("&View", "Zoom - &Smaller")
 ##        self.menu_bar.FindItemById(id).Enable(True)
         #self.zoom_combo_box.Enable(True)
-        
+
         # id = self.menu_bar.FindMenuItem("&View", "&Program view")
         # self.menu_bar.FindItemById(id).Check(True)
         # self.mode_combo_box.SetValue("Program")
-        
-        
+
+
     def session_load(self):
         global sdata
         global sdata_changed
@@ -327,7 +312,7 @@ class Bricworks_frame(wx.Frame):
                 sdata = test
             elif (test.sdata_version == 3):
                 sdata.convert_from_3(test)
-        
+
         #self.save_path = sdata.save_path
         #self.save_file = sdata.save_file
 
@@ -375,7 +360,7 @@ class Bricworks_frame(wx.Frame):
         # else:
         #     self.set_module_view()
         #     gui.win_data.switch_to_config()
-            
+
         self.change_dirty(False)
         sdata_changed = False
 
@@ -385,10 +370,10 @@ class Bricworks_frame(wx.Frame):
         cdata = Session_data()
         cdata.win_size = self.GetSize()
         cdata.win_pos = self.GetPosition()
-        
+
         for i in range(len(self.splitters)):
             cdata.sashes[i] = self.splitters[i].GetSashPosition()
-        
+
         #cdata.save_path = self.save_path
         #cdata.save_file = self.save_file
         cdata.main_window = gui.win_data.get_main_window_type()
@@ -412,7 +397,7 @@ class Bricworks_frame(wx.Frame):
 
     def on_move(self, event):
         self.on_size(event)
-        
+
     def on_size(self, event):
         # send the new size to the program pallete
         size = self.GetClientSize()
@@ -422,7 +407,7 @@ class Bricworks_frame(wx.Frame):
         rect = wx.Rect(upper_left[0], upper_left[1], size[0], size[1])
         #print rect
         gui.win_data.inform_pallete_of_frame_rect(rect)
-        
+
         event.Skip()
 
     def on_idle(self, event):
@@ -444,7 +429,7 @@ class Bricworks_frame(wx.Frame):
 
     def inform_work_rect(self, rect):
         gui.win_data.inform_pallete_of_work_rect(rect)
-        
+
     def init_status_bar(self):
         self.status_bar = self.CreateStatusBar()
         self.status_bar.SetFieldsCount(3)
@@ -467,7 +452,7 @@ class Bricworks_frame(wx.Frame):
         self.menu_bar.FindItemById(save_id).Enable(dirty)
         if (not dirty):
             gui.win_data.update_dirty(False)
-            
+
 
     def init_menu_items(self, items):
         menu = wx.Menu()
@@ -487,11 +472,11 @@ class Bricworks_frame(wx.Frame):
                     else:
                         id = -1
                     menu_item = menu.Append(id, label, status)
-                    
+
                 self.Bind(wx.EVT_MENU, handler, menu_item)
-                
+
         return menu
-        
+
 
     def init_tool_bar(self):
         self.tool_bar = self.CreateToolBar()
@@ -506,7 +491,7 @@ class Bricworks_frame(wx.Frame):
 
         self.zoom_id = wx.NewId()
         self.zoom_combo_box = wx.ComboBox(self.tool_bar, self.zoom_id, "100%",
-                                          choices = ["50%", "60%", "70%", "80%", "90%", 
+                                          choices = ["50%", "60%", "70%", "80%", "90%",
                                                      "100%", "120%", "150%"], size=(100, -1))
         self.tool_bar.AddControl(wx.StaticText(self.tool_bar, -1, " Zoom "))
         self.tool_bar.AddControl(self.zoom_combo_box)
@@ -523,16 +508,16 @@ class Bricworks_frame(wx.Frame):
         self.add_prog_button = wx.Button(self.tool_bar, self.add_prog_id, "Program Edison", size=(140,-1))
         self.tool_bar.AddControl(self.add_prog_button)
         self.Bind(wx.EVT_BUTTON, self.on_program_button, id=self.add_prog_id)
-        
 
-        
+
+
         self.tool_bar.Realize()
         # start it on
         self.tool_bar.Show()
-        
+
         #id = self.menu_bar.FindMenuItem("&Settings", "Display toolbar")
         #self.menu_bar.FindItemById(id).Check(True)
-    
+
     def on_change_mode(self, event):
         new_mode = event.GetString().lower()
         if (new_mode == "program"):
@@ -563,7 +548,7 @@ class Bricworks_frame(wx.Frame):
         dialog = gui.downloader.audio_downloader("", "Download over audio")
         result = dialog.ShowModal()
         dialog.Destroy()
-    
+
     def menu_new_edison(self, event):
         gui.win_data.selection_drop_all()
         if (self.handle_unsaved_changes("Unsaved program.")):
@@ -575,35 +560,43 @@ class Bricworks_frame(wx.Frame):
             gui.win_data.status_file(self.save_file)
             gui.win_data.make_var_and_config_update()
             self.Refresh()
-            
+
     def menu_open(self, event):
         gui.win_data.selection_drop_all()
         if (not self.handle_unsaved_changes("Unsaved program.")):
             return
         gui.win_data.clear_pdata()
         load_path = wx.FileSelector("Open program", default_path=self.save_path,
-                                    wildcard="EdWare files (*.mbw)|*.mbw|All files (*.*)|*.*",
+                                    wildcard="EdWare files (*.edw)|*.edw|All files (*.*)|*.*",
                                     flags=wx.OPEN)
 
         if (load_path):
             self.load_existing_path(load_path)
 
-            
+
     def load_existing_path(self, load_path):
         gui.win_data.selection_drop_all()
         #print "Load_path", load_path
         if (not os.path.isfile(load_path)):
-            
+
             wx.MessageBox("Can't open the file: %s" % (load_path,),
                           "Error while opening program.", wx.OK | wx.ICON_ERROR)
         else:
             gui.win_data.clear_pdata()
+            (path, ext) = os.path.splitext(load_path)
             try:
                 fh = file(load_path, 'rb')
-                gui.win_data.load(fh, sdata.strict_versions)
+                # if older 'mbw' file then use python un-pickling, else use JSON
+                if (ext.lower() == ".mbw"):
+                    gui.win_data.load(fh, sdata.strict_versions)
+                else:
+                    # expect all other files will be JSON
+                    gui.win_data.loadEdisonAsJson(fh, sdata.strict_versions)
                 fh.close()
-                
-                # remember the path and file
+
+                # remember the path and file -- change to .edw if not already
+                if (ext.lower() != ".edw"):
+                    load_path = path + ".edw"
                 self.save_path, self.save_file = os.path.split(load_path)
                 gui.win_data.status_file(self.save_file)
 
@@ -640,7 +633,7 @@ class Bricworks_frame(wx.Frame):
             self.save_path, self.save_file = os.path.split(save_path)
             gui.win_data.status_file(self.save_file)
             self.program_save(self.save_path, self.save_file)
-    
+
     def menu_exit(self, event):
         gui.win_data.selection_drop_all()
         if (self.handle_unsaved_changes("Exiting with a modified program.")):
@@ -679,29 +672,31 @@ class Bricworks_frame(wx.Frame):
 
         return True
 
-        
+
     def offer_save(self, path, filename):
         save_path = wx.FileSelector("Save program", default_path=path, default_filename=filename,
                                     flags=wx.SAVE|wx.OVERWRITE_PROMPT)
         if (save_path and not os.path.isfile(save_path) and os.path.splitext(save_path)[1] == ""):
-            save_path += ".mbw"
+            save_path += ".edw"
         return save_path
-    
-    def program_save(self, path, filename):
-        
-        try:
-            fh = file(os.path.join(path, filename), 'wb')
-            gui.win_data.save(fh)
-            fh.close()
 
-            #fh = file(os.path.join(path, filename+'JSON'), 'wb')
-            #gui.win_data.saveJson(fh)
-            #fh.close()
+    def program_save(self, path, filename):
+
+        try:
+            # Edison has gone to a JSON format!
+            if (sdata.edison_mode):
+                fh = file(os.path.join(path, filename), 'wb')
+                gui.win_data.saveEdisonAsJson(fh)
+                fh.close()
+            else:
+                fh = file(os.path.join(path, filename), 'wb')
+                gui.win_data.save(fh)
+                fh.close()
 
         except Exception,e:
             wx.MessageBox("Error saving the program. Maybe the disk is full?",
                           "Error while saving.", wx.OK | wx.ICON_ERROR)
-            
+
 
     def menu_usb_device(self, event):
         global sdata_changed
@@ -723,7 +718,7 @@ class Bricworks_frame(wx.Frame):
         result = dialog.ShowModal()
         #print result
         dialog.Destroy()
-    
+
     def menu_cable_program(self, event):
         global sdata_changed
         gui.win_data.selection_drop_all()
@@ -735,7 +730,7 @@ class Bricworks_frame(wx.Frame):
         if (len(used_device) > 0 and (not used_device == sdata.usb_device)):
             sdata.usb_device = used_device
             sdata_changed = True
-    
+
     def menu_firmware(self, event):
         global sdata_changed
         gui.win_data.selection_drop_all()
@@ -777,10 +772,10 @@ class Bricworks_frame(wx.Frame):
 
     def menu_zoom_bigger(self, event):
         gui.win_data.adjust_zoom(1)
-    
+
     def menu_zoom_smaller(self, event):
         gui.win_data.adjust_zoom(-1)
-    
+
     def menu_basic_mode(self, event):
         self.set_basic_mode()
 
@@ -789,14 +784,14 @@ class Bricworks_frame(wx.Frame):
     #     if (gui.win_data.get_adv_mode()):
     #         wx.MessageBox("To go back to basic (factory) mode, you must use 'New - Basic'.",
     #                       "Back to Basics.", wx.OK | wx.ICON_WARNING)
-            
+
     #         id = self.menu_bar.FindMenuItem("&Settings", "&Advanced mode")
     #         self.menu_bar.FindItemById(id).Check(True)
 
     #     else:
     #         self.set_adv_mode()
-            
-            
+
+
 
     def menu_help(self, event):
         dlg = gui.about.SimpleHelpBox(self)
@@ -806,11 +801,11 @@ class Bricworks_frame(wx.Frame):
     def menu_about(self, event):
         # BED debug
         #gui.win_data.program().dump()
-        
+
         dlg = gui.about.AboutBox(self)
         dlg.ShowModal()
         dlg.Destroy()
-    
+
     def menu_enable_toolbar(self, event):
         id = self.menu_bar.FindMenuItem("&Settings", "&Display toolbar")
         if (self.menu_bar.FindItemById(id).IsChecked()):
@@ -829,8 +824,8 @@ class Bricworks_frame(wx.Frame):
         else:
             sdata.strict_versions = False
         sdata_changed = True
-            
-    
+
+
 
 class Top_right_panel(wx.Panel):
     def __init__(self, parent, size=(600, 100)):
@@ -872,13 +867,13 @@ class Bottom_right_panel(wx.Panel):
 
 
 #----------------------------------------------------------------------
-    
+
 def main(file_path=None):
     app = wx.PySimpleApp()
     frame = Bricworks_frame(None)
     frame.Show(True)
     frame.Update()
-    
+
 
     if (file_path):
         frame.load_existing_path(file_path)
@@ -899,13 +894,13 @@ class BricworksApp(wx.App):
         #print "Loading", file_path
         self.frame.load_existing_path(file_path)
         self.frame.Update()
-    
+
 def main2(file_path=None):
     app = BricworksApp(False)
     if (file_path):
         app.load(file_path)
     app.MainLoop()
-    
+
 
 if __name__ == '__main__':
     file_path = None

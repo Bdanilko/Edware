@@ -42,7 +42,7 @@ class Config_list(wx.ListCtrl): #, listmix.TextEditMixin):
     def headers(self):
         for i in range(self.columns):
             self.InsertColumn(i, self.column_headers[i])
-            
+
         for i in range(self.columns):
             self.SetColumnWidth(i, -2)
 
@@ -52,7 +52,7 @@ class Config_list(wx.ListCtrl): #, listmix.TextEditMixin):
         self.min_widths = []
         for i in range(self.columns):
             self.min_widths.append(self.GetColumnWidth(i))
-            
+
     def resize_columns(self):
         items = self.GetItemCount()
         if (items==0):
@@ -68,8 +68,8 @@ class Config_list(wx.ListCtrl): #, listmix.TextEditMixin):
             for i in range(3):
                 if (self.GetColumnWidth(i) < self.min_widths[i]):
                     self.SetColumnWidth(i, -2)
-                    
-        
+
+
 
 class Config_win(wx.Panel):
     def __init__(self, parent):
@@ -101,13 +101,13 @@ class Config_win(wx.Panel):
     def on_activate(self, event):
         # close a bric properties box so this change can be reflected in the box
         win_data.selection_drop_all()
-        
+
         index = event.GetIndex()
         loc = self.list.GetItemText(index)
         loc_num = int(loc, 10)
         dtype,name = win_data.config_get(loc_num)
         data = (loc, dtype, name)
-            
+
         dialog = Config_dialog(self, "Edit module name", data)
 
         #dialog.CenterOnScreen()
@@ -119,7 +119,7 @@ class Config_win(wx.Panel):
            # any change?
            if (new_name == data[2]):
                return
-           
+
            error_message = ""
            # verify that the new name is not already used
            if ((len(new_name) > 0) and
@@ -137,11 +137,11 @@ class Config_win(wx.Panel):
 
                if (win_data.config_name_already_used(loc_num, new_name)):
                    error_message = "The module name '%s' is already used" % (new_name,)
-                   
+
            else:
                error_message = "Module names must start with a character and are at most 16 characters long"
 
-                               
+
 
            if (error_message):
                wx.MessageBox(error_message, caption="Error editing module name.", style=wx.OK | wx.ICON_ERROR)
@@ -150,7 +150,7 @@ class Config_win(wx.Panel):
                win_data.config_change_name(loc_num, new_name)
                self.update_list()
                #self.Refresh()
-               
+
 
         else:
             dialog.Destroy()
@@ -176,7 +176,7 @@ class Config_dialog(wx.Dialog):
         for i in range(3):
             grid.Add(labels[i], flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTRE_VERTICAL)
             grid.Add(self.fields[i])
-        
+
         clr_button = wx.Button(self, wx.ID_CLEAR)
         ok_button = wx.Button(self, wx.ID_OK)
         ok_button.SetDefault()
@@ -186,7 +186,7 @@ class Config_dialog(wx.Dialog):
         sizer.AddSpacer((10,10))
         sizer.Add(grid, 1)
         sizer.AddSpacer((20,20))
-        
+
         buttons = wx.BoxSizer(wx.HORIZONTAL)
         buttons.Add(clr_button)
         buttons.AddSpacer((20,20), 1)
@@ -205,4 +205,3 @@ class Config_dialog(wx.Dialog):
 
     def get_data(self):
         return self.fields[2].GetValue()
-
