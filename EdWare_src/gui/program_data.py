@@ -242,6 +242,11 @@ class Program(object):
                     del self.streams[i]
                     break
             win_data.update_dirty(True)
+            win_data.initialise_unused_events()
+            
+            # refresh the programming pallete
+            win_data.force_redraw("ppallete")
+
             return True
             
         if (self.brics[id].bric_name in ('If', 'Loop')):

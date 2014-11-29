@@ -205,24 +205,34 @@ def loadEdisonAsJson(file_obj, strict):
         set_edison_configuration()
 
         update_dirty(False)
+        
         #dump()
         #pdata.program.dump()
 
         # update the used events
-        unused_events_set = False;
-        
+        initialise_unused_events()
+
+def clear_unused_events():
+    global unused_events
+    global unused_events_set
+    unused_events = {}
+    unused_events_set = False
+    
 def set_unused_events(events):
     global unused_events
     global unused_events_set
     unused_events = events
     unused_events_set = True
-    print
-    print "Set unused events:", events
-    print
+    #print
+    #print "Set unused events:", events
+    #print
 
 def get_unused_events():
     return (unused_events_set, unused_events)
-    
+
+def initialise_unused_events():
+    set_unused_events(tdata.windows['detail'].get_unused_events())
+
 def load(file_obj, strict):
     global pdata
     program_version = pdata.version

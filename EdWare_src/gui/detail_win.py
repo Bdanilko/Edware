@@ -101,7 +101,9 @@ EVENT_DICT = {MOTHERBOARD:(('Button 1', ('_devices', 0), 'button'),
                                 ),
               }
 
-
+NEW_EVENT_BAD_EVENTS = ['RC match 0', 'RC match 1', 'RC match 2', 'RC match 3', 'RC match 4',
+                           'RC match 5', 'RC match 6', 'RC match 7', 'RC match 8',
+                         'Serial Character']
 
 MOTOR_FWD = "forward"
 MOTOR_STP = "stop"
@@ -3240,23 +3242,6 @@ class Detail_win(wx.ScrolledWindow):
         code_lines.append("bitclr $%s %s" % (bit, win_data.make_mod_reg(mod, 'status')))
 
 
-    def get_used_events(self, selected_bric_id):
-        stream = 1                       # start at the first event
-        mod_events = []
-        while (stream < win_data.program().get_stream_count()):
-            stream_id = win_data.program().get_stream_id(stream)
-            bric_data = win_data.program().get_bric_data(stream_id)
-            if (stream_id != selected_bric_id):
-                # convert module id to name
-                if (bric_data[0]):
-                    mod_name = win_data.config_name_from_id(bric_data[0])
-                else:
-                    mod_name = MOTHERBOARD
-                mod_events.append((mod_name, bric_data[0], bric_data[1]))
-            stream += 1
-        print mod_events
-        return mod_events
-
     def get_unused_events(self, selected_bric_id = None):
         stream = 1                       # start at the first event
         used_events = []
@@ -3277,11 +3262,11 @@ class Detail_win(wx.ScrolledWindow):
         for m in modules:
             mod_choices = []
             choices = self.get_event_choices(m)
-            print m, choices
+            #print m, choices
             # now remove any that are an bad_events or used_events
             for c in choices:
                 found = False
-                if (c[0] in self.bad_events):
+                if (c[0] in NEW_EVENT_BAD_EVENTS):
                     found = True
                 else:
                     for um in used_events:
@@ -3349,12 +3334,16 @@ class Detail_win(wx.ScrolledWindow):
             self.old_data = self.save_initial()
 
         win_data.set_unused_events(self.get_unused_events())
+        
+        # refresh the programming pallete
+        win_data.force_redraw("ppallete")
+        
         return grid
 
 
     def event_convert(self, input, command, name, bric_id):
         """Data: module, event  (note: module can be MOTHERBOARD)"""
-        print "event_convert:", command
+        #print "event_convert:", command
         if (command == 'from_ids'):
             output = [MOTHERBOARD, input[1]]
             if (input[0]):

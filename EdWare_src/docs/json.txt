@@ -1,0 +1,44 @@
+
+
+Top level
+----------
+Object:      "Data"
+version:     "10" for the current edison version
+edison_mode: "true" for all edison programs
+
+var_ids:   {"VAR_NAME": var_id, ...}
+variables: {"VAR_NAME": { "Tuple" : [type, "1", initial_value]}, ...}
+var_use:   {"var_id" : {"Tuple" : ["VAR_NAME", use_count]}, ...}
+
+program: {
+         Object: "Program"
+         "move_id" : []      -- left at this value (used when brics are being moved)
+         "move_which_id" : 0 -- left at this value
+         "streams" : [bric_id, ...]  -- these are the bric ids for the start of each event handler
+         "bric_count" : count
+         "start_id" :   bric_ic
+         "brics" : {
+                 "bric_id" : {"Object":"Bric", "id" : bric_id,
+                              "next_id":[next_bric_id_normal_path, next_bric_id_alt_path],
+                              "prev_id" : [prev_bric_id_normal_path, prev_bric_id_alt_path],
+                              "bric_name": "bric_type_name", "if_variant" : if_variant,
+                              "bric_data": [data for this particular bric]},
+                    ... }
+         }
+
+
+Notes
+-----
+1) The "bric_data" item is different for each bric. It contains values that are shown in the detail
+   window. These values are documented in detail_win.py, in the method with the name from
+   self.convert_dict (line 166) - each of these methods takes the bric_data as input, which
+   is typically documented in the doc_string for that method. For example digital_convert has
+   the doc_string: """Data: module, output_level, var""", so the bric_data is the module to
+   output on, the output_level and a possible variable name (or "<-Constant" which means to
+   use the output_level and not the variable)
+
+2) In "variables", type is "0-255" or "+/- 32767", the second parm ("1") is NOT used and the
+   initial value is either a number ("num") or null ("").
+
+3) Of course, let EdWare.py help you. Create a program with the brics that you are interested
+   in and then check out the json saved file.

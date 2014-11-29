@@ -69,3 +69,4 @@ class Program_pallete(pallete_win.Pallete_win):
                 
         # force the work area to redraw
         win_data.force_redraw('pwork')
+
