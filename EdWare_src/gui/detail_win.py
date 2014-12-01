@@ -132,6 +132,8 @@ class Detail_win(wx.ScrolledWindow):
         self.vbox = wx.BoxSizer(wx.VERTICAL)
         self.dirty = False
         self.cb_special = None
+        self.module_name_conversions = []
+        self.good_choices = []
 
         self.SetSizer(self.vbox)
         self.FitInside()
@@ -361,7 +363,7 @@ class Detail_win(wx.ScrolledWindow):
     def set_control_values(self, control_list, value_list):
         for i in range(len(control_list)):
             if (control_list[i]):
-                #print "Setting:", value_list[i]
+                print "Setting:", value_list[i]
                 control_list[i].SetValue(value_list[i])
 
     def add_with_prompt(self, grid, loc, prompt, controls, extra_info=None, ctrl_span=None):
@@ -391,7 +393,7 @@ class Detail_win(wx.ScrolledWindow):
 
     def save_initial(self):
         data = self.conv_func(None, 'to_ids_add_refs', self.name, self.bric_id)
-        #print "save_initial:", data
+        print "save_initial:", data
         win_data.program().set_bric_data(self.bric_id, data)
         self.dirty = False
         self.update_dirty(False)
@@ -436,6 +438,7 @@ class Detail_win(wx.ScrolledWindow):
         win_data.program().set_bric_data(self.bric_id, new_data)
         self.update_dirty(False)
         self.old_data = new_data
+        print "save_changes:", new_data
 
     def cancel_changes(self):
         """old_data is already in the correct format for saving, not displaying"""
@@ -465,6 +468,36 @@ class Detail_win(wx.ScrolledWindow):
         else:
             raise KeyError, "Unknown bric name: %s (id:%d)" % (name, bric_id)
 
+# ------ Alias support so that modules can be presented with different names ---------
+# ------ depending on the bric ------------------------------------------------------
+
+    def module_apply_alias(self, module, aliasList):
+        for l, r in aliasList:
+            if (l == module):
+                print "Applying alias", l, "->", r
+                return r
+        return module
+
+    def module_apply_aliases(self, moduleList, aliasList):
+        newModuleList = []
+        for mod in moduleList:
+            converted = False
+            for l, r in aliasList:
+                if (l == mod):
+                    print "Applying alias", l, "->", r
+                    newModuleList.append(r)
+                    converted = True
+            if (not converted):
+                newModuleList.append()
+        return newModuleList
+        
+    def module_remove_alias(self, alias, aliasList):
+        for l, r in aliasList:
+            if (r == alias):
+                print "Removing alias", r, "->", l
+                return l
+        return alias
+    
 
 # =======================================================================================
 # ---------------------------- bric details ---------------------------------------------
@@ -1359,6 +1392,8 @@ class Detail_win(wx.ScrolledWindow):
         self.dirty = False
         self.name = win_data.program().get_bric_name(bric_id)
         self.prop_title = bric_data.get_bric_prop_title(self.name)
+        self.module_aliases = [("Left_LED", "Left light level"), ("Right_LED", "Right light level"),
+                               ("LINE_TRACKER1", "Line light level")]
 
         values = None
         if (self.prop_title):
@@ -1371,6 +1406,9 @@ class Detail_win(wx.ScrolledWindow):
         modules = win_data.config_device_names("LED")
         modules.extend(win_data.config_device_names('Line Tracker'))
 
+        # convert to use aliases
+        modules = self.module_apply_aliases(modules, self.module_aliases)
+        
         mod_choice = self.make_combo(modules)
 
         choices = win_data.vars_names(S_NAME)
@@ -1383,7 +1421,7 @@ class Detail_win(wx.ScrolledWindow):
         self.cons_cb = (mod_choice,ctrl)
         self.rbs = None
 
-        self.add_with_prompt(grid, (0,0), MODULE_PROMPT, (mod_choice,))
+        self.add_with_prompt(grid, (0,0), "Sense:", (mod_choice,))
         self.add_with_prompt(grid, (1,0), "Variable to read into:", (ctrl,))
 
         self.bind_event_handlers()
@@ -1400,9 +1438,11 @@ class Detail_win(wx.ScrolledWindow):
 
     def readlight_convert(self, input, command, name, bric_id):
         """Data: mod, var"""
+        print "readlight_convert", bric_id, command, name, input
 
         if (command == 'from_ids'):
             output= [win_data.config_name_from_id(input[0]), win_data.vars_get_name(input[1])]
+            output[0] = self.module_apply_alias(output[0], self.module_aliases)
             return output
 
         elif (command == 'to_ids_add_refs'):
@@ -1414,6 +1454,7 @@ class Detail_win(wx.ScrolledWindow):
                 output.append(ctrl.GetValue())
 
             # convert to ids
+            output[0] = self.module_remove_alias(output[0], self.module_aliases)
             output[0] = win_data.config_id_from_name(output[0])
             output[1] = win_data.vars_get_id(output[1])
             win_data.config_add_use(output[0])
@@ -1436,12 +1477,15 @@ class Detail_win(wx.ScrolledWindow):
 
 # -------------- Read Motor distance details  --------------------
 
+            
     def readdist_details(self, bric_id, data):
+        print "readdist_details", bric_id, data
         self.conv_func = self.readdist_convert
         self.dirty = False
         self.name = win_data.program().get_bric_name(bric_id)
         self.prop_title = bric_data.get_bric_prop_title(self.name)
-
+        self.module_aliases = [("Left_Motor", "Left drive"), ("Right_Motor", "Right drive")]
+                                  
         values = None
         if (self.prop_title):
             self.title.SetLabel(self.prop_title)
@@ -1453,6 +1497,9 @@ class Detail_win(wx.ScrolledWindow):
         modules = []
         modules.extend(win_data.config_device_names('Motor A'))
         modules.extend(win_data.config_device_names('Motor B'))
+
+        # convert to use aliases
+        modules = self.module_apply_aliases(modules, self.module_aliases)
 
         mod_choice = self.make_combo(modules)
 
@@ -1466,7 +1513,7 @@ class Detail_win(wx.ScrolledWindow):
         self.cons_cb = (mod_choice,ctrl)
         self.rbs = None
 
-        self.add_with_prompt(grid, (0,0), MODULE_PROMPT, (mod_choice,))
+        self.add_with_prompt(grid, (0,0), "Read distance from:", (mod_choice,))
         self.add_with_prompt(grid, (1,0), "Variable to read into:", (ctrl,))
 
         self.bind_event_handlers()
@@ -1483,9 +1530,11 @@ class Detail_win(wx.ScrolledWindow):
 
     def readdist_convert(self, input, command, name, bric_id):
         """Data: mod, var"""
+        print "readdist_convert", bric_id, command, name, input
 
         if (command == 'from_ids'):
             output= [win_data.config_name_from_id(input[0]), win_data.vars_get_name(input[1])]
+            output[0] = self.module_apply_alias(output[0], self.module_aliases)
             return output
 
         elif (command == 'to_ids_add_refs'):
@@ -1497,6 +1546,7 @@ class Detail_win(wx.ScrolledWindow):
                 output.append(ctrl.GetValue())
 
             # convert to ids
+            output[0] = self.module_remove_alias(output[0], self.module_aliases)
             output[0] = win_data.config_id_from_name(output[0])
             output[1] = win_data.vars_get_id(output[1])
             win_data.config_add_use(output[0])
@@ -3218,7 +3268,7 @@ class Detail_win(wx.ScrolledWindow):
         for title, stuff, if_variant in events:
             if (title in self.bad_events):
                 continue
-            if (self.good_choices.has_key(value)):
+            if (self.good_choices and self.good_choices.has_key(value)):
                 if (title not in self.good_choices[value]):
                     continue
             self.event_choice.Append(title)
@@ -3584,6 +3634,7 @@ class Detail_win(wx.ScrolledWindow):
     def wait_convert(self, input, command, name, bric_id):
         """Data: rb, time-cons, time-var, module, event  (note: module can be MOTHERBOARD)"""
 
+        print "wait_convert cmd:", command, ", input:", input
         if (command == 'from_ids'):
             output = [input[0], input[1], CONSTANT, MOTHERBOARD, input[4]]
 
