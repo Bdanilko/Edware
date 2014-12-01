@@ -70,7 +70,7 @@ TRACKER_0_STATUS = "On reflective surface"
 TRACKER_1_STATUS = "On non-reflective surface"
 
 #                           title,      (mod,bit),       if_variant
-EVENT_DICT = {MOTHERBOARD:(('Button 1', ('_devices', 0), 'button'),
+EVT_1_DICT = {MOTHERBOARD:(('Button 1', ('_devices', 0), 'button'),
                            ('Button 2', ('_devices', 1), 'button'),
                            ('Button 3', ('_devices', 2), 'button'),
                            ('Timer finished', ('_timers', 0), 'timer'),
@@ -101,9 +101,62 @@ EVENT_DICT = {MOTHERBOARD:(('Button 1', ('_devices', 0), 'button'),
                                 ),
               }
 
-NEW_EVENT_BAD_EVENTS = ['RC match 0', 'RC match 1', 'RC match 2', 'RC match 3', 'RC match 4',
+OLD_EVENT_BAD_EVENTS = ['RC match 0', 'RC match 1', 'RC match 2', 'RC match 3', 'RC match 4',
                            'RC match 5', 'RC match 6', 'RC match 7', 'RC match 8',
                          'Serial Character']
+
+#                           title,      (mod,bit),       if_variant
+EVENT_DICT = {'Keypad': (
+                  ('Triangle button pressed', ('_devices', 0), 'button'),
+                  ('Square button pressed', ('_devices', 1), 'button'),
+                  ('Round button pressed', ('_devices', 2), 'button'),),
+              'Countdown timer': (
+                  ('Timer finished', ('_timers', 0), 'timer'),),
+              'Receive serial': (
+                  ('Serial Character', ('_devices', 4), 'serial'),),
+              'Left Drive' : (
+                  ('Left Strain detected', (None, 0), 'motor'),),
+              'Right Drive' : (
+                  ('Right Strain detected', (None, 0), 'motor'),),
+              'Music' : (
+                  ('Tune Finished', (None, 0), 'timer'),),
+              'Detect clap' : (
+                  ('Clap detected', (None, 2), 'clap'),),
+              'Receive IR data': (
+                  ('IR Character', (None, 0), 'irrx'),),
+              'Detect obstacle' : (
+                  ('Obstacle detected at front', (None,4), 'obstacle'),
+                  ('Obstacle detected at left', (None,5), 'obstacle'),
+                  ('Obstacle detected at right', (None,3), 'obstacle'),
+                  ('Any Obstacle detected', (None,6), 'obstacle'),),
+              'Receive RC data': (
+                  ('Match #0 remote control code', (None, 1), 'remote'),
+                  ('Match #1 remote control code', (None, 1), 'remote'),
+                  ('Match #2 remote control code', (None, 1), 'remote'),
+                  ('Match #3 remote control code', (None, 1), 'remote'),
+                  ('Match #4 remote control code', (None, 1), 'remote'),
+                  ('Match #5 remote control code', (None, 1), 'remote'),
+                  ('Match #6 remote control code', (None, 1), 'remote'),
+                  ('Match #7 remote control code', (None, 1), 'remote'),
+                  ('Match #8 remote control code', (None, 1), 'remote'),
+                  ('Any match remote control code', (None, 1), 'remote'),),
+              'Line Tracker' : (
+                  (TRACKER_0_STATUS, (None, 1), 'tracker'),
+                  (TRACKER_1_STATUS, (None, 1), 'tracker'),
+                  ('Any change', (None, 1), 'tracker'),),
+              }
+
+EVENT_ALIASES = [(MOTHERBOARD, "Keypad"), (MOTHERBOARD, "Countdown timer"),
+                 (MOTHERBOARD, "Receive serial"), ("Left_Motor", "Left Drive"),
+                 ("Right_Motor", "Right Drive"), ("SOUNDER1", "Music"), ("SOUNDER1", "Detect clap"),
+                 ("IR_RECEIVER1", "Receive IR data"), ("IR_RECEIVER1", "Detect obstacle"),
+                 ("IR_RECEIVER1", "Receive RC data"), ]
+
+NEW_EVENT_BAD_EVENTS = ['Match #0 remote control code', 'Match #1 remote control code',
+                        'Match #2 remote control code', 'Match #3 remote control code',
+                        'Match #4 remote control code', 'Match #5 remote control code',
+                        'Match #6 remote control code', 'Match #7 remote control code',
+                        'Match #8 remote control code', 'Serial Character']
 
 MOTOR_FWD = "Forward"
 MOTOR_STP = "Stop"
@@ -363,7 +416,7 @@ class Detail_win(wx.ScrolledWindow):
     def set_control_values(self, control_list, value_list):
         for i in range(len(control_list)):
             if (control_list[i]):
-                print "Setting:", value_list[i]
+                #print "Setting:", value_list[i]
                 control_list[i].SetValue(value_list[i])
 
     def add_with_prompt(self, grid, loc, prompt, controls, extra_info=None, ctrl_span=None):
@@ -393,7 +446,7 @@ class Detail_win(wx.ScrolledWindow):
 
     def save_initial(self):
         data = self.conv_func(None, 'to_ids_add_refs', self.name, self.bric_id)
-        print "save_initial:", data
+        #print "save_initial:", data
         win_data.program().set_bric_data(self.bric_id, data)
         self.dirty = False
         self.update_dirty(False)
@@ -438,7 +491,7 @@ class Detail_win(wx.ScrolledWindow):
         win_data.program().set_bric_data(self.bric_id, new_data)
         self.update_dirty(False)
         self.old_data = new_data
-        print "save_changes:", new_data
+        #print "save_changes:", new_data
 
     def cancel_changes(self):
         """old_data is already in the correct format for saving, not displaying"""
@@ -474,7 +527,7 @@ class Detail_win(wx.ScrolledWindow):
     def module_apply_alias(self, module, aliasList):
         for l, r in aliasList:
             if (l == module):
-                print "Applying alias", l, "->", r
+                #print "Applying alias", l, "->", r
                 return r
         return module
 
@@ -484,7 +537,7 @@ class Detail_win(wx.ScrolledWindow):
             converted = False
             for l, r in aliasList:
                 if (l == mod):
-                    print "Applying alias", l, "->", r
+                    #print "Applying alias", l, "->", r
                     newModuleList.append(r)
                     converted = True
             if (not converted):
@@ -494,7 +547,7 @@ class Detail_win(wx.ScrolledWindow):
     def module_remove_alias(self, alias, aliasList):
         for l, r in aliasList:
             if (r == alias):
-                print "Removing alias", r, "->", l
+                #print "Removing alias", r, "->", l
                 return l
         return alias
     
@@ -1438,7 +1491,7 @@ class Detail_win(wx.ScrolledWindow):
 
     def readlight_convert(self, input, command, name, bric_id):
         """Data: mod, var"""
-        print "readlight_convert", bric_id, command, name, input
+        #print "readlight_convert", bric_id, command, name, input
 
         if (command == 'from_ids'):
             output= [win_data.config_name_from_id(input[0]), win_data.vars_get_name(input[1])]
@@ -1479,7 +1532,7 @@ class Detail_win(wx.ScrolledWindow):
 
             
     def readdist_details(self, bric_id, data):
-        print "readdist_details", bric_id, data
+        #print "readdist_details", bric_id, data
         self.conv_func = self.readdist_convert
         self.dirty = False
         self.name = win_data.program().get_bric_name(bric_id)
@@ -1530,7 +1583,7 @@ class Detail_win(wx.ScrolledWindow):
 
     def readdist_convert(self, input, command, name, bric_id):
         """Data: mod, var"""
-        print "readdist_convert", bric_id, command, name, input
+        #print "readdist_convert", bric_id, command, name, input
 
         if (command == 'from_ids'):
             output= [win_data.config_name_from_id(input[0]), win_data.vars_get_name(input[1])]
@@ -3242,20 +3295,22 @@ class Detail_win(wx.ScrolledWindow):
 # ---------------------------- Event/Wait/If/Loop Brics ----------------------------------------
 
     def get_event_modules(self):
-        modules = [MOTHERBOARD]
-        for mod in ['Motor A', 'Motor B', 'Sounder', 'IR Receiver', 'Line Tracker']:
-            modules.extend(win_data.config_device_names(mod))
+        #modules = [MOTHERBOARD]
+        #for mod in ['Motor A', 'Motor B', 'Sounder', 'IR Receiver', 'Line Tracker']:
+        #    modules.extend(win_data.config_device_names(mod))
 
-        return modules
+        #return modules
+        return EVENT_DICT.keys()
 
     def get_event_choices(self, name):
-        if (name == MOTHERBOARD):
-            dtype = MOTHERBOARD
-        else:
-            id = win_data.config_id_from_name(name)
-            dtype = win_data.config_dtype_from_id(id)
+        # if (name == MOTHERBOARD):
+        #     dtype = MOTHERBOARD
+        # else:
+        #     id = win_data.config_id_from_name(name)
+        #     dtype = win_data.config_dtype_from_id(id)
 
-        return EVENT_DICT[dtype]
+        # return EVENT_DICT[dtype]
+        return EVENT_DICT[name]
 
     def do_event_change(self, value):
         if (not self.event_choice):
@@ -3311,13 +3366,15 @@ class Detail_win(wx.ScrolledWindow):
 
         return if_variant
 
-    def create_event_code(self, code_lines, module, event, label):
+    def create_event_code(self, code_lines, mod_alias, event, label):
         match = None
         value = None
         bit = -1
         mod = None
         clear_status = True
-        events = self.get_event_choices(module)
+        
+        module = self.module_remove_alias(mod_alias, EVENT_ALIASES)
+        events = self.get_event_choices(mod_alias)
 
         for title, details, if_variant in events:
             if (title == event):
@@ -3378,7 +3435,9 @@ class Detail_win(wx.ScrolledWindow):
         value = None
         bit = -1
         mod = None
-        events = self.get_event_choices(module)
+
+        mod_alias = self.find_alias_from_event(event)
+        events = self.get_event_choices(mod_alias)
 
         for title, details, if_variant in events:
             if (title == event):
@@ -3412,6 +3471,17 @@ class Detail_win(wx.ScrolledWindow):
         code_lines.append("bitclr $%s %s" % (bit, win_data.make_mod_reg(mod, 'status')))
 
 
+    def find_alias_from_event(self, event):
+        modules = self.get_event_modules()
+        for m in modules:
+            choices = self.get_event_choices(m)
+            for c in choices:
+                if (c[0] == event):
+                    return m
+
+        raise SyntaxError, "bad event: " + event
+
+        
     def get_unused_events(self, selected_bric_id = None):
         stream = 1                       # start at the first event
         used_events = []
@@ -3419,14 +3489,15 @@ class Detail_win(wx.ScrolledWindow):
             stream_id = win_data.program().get_stream_id(stream)
             bric_data = win_data.program().get_bric_data(stream_id)
             if (stream_id != selected_bric_id):
-                # convert module id to name
                 if (bric_data[0]):
-                    mod_name = win_data.config_name_from_id(bric_data[0])
+                    mod_name = self.module_remove_alias(bric_data[0], EVENT_ALIASES)
+                    mod_name = win_data.config_name_from_id(mod_name)
                 else:
                     mod_name = MOTHERBOARD
-                used_events.append((mod_name, bric_data[0], bric_data[1]))
+                used_events.append((mod_name, bric_data[1]),)
             stream += 1
-
+        #print "Used events:", used_events
+        
         modules = self.get_event_modules()
         unused_events = {}
         for m in modules:
@@ -3440,7 +3511,7 @@ class Detail_win(wx.ScrolledWindow):
                     found = True
                 else:
                     for um in used_events:
-                        if ((um[0] == m) and (um[2] == c[0])):
+                        if ((um[1] == m) and (um[2] == c[0])):
                             #print "Found:", m, c[0]
                             found = True
                 if (not found):
@@ -3453,15 +3524,11 @@ class Detail_win(wx.ScrolledWindow):
         return unused_events
     
     def event_details(self, bric_id, data):
-
+        #print "event_details:", data
         self.conv_func = self.event_convert
         self.dirty = False
         self.name = win_data.program().get_bric_name(bric_id)
-        self.bad_events = ['RC match 0', 'RC match 1', 'RC match 2', 'RC match 3', 'RC match 4',
-                           'RC match 5', 'RC match 6', 'RC match 7', 'RC match 8']
-
-        if (not win_data.get_adv_mode()):
-            self.bad_events.append("Serial Character")
+        self.bad_events = NEW_EVENT_BAD_EVENTS
 
         self.good_choices = self.get_unused_events(bric_id)
         
@@ -3487,7 +3554,7 @@ class Detail_win(wx.ScrolledWindow):
         self.cons_cb = (self.event_choice,)
         self.rbs = None
 
-        grid.Add(wx.StaticText(self, -1, "Trigger event on:"), (0,1), flag=wx.ALIGN_LEFT)
+        grid.Add(wx.StaticText(self, -1, "Event happens:"), (0,1), flag=wx.ALIGN_LEFT)
 
         self.add_with_prompt(grid, (1,1), "", (mod_choice,))
         self.add_with_prompt(grid, (1,2), "", (self.event_choice,))
@@ -3497,8 +3564,9 @@ class Detail_win(wx.ScrolledWindow):
         if (data):
             self.old_data = data
             values = self.conv_func(data, 'from_ids', self.name, bric_id)
-            mod_choice.SetValue(values[0])
-            self.do_event_change(values[0])
+            mod_alias = self.find_alias_from_event(values[1])
+            mod_choice.SetValue(mod_alias)
+            self.do_event_change(mod_alias)
             self.event_choice.SetValue(values[1])
 
 
@@ -3517,11 +3585,13 @@ class Detail_win(wx.ScrolledWindow):
 
     def event_convert(self, input, command, name, bric_id):
         """Data: module, event  (note: module can be MOTHERBOARD)"""
-        #print "event_convert:", command
+        #print "event_convert:", command, ", input:", input
         if (command == 'from_ids'):
-            output = [MOTHERBOARD, input[1]]
-            if (input[0]):
-                output[0] = win_data.config_name_from_id(input[0])
+            # get module alias from event
+            mod_alias = self.find_alias_from_event(input[1])
+            module = self.module_remove_alias(mod_alias, EVENT_ALIASES)
+            
+            output = [module, input[1]]
             return output
 
         elif (command == 'to_ids_add_refs'):
@@ -3531,11 +3601,16 @@ class Detail_win(wx.ScrolledWindow):
                 if (not ctrl):
                     continue
                 output.append(ctrl.GetValue())
-
+            
             # Validate values - change notes to codes
             # ??????
+            #print output
 
             # convert to ids
+            output[0] = self.module_remove_alias(output[0], EVENT_ALIASES)
+
+            #print output
+            
             if (output[0] == MOTHERBOARD):
                 output[0] = None
             else:
@@ -3598,7 +3673,7 @@ class Detail_win(wx.ScrolledWindow):
         self.cons_cb = (self.event_choice,)
         self.rbs = rbs
 
-        grid.Add(wx.StaticText(self, -1, "Wait UNTIL:"), (0,1), flag=wx.ALIGN_LEFT)
+        grid.Add(wx.StaticText(self, -1, "Wait Until:"), (0,1), flag=wx.ALIGN_LEFT)
 
         grid.Add(rbs[0], (1,0), flag=wx.ALIGN_CENTRE_VERTICAL)
         self.add_with_prompt(grid, (1,1), "", time)
@@ -3613,8 +3688,9 @@ class Detail_win(wx.ScrolledWindow):
         if (data):
             self.old_data = data
             values = self.conv_func(data, 'from_ids', self.name, bric_id)
-            mod_choice.SetValue(values[3])
-            self.do_event_change(values[3])
+            mod_alias = self.find_alias_from_event(values[4])
+            mod_choice.SetValue(mod_alias)
+            self.do_event_change(mod_alias)
             self.event_choice.SetValue(values[4])
             self.set_control_values(self.data_order[:3], values[:3])
 
@@ -3622,8 +3698,8 @@ class Detail_win(wx.ScrolledWindow):
             self.switch_group(rbs[values[0]])
 
         else:
-            mod_choice.SetValue(MOTHERBOARD)
-            self.do_event_change(MOTHERBOARD)
+            mod_choice.SetValue("Keypad")
+            self.do_event_change("Keypad")
             self.switch_constants()
             self.switch_group(rbs[0])
 
@@ -3634,16 +3710,18 @@ class Detail_win(wx.ScrolledWindow):
     def wait_convert(self, input, command, name, bric_id):
         """Data: rb, time-cons, time-var, module, event  (note: module can be MOTHERBOARD)"""
 
-        print "wait_convert cmd:", command, ", input:", input
+        #print "wait_convert cmd:", command, ", input:", input
         if (command == 'from_ids'):
-            output = [input[0], input[1], CONSTANT, MOTHERBOARD, input[4]]
+            mod_alias = self.find_alias_from_event(input[4])
+            module = self.module_remove_alias(mod_alias, EVENT_ALIASES)
+            output = [input[0], input[1], CONSTANT, module, input[4]]
 
             if (input[0] == 0):
                 if (input[2]):
                     output[2] = win_data.vars_get_name(input[2])
             else:
                 if (input[3]):
-                    output[3] = win_data.config_name_from_id(input[3])
+                    output[3] = module
             return output
 
         elif (command == 'to_ids_add_refs'):
@@ -3663,6 +3741,8 @@ class Detail_win(wx.ScrolledWindow):
             # ??????
 
             # convert to ids
+            output[3] = self.module_remove_alias(output[3], EVENT_ALIASES)
+
             if (output[0] == 0):
                 output[2] = win_data.vars_get_id(output[2])
                 win_data.vars_add_use(output[2])
@@ -3677,6 +3757,7 @@ class Detail_win(wx.ScrolledWindow):
 
         elif (command == 'rm_refs'):
             """Input is the stored data, with refs"""
+            #print "rm_refs:", input[3]
             if (input[0] == 0):
                 win_data.vars_rm_use(input[2])
             else:
@@ -3716,7 +3797,8 @@ class Detail_win(wx.ScrolledWindow):
                 label = win_data.make_label(bric_id, 0)
                 code_lines.append(label)
                 # if test fails then keep checking
-                self.create_event_code(code_lines, input[3], input[4], label)
+                mod_alias = self.find_alias_from_event(input[4])
+                self.create_event_code(code_lines, mod_alias, input[4], label)
 
             return code_lines
 
@@ -3786,15 +3868,16 @@ class Detail_win(wx.ScrolledWindow):
         if (data):
             self.old_data = data
             values = self.conv_func(data, 'from_ids', self.name, bric_id)
-            mod_choice.SetValue(values[4])
-            self.do_event_change(values[4])
+            mod_alias = self.find_alias_from_event(values[5])
+            mod_choice.SetValue(mod_alias)
+            self.do_event_change(mod_alias)
             self.set_control_values(self.data_order[:4], values[:4])
             self.event_choice.SetValue(values[5])
             self.switch_group(rbs[values[0]])
 
         else:
-            mod_choice.SetValue(MOTHERBOARD)
-            self.do_event_change(MOTHERBOARD)
+            mod_choice.SetValue("Keypad")
+            self.do_event_change("Keypad")
             # special set to loop forever
             self.switch_group(rbs[2])
 
@@ -3806,14 +3889,16 @@ class Detail_win(wx.ScrolledWindow):
         """Data: rb, test-var, test-op, test-cons, module, event, in-event, end-of-loopif"""
 
         if (command == 'from_ids'):
-            output = [input[0], NO_VAR, input[2], input[3], MOTHERBOARD, input[5]]
+            mod_alias = self.find_alias_from_event(input[5])
+            module = self.module_remove_alias(mod_alias, EVENT_ALIASES)
+            output = [input[0], NO_VAR, input[2], input[3], module, input[5]]
 
             if (input[0] == 0):
                 if (input[1]):
                     output[1] = win_data.vars_get_name(input[1])
             elif (input[0] == 1):
                 if (input[4]):
-                    output[4] = win_data.config_name_from_id(input[4])
+                    output[4] = module
             else:
                 pass
             #print output
@@ -3836,6 +3921,7 @@ class Detail_win(wx.ScrolledWindow):
             # ??????
 
             # convert to ids
+            output[4] = self.module_remove_alias(output[4], EVENT_ALIASES)
             if (output[0] == 0):
                 if (output[1] == NO_VAR):
                     output[1] = None
@@ -3898,7 +3984,8 @@ class Detail_win(wx.ScrolledWindow):
             elif (input[0] == 1):
 
                 # if test fails then go to the body
-                self.create_event_code(code_lines, input[4], input[5], labels[0])
+                mod_alias = self.find_alias_from_event(input[5])
+                self.create_event_code(code_lines, mod_alias, input[5], labels[0])
 
                 # if it passes then exit the loop
                 code_lines.append("bra %s" % (labels[1],))
@@ -3976,15 +4063,16 @@ class Detail_win(wx.ScrolledWindow):
         if (data):
             self.old_data = data
             values = self.conv_func(data, 'from_ids', self.name, bric_id)
-            mod_choice.SetValue(values[4])
-            self.do_event_change(values[4])
+            mod_alias = self.find_alias_from_event(values[5])
+            mod_choice.SetValue(mod_alias)
+            self.do_event_change(mod_alias)
             self.set_control_values(self.data_order[:4], values[:4])
             self.event_choice.SetValue(values[5])
             self.switch_group(rbs[values[0]])
 
         else:
-            mod_choice.SetValue(MOTHERBOARD)
-            self.do_event_change(MOTHERBOARD)
+            mod_choice.SetValue("Keypad")
+            self.do_event_change("Keypad")
             self.switch_group(rbs[0])
             win_data.program().set_bric_if_variant(bric_id, "var")
 
@@ -4001,6 +4089,7 @@ class Detail_win(wx.ScrolledWindow):
         ifVar = "var"
         if (self.rbs[1].GetValue() == 1):
             module = self.groups[1][1][0].GetValue()
+            # BED this should work with the mod_aliases
             event = self.event_choice.GetValue()
             #print "Mod:", module, "Event:", event
             ifVar = self.find_if_variant(module, event)
@@ -4013,7 +4102,9 @@ class Detail_win(wx.ScrolledWindow):
         """Data: rb, test-var, test-op, test-cons, module, event, in-event, end-of-loopif"""
 
         if (command == 'from_ids'):
-            output = [input[0], NO_VAR, input[2], input[3], MOTHERBOARD, input[5]]
+            mod_alias = self.find_alias_from_event(input[5])
+            module = self.module_remove_alias(mod_alias, EVENT_ALIASES)
+            output = [input[0], NO_VAR, input[2], input[3], module, input[5]]
 
             if (input[0] == 0):
                 if (input[1]):
@@ -4041,6 +4132,7 @@ class Detail_win(wx.ScrolledWindow):
             # ??????
 
             # convert to ids
+            output[4] = self.module_remove_alias(output[4], EVENT_ALIASES)
             if (output[0] == 0):
                 if (output[1] == NO_VAR):
                     output[1] = None
@@ -4100,8 +4192,8 @@ class Detail_win(wx.ScrolledWindow):
 
             else:
                 # check an event
-
-                if_variant = self.create_event_code(code_lines, input[4], input[5], labels[1])
+                mod_alias = self.find_alias_from_event(input[5])
+                if_variant = self.create_event_code(code_lines, mod_alias, input[5], labels[1])
 
                 # test passed
                 code_lines.append("bra %s" % (labels[0],))

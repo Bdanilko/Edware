@@ -438,6 +438,7 @@ def config_change_name(loc, new_name):
     config_dirty(True)
 
 def config_id_from_name(name):
+    #print name, pdata.configuration
     for loc in pdata.configuration:
         if (pdata.configuration[loc][1] == name):
             return pdata.config_ids[loc]
