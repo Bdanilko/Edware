@@ -72,8 +72,14 @@ class Bric(Detail_parser):
                 #print "Found proptitle:", self.prop_title
             else:
                 self.prop_title = None
+
+            if (cp.has_option(cp_name, 'propextratext')):
+                self.prop_extra_text = cp.get(cp_name, 'propextratext')
+                #print "Found propextratext:", self.prop_extra_text
+            else:
+                self.prop_extra_text = None
+
             # get the bitmaps
-            
             bmp = cp.get(cp_name, 'bmap')
             sbmp = cp.get(cp_name, 'selbmap')
 
@@ -141,6 +147,9 @@ class Bric(Detail_parser):
     def get_prop_title(self):
         return self.prop_title
     
+    def get_prop_extra_text(self):
+        return self.prop_extra_text
+
     def get_detail(self):
         return self.detail
 
@@ -294,6 +303,9 @@ def get_bric_help(name):
 
 def get_bric_prop_title(name):
     return data.bric_dict[name].get_prop_title()
+
+def get_bric_prop_extra_text(name):
+    return data.bric_dict[name].get_prop_extra_text()
 
 def is_enabled(name):
     return enable_check(data.bric_dict[name].enable)
