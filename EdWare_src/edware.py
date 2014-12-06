@@ -132,6 +132,10 @@ class Bricworks_frame(wx.Frame):
                            ("", "", ""),
                            ("&Check program size", "Report on the bytes and variables used in the program",
                             self.menu_check_program),
+
+                           ("", "", ""),
+                           ("&Download new firmware", "Download new firmware to Edison",
+                            self.menu_edison_firmware),
                            ),
                           ("&Help",
                            ("&Help", "Display help for Edison EdWare", self.menu_help),
@@ -580,6 +584,13 @@ class Bricworks_frame(wx.Frame):
         gui.win_data.selection_drop_all()
         dialog = gui.downloader.audio_downloader("", "Download over audio")
         result = dialog.ShowModal()
+        dialog.Destroy()
+
+    def menu_edison_firmware(self, event):
+        gui.win_data.selection_drop_all()
+        dialog = gui.downloader.audio_firmware_downloader("", "Download new FIRMWARE over audio")
+        result = dialog.ShowModal()
+        used_device = dialog.get_port()
         dialog.Destroy()
 
     def menu_new_edison(self, event):

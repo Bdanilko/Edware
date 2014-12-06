@@ -330,6 +330,101 @@ class audio_downloader(wx.Dialog):
 
         self.Refresh()
         
+        # --------------- AUDIO FIRMWARE dialog ----------------------------------
+        
+class audio_firmware_downloader(wx.Dialog):
+    def __init__(self, file_name, title="Set Title!", size=(200, 200)):
+        wx.Dialog.__init__(self, None, -1, title, size=(500, 300))
+        self.SetBackgroundColour("lightgray")
+
+        self.grid = wx.GridBagSizer(5,5)
+
+        self.progress_prompt = wx.StaticText(self, -1, "Download progress:")
+        self.gauge = wx.Gauge(self, -1, range=100)
+        self.start = wx.Button(self, -1, "Start Download")
+        self.cancel = wx.Button(self, -1, "Cancel Download")
+        self.help_text = wx.StaticText(self, -1, "")
+        self.file_browse = fbb.FileBrowseButton(self, -1, labelText="Firmware File:",
+                                                dialogTitle="Find a Firmware File",
+                                                fileMode=wx.OPEN)
+        self.file_browse.SetBackgroundColour("lightgray")
+
+        self.grid.Add(self.file_browse, (1,1), span=(1,3), flag=wx.EXPAND)
+
+        self.grid.Add(self.progress_prompt, (4,1), span=(1,2), flag=wx.EXPAND)
+        self.grid.Add(self.gauge, (5,1), span=(1,3), flag=wx.EXPAND)
+        
+        self.grid.Add(self.help_text, (6,1), span=(2,2), flag=wx.EXPAND)
+        
+        self.grid.AddGrowableRow(7)
+        self.grid.Add(self.cancel, (8,2), flag=wx.ALIGN_RIGHT | wx.BOTTOM)
+        self.grid.Add(self.start, (8,3), flag=wx.ALIGN_LEFT | wx.BOTTOM)
+        self.grid.Add((1,1), (9,2))
+
+        self.SetSizer(self.grid)
+        self.Layout()
+
+        self.start.SetDefault()
+
+        self.Bind(wx.EVT_BUTTON, self.on_start, self.start)
+        self.Bind(wx.EVT_BUTTON, self.on_cancel, self.cancel)
+
+    def on_cancel(self, event):
+        self.EndModal(1)
+
+    def on_start(self, event):
+        # get the device
+        device = self.usb_ctrl.GetValue()
+
+        filename = self.file_browse.GetValue()
+        if (not os.path.exists(filename)):
+            self.help_text.SetLabel("Error - couldn't read file: %s" % (filename,))
+            return
+        
+        file_handle = file(filename, 'rb')
+        firmware_string = file_handle.read()
+        file_handle.close()
+
+        prefix = token_downloader.SERIAL_WAKEUP_STR + token_downloader.FIRMWARE_STR
+        prefix_len = len(prefix)
+
+        while (firmware_string.startswith(token_downloader.PRE_WAKEUP_ONE)):
+               firmware_string = firmware_string[len(token_downloader.PRE_WAKEUP_ONE):]
+               
+        if ((len(firmware_string) < prefix_len) or
+            (not firmware_string.startswith(prefix))):
+            self.help_text.SetLabel("Error - file doesn't seem to be firmware.")
+            return
+        
+        version = ((ord(firmware_string[prefix_len])&0xf0)>>4,
+                   ord(firmware_string[prefix_len])&0x0f)
+
+        firmware_bytes = []
+        for i in range(prefix_len+1, len(firmware_string)):
+            firmware_bytes.append(ord(firmware_string[i]))
+        self.byte_count = len(firmware_string)
+        self.gauge.SetRange(self.byte_count)
+        
+        # can't start twice so disable this button
+        self.start.Disable()
+        self.help_text.SetLabel("Starting download of %d bytes." % (self.byte_count,))
+        self.Update()
+
+        result = token_downloader.gui_serial("firmware", version, firmware_bytes,
+                                             device, self.help_text, self.gauge)
+
+        if (not result):
+            self.start.Enable()
+
+        else:
+            self.gauge.SetValue(self.byte_count)
+            self.gauge.Update()
+
+            self.help_text.SetLabel("Downloading was successful!")
+            self.start.Enable()
+
+        self.Refresh()
+
 
         
 # --------------- Screen dialog ----------------------------------
