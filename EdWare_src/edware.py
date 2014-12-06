@@ -125,7 +125,7 @@ class Bricworks_frame(wx.Frame):
 #                           ),
 
 
-                          ("&Program Robot",
+                          ("&Program Edison",
                            ("Program &Edison", "Program Edison",
                             self.menu_edison_program),
                            ("", "", ""),

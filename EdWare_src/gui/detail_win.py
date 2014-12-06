@@ -31,6 +31,10 @@ import win_data
 
 from wx.lib.masked import NumCtrl
 
+MOTOR_DISTANCE_ENABLED = False
+
+# normally the module combo boxes are 150. But events are long strings
+EVENT_COMBO_PIXELS = 200
 
 CONSTANT = "<-Constant"
 NO_VAR = "-No Variable-"
@@ -70,76 +74,38 @@ TRACKER_0_STATUS = "On reflective surface"
 TRACKER_1_STATUS = "On non-reflective surface"
 
 #                           title,      (mod,bit),       if_variant
-EVT_1_DICT = {MOTHERBOARD:(('Button 1', ('_devices', 0), 'button'),
-                           ('Button 2', ('_devices', 1), 'button'),
-                           ('Button 3', ('_devices', 2), 'button'),
-                           ('Timer finished', ('_timers', 0), 'timer'),
-                           ('Serial Character', ('_devices', 4), 'serial'),),
-
-              'Motor A' : (('Strain detected', (None, 0), 'motor'),),
-              'Motor B' : (('Strain detected', (None, 0), 'motor'),),
-              'Sounder' : (('Tune Finished', (None, 0), 'timer'),
-                           ('Clap detected', (None, 2), 'clap'),),
-              'IR Receiver': (('IR Character', (None, 0), 'irrx'),
-                              ('Any Obstacle detected', (None,6), 'obstacle'),
-                              ('Obstacle detected on left', (None,5), 'obstacle'),
-                              ('Obstacle detected ahead', (None,4), 'obstacle'),
-                              ('Obstacle detected on right', (None,3), 'obstacle'),
-                              ('Any RC match', (None, 1), 'remote'),
-                              ('RC match 0', (None, 1), 'remote'),
-                              ('RC match 1', (None, 1), 'remote'),
-                              ('RC match 2', (None, 1), 'remote'),
-                              ('RC match 3', (None, 1), 'remote'),
-                              ('RC match 4', (None, 1), 'remote'),
-                              ('RC match 5', (None, 1), 'remote'),
-                              ('RC match 6', (None, 1), 'remote'),
-                              ('RC match 7', (None, 1), 'remote'),
-                              ('RC match 8', (None, 1), 'remote'),),
-              'Line Tracker' : ((TRACKER_0_STATUS, (None, 1), 'tracker'),
-                                (TRACKER_1_STATUS, (None, 1), 'tracker'),
-                                ('Any change', (None, 1), 'tracker'),
-                                ),
-              }
-
-OLD_EVENT_BAD_EVENTS = ['RC match 0', 'RC match 1', 'RC match 2', 'RC match 3', 'RC match 4',
-                           'RC match 5', 'RC match 6', 'RC match 7', 'RC match 8',
-                         'Serial Character']
-
-#                           title,      (mod,bit),       if_variant
 EVENT_DICT = {'Keypad': (
                   ('Triangle button pressed', ('_devices', 0), 'button'),
-                  ('Square button pressed', ('_devices', 1), 'button'),
+                  #('Square button pressed', ('_devices', 1), 'button'),
                   ('Round button pressed', ('_devices', 2), 'button'),),
               'Countdown timer': (
                   ('Timer finished', ('_timers', 0), 'timer'),),
-              'Receive serial': (
-                  ('Serial Character', ('_devices', 4), 'serial'),),
-              'Left Drive' : (
-                  ('Left Strain detected', (None, 0), 'motor'),),
-              'Right Drive' : (
-                  ('Right Strain detected', (None, 0), 'motor'),),
+              #'Left Drive' : (
+              #    ('Left Strain detected', (None, 0), 'motor'),),
+              'Drive' : (
+                  ('Strain detected', (None, 0), 'motor'),),
               'Music' : (
-                  ('Tune Finished', (None, 0), 'timer'),),
+                  ('Tune finished', (None, 0), 'timer'),),
               'Detect clap' : (
                   ('Clap detected', (None, 2), 'clap'),),
-              'Receive IR data': (
+              'Data from another Edison': (
                   ('IR Character', (None, 0), 'irrx'),),
               'Detect obstacle' : (
-                  ('Obstacle detected at front', (None,4), 'obstacle'),
-                  ('Obstacle detected at left', (None,5), 'obstacle'),
-                  ('Obstacle detected at right', (None,3), 'obstacle'),
+                  ('Obstacle at front', (None,4), 'obstacle'),
+                  ('Obstacle at left', (None,5), 'obstacle'),
+                  ('Obstacle at right', (None,3), 'obstacle'),
                   ('Any Obstacle detected', (None,6), 'obstacle'),),
-              'Receive RC data': (
-                  ('Match #0 remote control code', (None, 1), 'remote'),
-                  ('Match #1 remote control code', (None, 1), 'remote'),
-                  ('Match #2 remote control code', (None, 1), 'remote'),
-                  ('Match #3 remote control code', (None, 1), 'remote'),
-                  ('Match #4 remote control code', (None, 1), 'remote'),
-                  ('Match #5 remote control code', (None, 1), 'remote'),
-                  ('Match #6 remote control code', (None, 1), 'remote'),
-                  ('Match #7 remote control code', (None, 1), 'remote'),
-                  ('Match #8 remote control code', (None, 1), 'remote'),
-                  ('Any match remote control code', (None, 1), 'remote'),),
+              'Data from TV remote': (
+                  ('Match #0 remote code', (None, 1), 'remote'),
+                  ('Match #1 remote code', (None, 1), 'remote'),
+                  ('Match #2 remote code', (None, 1), 'remote'),
+                  ('Match #3 remote code', (None, 1), 'remote'),
+                  ('Match #4 remote code', (None, 1), 'remote'),
+                  ('Match #5 remote code', (None, 1), 'remote'),
+                  ('Match #6 remote code', (None, 1), 'remote'),
+                  ('Match #7 remote code', (None, 1), 'remote'),
+                  ('Match #8 remote code', (None, 1), 'remote'),
+                  ('Any match remote code', (None, 1), 'remote'),),
               'Line Tracker' : (
                   (TRACKER_0_STATUS, (None, 1), 'tracker'),
                   (TRACKER_1_STATUS, (None, 1), 'tracker'),
@@ -147,16 +113,15 @@ EVENT_DICT = {'Keypad': (
               }
 
 EVENT_ALIASES = [(MOTHERBOARD, "Keypad"), (MOTHERBOARD, "Countdown timer"),
-                 (MOTHERBOARD, "Receive serial"), ("Left_Motor", "Left Drive"),
-                 ("Right_Motor", "Right Drive"), ("SOUNDER1", "Music"), ("SOUNDER1", "Detect clap"),
-                 ("IR_RECEIVER1", "Receive IR data"), ("IR_RECEIVER1", "Detect obstacle"),
-                 ("IR_RECEIVER1", "Receive RC data"), ]
+                 ("Right_Motor", "Drive"), ("SOUNDER1", "Music"), ("SOUNDER1", "Detect clap"),
+                 ("IR_RECEIVER1", "Data from another Edison"), ("IR_RECEIVER1", "Detect obstacle"),
+                 ("IR_RECEIVER1", "Data from TV remote"), ("LINE_TRACKER1", "Line Tracker") ]
 
-NEW_EVENT_BAD_EVENTS = ['Match #0 remote control code', 'Match #1 remote control code',
-                        'Match #2 remote control code', 'Match #3 remote control code',
-                        'Match #4 remote control code', 'Match #5 remote control code',
-                        'Match #6 remote control code', 'Match #7 remote control code',
-                        'Match #8 remote control code', 'Serial Character']
+NEW_EVENT_BAD_EVENTS = ['Match #0 remote code', 'Match #1 remote code',
+                        'Match #2 remote code', 'Match #3 remote code',
+                        'Match #4 remote code', 'Match #5 remote code',
+                        'Match #6 remote code', 'Match #7 remote code',
+                        'Match #8 remote code']
 
 MOTOR_FWD = "Forward"
 MOTOR_STP = "Stop"
@@ -1409,7 +1374,7 @@ class Detail_win(wx.ScrolledWindow):
                 code_lines.append("bitclr $5 %s" % (win_data.make_mod_reg(input[0], 'status'),))
                 code_lines.append("bitclr $6 %s" % (win_data.make_mod_reg(input[0], 'status'),))
 
-                code_lines.append("and $58/16")
+                code_lines.append("and $78/16")
                 code_lines.append("movb %%_cpu:acc @%s" % (input[1]))
 
                 ## alternate implementation
@@ -2520,7 +2485,8 @@ class Detail_win(wx.ScrolledWindow):
         if (self.name == 'Motor Pair'):
             modules = win_data.config_motor_pairs()
             directions = [MOTOR_FWD, MOTOR_BCK,
-                          MOTOR_P_RT, MOTOR_P_RT_90, MOTOR_P_LT, MOTOR_P_LT_90,
+                          MOTOR_P_RT, #MOTOR_P_RT_90,
+                          MOTOR_P_LT, #MOTOR_P_LT_90,
                           MOTOR_P_SR, MOTOR_P_SL,
                           MOTOR_P_BR, MOTOR_P_BL,
                           MOTOR_STP]
@@ -2576,8 +2542,14 @@ class Detail_win(wx.ScrolledWindow):
         self.make_headings(grid, (grid_line,1))
         self.add_with_prompt(grid, (grid_line+1,0), "Direction:", dirs)
         self.add_with_prompt(grid, (grid_line+2,0), "Speed:", speed)
-        self.add_with_prompt(grid, (grid_line+3,0), "Distance:", dist_units, ctrl_span=(1,2))
-        self.add_with_prompt(grid, (grid_line+4,0), "Distance:", dist_value)
+        
+        if (MOTOR_DISTANCE_ENABLED):
+            self.add_with_prompt(grid, (grid_line+3,0), "Distance:", dist_units, ctrl_span=(1,2))
+            self.add_with_prompt(grid, (grid_line+4,0), "Distance:", dist_value)
+        else:
+            dist_units[0].Hide()
+            dist_value[0].Hide()
+            dist_value[1].Hide()
 
         self.bind_event_handlers()
 
@@ -3482,46 +3454,52 @@ class Detail_win(wx.ScrolledWindow):
         raise SyntaxError, "bad event: " + event
 
         
-    def get_unused_events(self, selected_bric_id = None):
+    def get_unused_event_choices(self, selected_bric_id = None):
         stream = 1                       # start at the first event
-        used_events = []
+        used_choices = []
         while (stream < win_data.program().get_stream_count()):
             stream_id = win_data.program().get_stream_id(stream)
             bric_data = win_data.program().get_bric_data(stream_id)
             if (stream_id != selected_bric_id):
-                if (bric_data[0]):
-                    mod_name = self.module_remove_alias(bric_data[0], EVENT_ALIASES)
-                    mod_name = win_data.config_name_from_id(mod_name)
-                else:
-                    mod_name = MOTHERBOARD
-                used_events.append((mod_name, bric_data[1]),)
+                used_choices.append(bric_data[1])
             stream += 1
-        #print "Used events:", used_events
-        
+        #print "Used choices:", used_choices
+
+        unused_choices = []
         modules = self.get_event_modules()
-        unused_events = {}
         for m in modules:
-            mod_choices = []
             choices = self.get_event_choices(m)
             #print m, choices
             # now remove any that are an bad_events or used_events
             for c in choices:
-                found = False
-                if (c[0] in NEW_EVENT_BAD_EVENTS):
-                    found = True
-                else:
-                    for um in used_events:
-                        if ((um[1] == m) and (um[2] == c[0])):
-                            #print "Found:", m, c[0]
-                            found = True
-                if (not found):
-                    mod_choices.append(c[0])
-
-            if (mod_choices):
-                unused_events[m] = mod_choices
+                #print c[0], NEW_EVENT_BAD_EVENTS, used_choices
+                if ((c[0] not in NEW_EVENT_BAD_EVENTS) and
+                    (c[0] not in used_choices)):
+                    unused_choices.append(c[0])
 
         #print unused_events
+        return unused_choices
+
+    def get_unused_events(self, selected_bric_id = None):
+        unused_choices = self.get_unused_event_choices(selected_bric_id)
+        #print "unused_choices", unused_choices
+        unused_events = {}
+
+        modules = self.get_event_modules()
+        for uc in unused_choices:
+            for m in modules:
+                choices = self.get_event_choices(m)
+                for c in choices:
+                    if (uc == c[0]):
+                        if (m in unused_events):
+                            unused_events[m].append(uc)
+                        else:
+                            unused_events[m] = [uc]
+                        break
+                    
+        #print "Unused events:", unused_events
         return unused_events
+        
     
     def event_details(self, bric_id, data):
         #print "event_details:", data
@@ -3542,8 +3520,8 @@ class Detail_win(wx.ScrolledWindow):
         grid = wx.GridBagSizer(5, 5)
 
         modules = self.good_choices.keys()
-        mod_choice = self.make_combo(modules, size=(150,-1))
-        self.event_choice = wx.ComboBox(self, -1, "", style=wx.CB_READONLY, size=(150,-1))
+        mod_choice = self.make_combo(modules, size=(EVENT_COMBO_PIXELS,-1))
+        self.event_choice = wx.ComboBox(self, -1, "", style=wx.CB_READONLY, size=(EVENT_COMBO_PIXELS,-1))
 
         self.Bind(wx.EVT_COMBOBOX, self.on_event_mod_change, mod_choice)
 
@@ -3640,8 +3618,6 @@ class Detail_win(wx.ScrolledWindow):
         self.dirty = False
         self.name = win_data.program().get_bric_name(bric_id)
         self.bad_events = []
-        if (not win_data.get_adv_mode()):
-            self.bad_events.append("Serial Character")
 
         self.prop_title = bric_data.get_bric_prop_title(self.name)
 
@@ -3656,8 +3632,8 @@ class Detail_win(wx.ScrolledWindow):
         rbs = self.make_radio_buttons(["Seconds pass", "Event happens"])
 
         modules = self.get_event_modules()
-        mod_choice = self.make_combo(modules, size=(150, -1))
-        self.event_choice = wx.ComboBox(self, -1, "", style=wx.CB_READONLY, size=(150,-1))
+        mod_choice = self.make_combo(modules, size=(EVENT_COMBO_PIXELS, -1))
+        self.event_choice = wx.ComboBox(self, -1, "", style=wx.CB_READONLY, size=(EVENT_COMBO_PIXELS,-1))
 
         self.Bind(wx.EVT_COMBOBOX, self.on_event_mod_change, mod_choice)
 
@@ -3813,8 +3789,6 @@ class Detail_win(wx.ScrolledWindow):
         self.dirty = False
         self.name = win_data.program().get_bric_name(bric_id)
         self.bad_events = []
-        if (not win_data.get_adv_mode()):
-            self.bad_events.append("Serial Character")
 
         self.prop_title = bric_data.get_bric_prop_title(self.name)
 
@@ -3829,8 +3803,8 @@ class Detail_win(wx.ScrolledWindow):
         rbs = self.make_radio_buttons(["Test passes", "Event happens", "Loop forever"])
 
         modules = self.get_event_modules()
-        mod_choice = self.make_combo(modules, size=(150, -1))
-        self.event_choice = wx.ComboBox(self, -1, "", style=wx.CB_READONLY, size=(150,-1))
+        mod_choice = self.make_combo(modules, size=(EVENT_COMBO_PIXELS, -1))
+        self.event_choice = wx.ComboBox(self, -1, "", style=wx.CB_READONLY, size=(EVENT_COMBO_PIXELS,-1))
 
         self.Bind(wx.EVT_COMBOBOX, self.on_event_mod_change, mod_choice)
 
@@ -4008,8 +3982,6 @@ class Detail_win(wx.ScrolledWindow):
         self.name = win_data.program().get_bric_name(bric_id)
         self.bricId = bric_id
         self.bad_events = []
-        if (not win_data.get_adv_mode()):
-            self.bad_events.append("Serial Character")
 
         self.prop_title = bric_data.get_bric_prop_title(self.name)
 
@@ -4024,8 +3996,8 @@ class Detail_win(wx.ScrolledWindow):
         rbs = self.make_radio_buttons(["Test passes", "Event happens"])
 
         modules = self.get_event_modules()
-        mod_choice = self.make_combo(modules, size=(150,-1))
-        self.event_choice = wx.ComboBox(self, -1, "", style=wx.CB_READONLY, size=(150,-1))
+        mod_choice = self.make_combo(modules, size=(EVENT_COMBO_PIXELS,-1))
+        self.event_choice = wx.ComboBox(self, -1, "", style=wx.CB_READONLY, size=(EVENT_COMBO_PIXELS,-1))
 
         self.Bind(wx.EVT_COMBOBOX, self.on_event_mod_change, mod_choice)
 
