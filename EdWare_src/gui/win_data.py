@@ -23,7 +23,10 @@
 # Svn: $Id: win_data.py 52 2006-12-03 00:44:40Z briand $
 # * **************************************************************** */
 
+#import json is needed so that pyinstaller realises that it's needed for jsonpickle
+import json
 
+import sys
 import pickle
 import jsonpickle
 import os
@@ -115,7 +118,6 @@ def save(file_obj):
     pickle.dump(pdata, file_obj, 2)
     update_dirty(False)
 
-    
 # change some of the strings in the JSON data to be easier for the Apps
 # (and to protect against changes in the class names)
 # "py/tuple"                                  <--> "Tuple"
@@ -129,7 +131,7 @@ def convertPythonDataToJson(data):
     step3 = re.sub(r'"py/object": "gui.program_data.Bric"', r'"Object": "Bric"', step2)
     step4 = re.sub(r'"py/object": "gui.program_data.Program"', r'"Object": "Program"', step3)
     return step4
-    
+
 def convertJsonToPythonData(json):
     step1 = re.sub(r'"Tuple":', r'"py/tuple":', json)
     step2 = re.sub(r'"Object": "Data"', r'"py/object": "gui.win_data.Persistent_data"', step1)
@@ -140,7 +142,7 @@ def convertJsonToPythonData(json):
 def saveEdisonAsJson(file_obj):
     # Grab a deepcopy as will be doing destructive changes
     test = copy.deepcopy(pdata)
-    
+
     # remove values that don't change as they can be reconstructed
     del test.configuration
     del test.config_ids
@@ -151,7 +153,7 @@ def saveEdisonAsJson(file_obj):
 
     encoding = jsonpickle.encode(test)
     fileData = convertPythonDataToJson(encoding)
-    
+
     file_obj.write(fileData)
     update_dirty(False)
 
@@ -165,10 +167,10 @@ def loadEdisonAsJson(file_obj, strict):
     global pdata
     program_version = pdata.version
     data = file_obj.read()
-    
+
     jsonData = convertJsonToPythonData(data)
     #print "jsonData:", jsonData
-    
+
     test = jsonpickle.decode(jsonData)
     #print "Decoded:", test
 
@@ -205,7 +207,7 @@ def loadEdisonAsJson(file_obj, strict):
         set_edison_configuration()
 
         update_dirty(False)
-        
+
         #dump()
         #pdata.program.dump()
 
@@ -217,7 +219,7 @@ def clear_unused_events():
     global unused_events_set
     unused_events = {}
     unused_events_set = False
-    
+
 def set_unused_events(events):
     global unused_events
     global unused_events_set

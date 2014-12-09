@@ -35,7 +35,7 @@ class AboutBox(wx.Dialog):
         <body>
         <center>
         <h1>Edison EdWare</h1>
-        <h2>Version 0.9.1</h2>
+        <h2>Version 0.9.5</h2>
         Programming your Edison Robot<br>
         http://www.microbric.com/
         </center>
@@ -66,8 +66,8 @@ class AboutBox(wx.Dialog):
         <li><b>wxPython</b> (http://www.wxpython.org)
         <li><b>pyWin32</b> (http://pywin32.sourceforge.net)
         <li><b>pyInstaller</b> (http://www.pyinstaller.org)
-        <li>----------- previous version components ----------------
         <li><b>Inno Setup</b> (http://www.jrsoftware.org)
+        <li>----------- previous version components ----------------
         <li><b>pySerial</b> (http://pyserial.sourceforge.net)
         <li><b>comscan.py</b> from bitpim (http://www.bitpim.org)
         </font>

@@ -27,6 +27,7 @@
 import wx
 import os
 import os.path
+import glob
 import sys
 import cPickle
 
@@ -43,8 +44,8 @@ import gui.about
 
 import gui.win_data
 
-SESSION_FILE_NAME = "session.dat"
-
+SESSION_FILE_NAME = "edware_session.dat"
+USER_DIR = "."
 
 class Session_data(object):
     def __init__(self):
@@ -303,15 +304,26 @@ class Bricworks_frame(wx.Frame):
     def session_load(self):
         global sdata
         global sdata_changed
-        if (os.path.isfile(SESSION_FILE_NAME)):
-            file_obj = file(SESSION_FILE_NAME, 'r')
-            test = cPickle.load(file_obj)
-            file_obj.close()
+        session_path = os.path.join(USER_DIR, SESSION_FILE_NAME)
+        print "session_path:", session_path
+        if (not os.path.isfile(session_path)):
+            # if USER_DIR doesn't have a file, then try locally
+            session_path = SESSION_FILE_NAME
+        
+        if (os.path.isfile(session_path)):
+            try:
+                # assume that we can read, if not then ignore reading the session data
+                file_obj = file(session_path, 'r')
+                test = cPickle.load(file_obj)
+                file_obj.close()
 
-            if (test.sdata_version == sdata.sdata_version):
-                sdata = test
-            elif (test.sdata_version == 3):
-                sdata.convert_from_3(test)
+                if (test.sdata_version == sdata.sdata_version):
+                    sdata = test
+                elif (test.sdata_version == 3):
+                    sdata.convert_from_3(test)
+                
+            except Exception, e:
+                pass
 
         #self.save_path = sdata.save_path
         #self.save_file = sdata.save_file
@@ -389,9 +401,30 @@ class Bricworks_frame(wx.Frame):
 
         if (sdata_changed or (cdata != sdata)):
             #print "Session data changed"
-            file_obj = file(SESSION_FILE_NAME, 'w')
-            cPickle.dump(cdata, file_obj, 0)
-            file_obj.close()
+
+            # Try two locations to write the file. Try to do it in a platform
+            # agnostic way.
+            goodFileObj = False
+            
+            # First in the session directory
+            session_path = os.path.join(USER_DIR, SESSION_FILE_NAME)
+            try:
+                file_obj = file(session_path, 'w')
+                goodFileObj = True
+            except Exception:
+                pass
+
+            # else in the current directory
+            if (not goodFileObj):
+                try:
+                    file_obj = file(SESSION_FILE_NAME, 'w')
+                    goodFileObj = True
+                except Exception:
+                    pass
+
+            if (goodFileObj):
+                cPickle.dump(cdata, file_obj, 0)
+                file_obj.close()
 
         sdata_changed = False
 
@@ -681,7 +714,6 @@ class Bricworks_frame(wx.Frame):
         return save_path
 
     def program_save(self, path, filename):
-
         try:
             # Edison has gone to a JSON format!
             if (sdata.edison_mode):
@@ -694,9 +726,9 @@ class Bricworks_frame(wx.Frame):
                 fh.close()
 
         except Exception,e:
-            wx.MessageBox("Error saving the program. Maybe the disk is full?",
+            extraInfo = "Exception:%s, python ver:%s" % (e, sys.version)
+            wx.MessageBox("Error saving the program. Maybe the disk is full?\n(%s)" % (extraInfo),
                           "Error while saving.", wx.OK | wx.ICON_ERROR)
-
 
     def menu_usb_device(self, event):
         global sdata_changed
@@ -907,4 +939,15 @@ if __name__ == '__main__':
     if (len(sys.argv) > 1):
         file_path = sys.argv[1]
 
+    # find the session writing error
+    path = '~'
+    new_path = os.path.expanduser(path)
+    if (new_path == path):
+        # didn't work, will have to just try to use the current directory
+        USER_DIR = '.'
+    else:
+        USER_DIR = new_path
+        
+    print "USER_DIR:", USER_DIR
+    
     main2(file_path)
