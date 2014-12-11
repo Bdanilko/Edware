@@ -247,6 +247,8 @@ class Program(object):
             # refresh the programming pallete
             win_data.force_redraw("ppallete")
 
+            del self.brics[id]
+            self.bric_count -= 1
             return True
             
         if (self.brics[id].bric_name in ('If', 'Loop')):
