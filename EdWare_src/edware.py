@@ -590,7 +590,6 @@ class Bricworks_frame(wx.Frame):
         gui.win_data.selection_drop_all()
         dialog = gui.downloader.audio_firmware_downloader("", "Download new FIRMWARE over audio")
         result = dialog.ShowModal()
-        used_device = dialog.get_port()
         dialog.Destroy()
 
     def menu_new_edison(self, event):

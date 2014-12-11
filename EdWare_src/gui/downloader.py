@@ -45,6 +45,9 @@ import os.path
 
 import time
 import wave
+import pyaudio
+
+AUDIO_CHUNK = 1024
 
 TOKEN_VERSION_STR = "\x20"
 TOKEN_VERSION_BYTE = 0x20
@@ -349,17 +352,17 @@ class audio_firmware_downloader(wx.Dialog):
                                                 fileMode=wx.OPEN)
         self.file_browse.SetBackgroundColour("lightgray")
 
-        self.grid.Add(self.file_browse, (1,1), span=(1,3), flag=wx.EXPAND)
+        self.grid.Add(self.file_browse, (1,1), span=(1,6), flag=wx.EXPAND)
 
-        self.grid.Add(self.progress_prompt, (4,1), span=(1,2), flag=wx.EXPAND)
-        self.grid.Add(self.gauge, (5,1), span=(1,3), flag=wx.EXPAND)
+        self.grid.Add(self.progress_prompt, (3,1), span=(1,2), flag=wx.EXPAND)
+        self.grid.Add(self.gauge, (4,1), span=(1,6), flag=wx.EXPAND)
         
-        self.grid.Add(self.help_text, (6,1), span=(2,2), flag=wx.EXPAND)
+        self.grid.Add(self.help_text, (6,1), span=(2,4), flag=wx.EXPAND)
         
         self.grid.AddGrowableRow(7)
-        self.grid.Add(self.cancel, (8,2), flag=wx.ALIGN_RIGHT | wx.BOTTOM)
-        self.grid.Add(self.start, (8,3), flag=wx.ALIGN_LEFT | wx.BOTTOM)
-        self.grid.Add((1,1), (9,2))
+        self.grid.Add(self.cancel, (8,3), flag=wx.ALIGN_RIGHT | wx.BOTTOM)
+        self.grid.Add(self.start, (8,4), flag=wx.ALIGN_LEFT | wx.BOTTOM)
+        self.grid.Add((1,1), (10,2))
 
         self.SetSizer(self.grid)
         self.Layout()
@@ -370,61 +373,83 @@ class audio_firmware_downloader(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.on_cancel, self.cancel)
 
     def on_cancel(self, event):
-        self.EndModal(1)
+        self.EndModal(wx.ID_CANCEL)
 
     def on_start(self, event):
-        # get the device
-        device = self.usb_ctrl.GetValue()
-
         filename = self.file_browse.GetValue()
         if (not os.path.exists(filename)):
             self.help_text.SetLabel("Error - couldn't read file: %s" % (filename,))
             return
+
+        # Assuming that the file is the binary firmware file with all header bytes
+        # already added. Just have to convert to audio and play.
         
         file_handle = file(filename, 'rb')
         firmware_string = file_handle.read()
         file_handle.close()
+        self.download_bytes = bytearray(firmware_string)
 
-        prefix = token_downloader.SERIAL_WAKEUP_STR + token_downloader.FIRMWARE_STR
-        prefix_len = len(prefix)
-
-        while (firmware_string.startswith(token_downloader.PRE_WAKEUP_ONE)):
-               firmware_string = firmware_string[len(token_downloader.PRE_WAKEUP_ONE):]
-               
-        if ((len(firmware_string) < prefix_len) or
-            (not firmware_string.startswith(prefix))):
-            self.help_text.SetLabel("Error - file doesn't seem to be firmware.")
-            return
-        
-        version = ((ord(firmware_string[prefix_len])&0xf0)>>4,
-                   ord(firmware_string[prefix_len])&0x0f)
-
-        firmware_bytes = []
-        for i in range(prefix_len+1, len(firmware_string)):
-            firmware_bytes.append(ord(firmware_string[i]))
-        self.byte_count = len(firmware_string)
+        self.byte_count = len(self.download_bytes)
         self.gauge.SetRange(self.byte_count)
+        self.gauge.SetValue(0)
+        self.help_text.SetLabel("Creating audio file.")
+        self.Update()
+        
+        # convert to wav file
+        convertWithPause(self.download_bytes, "firmware.wav",
+                         DOWNLOAD_PAUSE_MSECS, DOWNLOAD_BYTES_BETWEEN_PAUSES);
         
         # can't start twice so disable this button
         self.start.Disable()
         self.help_text.SetLabel("Starting download of %d bytes." % (self.byte_count,))
+        self.gauge.SetValue(0)
+        self.gauge.Update()
         self.Update()
 
-        result = token_downloader.gui_serial("firmware", version, firmware_bytes,
-                                             device, self.help_text, self.gauge)
+        time.sleep(1)
+        
+        if PLATFORM == "linux":
+            wf = wave.open("firmware.wav", 'rb')
+            p = pyaudio.PyAudio()
 
-        if (not result):
-            self.start.Enable()
+            totalFrames = wf.getnframes()
+            framesRead = 0
+            self.gauge.SetRange(totalFrames)
+            self.gauge.SetValue(0)
+            stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
+                            channels=wf.getnchannels(),
+                            rate=wf.getframerate(),
+                            output=True)
 
-        else:
-            self.gauge.SetValue(self.byte_count)
-            self.gauge.Update()
+            data = wf.readframes(AUDIO_CHUNK)
+            framesRead += AUDIO_CHUNK
+            if (framesRead > totalFrames):
+                framesRead = totalFrames
 
-            self.help_text.SetLabel("Downloading was successful!")
-            self.start.Enable()
+            while data != '':
+                stream.write(data)
+                self.gauge.SetValue(framesRead)
+                self.Update()
+                
+                data = wf.readframes(AUDIO_CHUNK)
+                framesRead += AUDIO_CHUNK
+                if (framesRead > totalFrames):
+                    framesRead = totalFrames
+                
+            stream.stop_stream()
+            stream.close()
+
+            p.terminate()
+
+        elif PLATFORM == "win":
+            s1 = wx.Sound("firmware.wav")
+            s1.Play(wx.SOUND_SYNC)
+
+        self.gauge.SetValue(self.byte_count)
+        self.help_text.SetLabel("Finished downloading")
+        self.start.Enable()
 
         self.Refresh()
-
 
         
 # --------------- Screen dialog ----------------------------------
@@ -924,7 +949,7 @@ def convert(binString, outFilePath):
         preamble += 1
 
 def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
-    print "Debug: in convert() with binString of length", len(binString)
+    #print "Debug: in convert() with binString of length", len(binString)
     waveWriter = wave.open(outFilePath, 'wb')
     waveWriter.setnchannels(2)
     waveWriter.setsampwidth(1)
@@ -943,7 +968,7 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
     while (index < len(binString)):
         if (pauseCount == bytesBetweenPauses):
             # insert more preamble -- one preamble is 1ms
-            print "Debug -- pausing for", pauseMsecs, "msecs, after", index, "bytes"
+            #print "Debug -- pausing for", pauseMsecs, "msecs, after", index, "bytes"
             preamble = 0
             while (preamble < pauseMsecs):
                 waveWriter.writeframes(createAudio(0))
@@ -986,6 +1011,8 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
         waveWriter.writeframes(createAudio(0))
         preamble += 1
 
+    waveWriter.close()
+        
 def createAudio(midQuantas):
     data = ""
     
