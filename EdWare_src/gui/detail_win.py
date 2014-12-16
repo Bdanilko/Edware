@@ -1487,6 +1487,7 @@ class Detail_win(wx.ScrolledWindow):
 
         elif (command == 'gen_code'):
             code_lines = []
+            input[0] = self.module_remove_alias(input[0], self.module_aliases)
             code_lines.append("movw %s @%s" % (win_data.make_mod_reg(input[0], 'lightlevel'), input[1]))
             return code_lines
 
