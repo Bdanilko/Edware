@@ -25,6 +25,7 @@
 
 import wx
 import wx.html
+import os
 
 class AboutBox(wx.Dialog):
 
@@ -35,7 +36,7 @@ class AboutBox(wx.Dialog):
         <body>
         <center>
         <h1>Edison EdWare</h1>
-        <h2>Version 0.9.5</h2>
+        <h2>Version 0.9.7.1</h2>
         Programming your Edison Robot<br>
         http://www.microbric.com/
         </center>
@@ -77,8 +78,11 @@ class AboutBox(wx.Dialog):
         </html>
         '''
 
+        self.test_text = ""
+        #self.test_text = "Environment - EdwareAudio:%s" % (os.getenv("edwareaudio", "NOT-SET"))
+        
         html = wx.html.HtmlWindow(self)
-        html.SetPage(self.html_text)
+        html.SetPage(self.html_text + self.test_text)
         button = wx.Button(self, wx.ID_OK, "Okay")
 
         sizer = wx.BoxSizer(wx.VERTICAL)

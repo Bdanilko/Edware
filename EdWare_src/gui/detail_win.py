@@ -117,11 +117,12 @@ EVENT_ALIASES = [(MOTHERBOARD, "Keypad"), (MOTHERBOARD, "Countdown timer"),
                  ("IR_RECEIVER1", "Data from another Edison"), ("IR_RECEIVER1", "Detect obstacle"),
                  ("IR_RECEIVER1", "Data from TV remote"), ("LINE_TRACKER1", "Line Tracker") ]
 
-NEW_EVENT_BAD_EVENTS = ['Match #0 remote code', 'Match #1 remote code',
-                        'Match #2 remote code', 'Match #3 remote code',
-                        'Match #4 remote code', 'Match #5 remote code',
-                        'Match #6 remote code', 'Match #7 remote code',
-                        'Match #8 remote code']
+# NEW_EVENT_BAD_EVENTS = ['Match #0 remote code', 'Match #1 remote code',
+#                         'Match #2 remote code', 'Match #3 remote code',
+#                         'Match #4 remote code', 'Match #5 remote code',
+#                         'Match #6 remote code', 'Match #7 remote code',
+#                         'Match #8 remote code']
+NEW_EVENT_BAD_EVENTS = []
 
 MOTOR_FWD = "Forward"
 MOTOR_STP = "Stop"
@@ -3345,6 +3346,8 @@ class Detail_win(wx.ScrolledWindow):
         bit = -1
         mod = None
         clear_status = True
+
+        #print "create_event_code - mod_alias:", mod_alias, " event:", event
         
         module = self.module_remove_alias(mod_alias, EVENT_ALIASES)
         events = self.get_event_choices(mod_alias)
@@ -3377,9 +3380,11 @@ class Detail_win(wx.ScrolledWindow):
             mask = 0x01
             value = 0x00
             clear_status = False
-        elif (event.startswith('RC match')):
+        elif (event.startswith('Match #')):
             mask = 0x02
-            match = int(event[8:])
+            match = int(event[7])
+            #print "Matching IR code:", match
+            # any match is handled without any special case
         else:
             mask = 1 << int(bit)
 

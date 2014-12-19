@@ -45,7 +45,6 @@ import os.path
 
 import time
 import wave
-import pyaudio
 
 AUDIO_CHUNK = 1024
 
@@ -319,10 +318,45 @@ class audio_downloader(wx.Dialog):
         self.Update()
 
         time.sleep(1)
-        
-        if PLATFORM == "linux":
+
+        if ((os.getenv("edwareaudio", "") == "alt1") and
+            (PLATFORM == "linux")):
+            import pyaudio
+            wf = wave.open("program.wav", 'rb')
+            p = pyaudio.PyAudio()
+
+            totalFrames = wf.getnframes()
+            framesRead = 0
+            self.gauge.SetRange(totalFrames)
+            self.gauge.SetValue(0)
+            stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
+                            channels=wf.getnchannels(),
+                            rate=wf.getframerate(),
+                            output=True)
+
+            data = wf.readframes(AUDIO_CHUNK)
+            framesRead += AUDIO_CHUNK
+            if (framesRead > totalFrames):
+                framesRead = totalFrames
+
+            while data != '':
+                stream.write(data)
+                self.gauge.SetValue(framesRead)
+                self.Update()
+
+                data = wf.readframes(AUDIO_CHUNK)
+                framesRead += AUDIO_CHUNK
+                if (framesRead > totalFrames):
+                    framesRead = totalFrames
+
+            stream.stop_stream()
+            stream.close()
+            p.terminate()
+            
+        elif PLATFORM == "linux":
             s1 = pyglet.media.load("program.wav", streaming=False)
             s1.play()
+            
         elif PLATFORM == "win":
             s1 = wx.Sound("program.wav")
             s1.Play(wx.SOUND_SYNC)
@@ -409,6 +443,7 @@ class audio_firmware_downloader(wx.Dialog):
         time.sleep(1)
         
         if PLATFORM == "linux":
+            import pyaudio
             wf = wave.open("firmware.wav", 'rb')
             p = pyaudio.PyAudio()
 
