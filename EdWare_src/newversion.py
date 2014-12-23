@@ -25,6 +25,7 @@ if __name__ == '__main__':
     # copy everything over
     shutil.copy('edware.py', dirName)
     shutil.copy('edware.ico', dirName)
+    shutil.copy('edware.icns', dirName)
     shutil.copy('tass.py', dirName)
     shutil.copy('Click.wav', dirName)
 

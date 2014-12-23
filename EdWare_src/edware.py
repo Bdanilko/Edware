@@ -24,6 +24,9 @@
 # Svn: $Id: bricworks.py 52 2006-12-03 00:44:40Z briand $
 # * **************************************************************** */
 
+# this has to be imported early on as other imports bugger it up
+import pyaudio
+
 import wx
 import os
 import os.path
@@ -41,11 +44,10 @@ import gui.program_work
 import gui.config_work
 import gui.downloader
 import gui.about
-
+import gui.paths
 import gui.win_data
 
 SESSION_FILE_NAME = "edware_session.dat"
-USER_DIR = "."
 
 class Session_data(object):
     def __init__(self):
@@ -87,7 +89,7 @@ class Bricworks_frame(wx.Frame):
 ##        wx.SplashScreen(splash_bmap, wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT, 2000, self, -1)
 ##        wx.Yield()
 
-        self.save_path = os.getcwd()
+        self.save_path = gui.paths.get_store_dir()
         self.save_file = ""
 
         self.splitter_done = False
@@ -308,10 +310,10 @@ class Bricworks_frame(wx.Frame):
     def session_load(self):
         global sdata
         global sdata_changed
-        session_path = os.path.join(USER_DIR, SESSION_FILE_NAME)
+        session_path = os.path.join(gui.paths.get_store_dir(), SESSION_FILE_NAME)
         print "session_path:", session_path
         if (not os.path.isfile(session_path)):
-            # if USER_DIR doesn't have a file, then try locally
+            # if store_dir isn't valid, then try locally
             session_path = SESSION_FILE_NAME
         
         if (os.path.isfile(session_path)):
@@ -411,7 +413,7 @@ class Bricworks_frame(wx.Frame):
             goodFileObj = False
             
             # First in the session directory
-            session_path = os.path.join(USER_DIR, SESSION_FILE_NAME)
+            session_path = os.path.join(gui.paths.get_store_dir(), SESSION_FILE_NAME)
             try:
                 file_obj = file(session_path, 'w')
                 goodFileObj = True
@@ -949,15 +951,4 @@ if __name__ == '__main__':
     if (len(sys.argv) > 1):
         file_path = sys.argv[1]
 
-    # find the session writing error
-    path = '~'
-    new_path = os.path.expanduser(path)
-    if (new_path == path):
-        # didn't work, will have to just try to use the current directory
-        USER_DIR = '.'
-    else:
-        USER_DIR = new_path
-        
-    print "USER_DIR:", USER_DIR
-    
     main2(file_path)

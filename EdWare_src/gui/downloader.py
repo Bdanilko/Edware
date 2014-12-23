@@ -42,10 +42,16 @@ import sys
 import optparse
 import os
 import os.path
+import paths
+
+import sys
+import time
 
 import time
 import wave
 
+USE_PORTAUDIO = True
+import pyaudio
 AUDIO_CHUNK = 1024
 
 TOKEN_VERSION_STR = "\x20"
@@ -84,7 +90,7 @@ err = None
 def write_code(file_name):
 
     if (not file_name):
-        file_name = "last_compile"
+        file_name = os.path.join(paths.get_store_dir(), "last_compile")
         
     parts = os.path.splitext(file_name)
     file_name = parts[0]+".mbc"
@@ -170,7 +176,8 @@ def check_size():
 class usb_downloader(wx.Dialog):
     def __init__(self, usb_device, file_name, title="Set Title!", size=(200, 200)):
         wx.Dialog.__init__(self, None, -1, title, size=(500, 300))
-        self.SetBackgroundColour("lightgray")
+        if (paths.get_platform() != "mac"):
+            self.SetBackgroundColour("lightgray")
 
         # self.ports = get_possible_ports()
         # if (usb_device not in self.ports):
@@ -259,7 +266,8 @@ class usb_downloader(wx.Dialog):
 class audio_downloader(wx.Dialog):
     def __init__(self, file_name, title="Set Title!", size=(200, 200)):
         wx.Dialog.__init__(self, None, -1, title, size=(500, 300))
-        self.SetBackgroundColour("lightgray")
+        if (paths.get_platform() != "mac"):
+            self.SetBackgroundColour("lightgray")
 
         self.grid = wx.GridBagSizer(5,5)
         self.progress_prompt = wx.StaticText(self, -1, "Download progress:")
@@ -295,7 +303,8 @@ class audio_downloader(wx.Dialog):
         self.help_text.SetLabel("Download size is %d bytes." % (self.byte_count,))
 
         # convert to wav file
-        convertWithPause(self.download_bytes, "program.wav",
+        WAV_FILE = os.path.join(paths.get_store_dir(), "program.wav")
+        convertWithPause(self.download_bytes, WAV_FILE,
                          DOWNLOAD_PAUSE_MSECS, DOWNLOAD_BYTES_BETWEEN_PAUSES);
         
     def on_cancel(self, event):
@@ -318,11 +327,11 @@ class audio_downloader(wx.Dialog):
         self.Update()
 
         time.sleep(1)
+        WAV_FILE = os.path.join(paths.get_store_dir(), "program.wav")
 
-        if ((os.getenv("edwareaudio", "") == "alt1") and
-            (PLATFORM == "linux")):
-            import pyaudio
-            wf = wave.open("program.wav", 'rb')
+        if USE_PORTAUDIO:
+            print "Using PORTAUDIO"
+            wf = wave.open(WAV_FILE, 'rb')
             p = pyaudio.PyAudio()
 
             totalFrames = wf.getnframes()
@@ -354,11 +363,11 @@ class audio_downloader(wx.Dialog):
             p.terminate()
             
         elif PLATFORM == "linux":
-            s1 = pyglet.media.load("program.wav", streaming=False)
+            s1 = pyglet.media.load(WAV_FILE, streaming=False)
             s1.play()
             
         elif PLATFORM == "win":
-            s1 = wx.Sound("program.wav")
+            s1 = wx.Sound(WAV_FILE)
             s1.Play(wx.SOUND_SYNC)
 
         self.gauge.SetValue(self.byte_count)
@@ -372,7 +381,8 @@ class audio_downloader(wx.Dialog):
 class audio_firmware_downloader(wx.Dialog):
     def __init__(self, file_name, title="Set Title!", size=(200, 200)):
         wx.Dialog.__init__(self, None, -1, title, size=(500, 300))
-        self.SetBackgroundColour("lightgray")
+        if (paths.get_platform() != "mac"):
+            self.SetBackgroundColour("lightgray")
 
         self.grid = wx.GridBagSizer(5,5)
 
@@ -384,7 +394,8 @@ class audio_firmware_downloader(wx.Dialog):
         self.file_browse = fbb.FileBrowseButton(self, -1, labelText="Firmware File:",
                                                 dialogTitle="Find a Firmware File",
                                                 fileMode=wx.OPEN)
-        self.file_browse.SetBackgroundColour("lightgray")
+        if (paths.get_platform() != "mac"):
+            self.file_browse.SetBackgroundColour("lightgray")
 
         self.grid.Add(self.file_browse, (1,1), span=(1,6), flag=wx.EXPAND)
 

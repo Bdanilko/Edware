@@ -27,6 +27,7 @@ import os.path
 import ConfigParser
 
 import wx
+import paths
 
 class Data(object):
     def __init__(self):
@@ -41,7 +42,8 @@ class Data(object):
 
 data = Data()
 
-DEVICES = "gui/devices"
+
+DEVICES = os.path.join(paths.get_run_dir(), "gui/devices")
 DEVICE_CONTROL = DEVICES + "/control.ini"
 DEVICES_BIG = DEVICES + "/big"
 DEVICES_SMALL = DEVICES + "/small"

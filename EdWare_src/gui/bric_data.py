@@ -30,6 +30,7 @@ import wx
 import wx.lib.imageutils
 
 import win_data
+import paths
 
 BRIC_NORMAL = 0
 BRIC_SELECTED = 1
@@ -37,7 +38,7 @@ BRIC_DISABLED = 2
 
 # ----------------------
 
-BRICS = "gui/brics"
+BRICS = os.path.join(paths.get_run_dir(), "gui/brics")
 BRIC_CONTROL = BRICS + "/control.ini"
 BRICS_BIG = BRICS + "/big"
 BRICS_SMALL = BRICS + "/small"
