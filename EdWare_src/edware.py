@@ -8,7 +8,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, Microbric Pty Ltd.
+# Copyright 2006, 2014 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@
 # GNU General Public License (in the docs/licenses directory)
 # for more details.
 #
-# Svn: $Id: bricworks.py 52 2006-12-03 00:44:40Z briand $
 # * **************************************************************** */
 
 # this has to be imported early on as other imports bugger it up
@@ -311,7 +310,7 @@ class Bricworks_frame(wx.Frame):
         global sdata
         global sdata_changed
         session_path = os.path.join(gui.paths.get_store_dir(), SESSION_FILE_NAME)
-        print "session_path:", session_path
+        #print "session_path:", session_path
         if (not os.path.isfile(session_path)):
             # if store_dir isn't valid, then try locally
             session_path = SESSION_FILE_NAME

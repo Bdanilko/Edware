@@ -8,7 +8,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, Microbric Pty Ltd.
+# Copyright 2006, 2014 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@
 # GNU General Public License (in the docs/licenses directory)
 # for more details.
 #
-# Svn: $Id: detail_win.py 50 2006-12-02 01:10:37Z briand $
 # * **************************************************************** */
 
 import wx
@@ -1331,25 +1330,24 @@ class Detail_win(wx.ScrolledWindow):
                 code_lines.append("movb %%_cpu:acc @%s" % (input[1]))
 
             elif (name == 'Infrared Data In'):
-                # Have to clear the status bit for IR received
-                code_lines.append("bitclr $0 %s" % (win_data.make_mod_reg(input[0], 'status'),))
-
                 # read the actual character in (which may be 0)
                 code_lines.append("movb %s @%s" % (win_data.make_mod_reg(input[0], 'char'), input[1]))
 
                 # clear the data so that the next read won't return the same data
                 code_lines.append("movb $0 %s" % (win_data.make_mod_reg(input[0], 'char')))
 
-            elif (name == 'Remote'):
-                # Have to clear the status bit for the remote match
-                code_lines.append("bitclr $1 %s" % (win_data.make_mod_reg(input[0], 'status'),))
+                # Have to clear the status bit for IR received
+                code_lines.append("bitclr $0 %s" % (win_data.make_mod_reg(input[0], 'status'),))
 
+            elif (name == 'Remote'):
                 # read the match (which may be 0)
                 code_lines.append("movb %s @%s" % (win_data.make_mod_reg(input[0], 'match'), input[1]))
 
                 # clear the data so that the next read won't return the same data
                 code_lines.append("movb $0 %s" % (win_data.make_mod_reg(input[0], 'match')))
 
+                # Have to clear the status bit for the remote match
+                code_lines.append("bitclr $1 %s" % (win_data.make_mod_reg(input[0], 'status'),))
 
             elif (name == 'Analogue In'):
                 code_lines.append("movw %s @%s" % (win_data.make_mod_reg(input[0], 'level'), input[1]))

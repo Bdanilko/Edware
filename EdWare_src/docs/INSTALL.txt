@@ -1,0 +1,64 @@
+Notes on installing EdWare software
+
+*** Windows with installer ************
+
+The windows installer contains all code that's needed to run EdWare in a single
+executable created with PyInstaller and Inno. The file will be in the form:
+edwaresetup-x.y.z.exe (where x, y and z is the version number of the software).
+
+To install, just unzip the file (if it's zipped) and then run the .exe file. It will
+install the program for you.
+
+*** OSX with installer ****************
+
+The OSX installer contains all the code that's needed to run EdWare in a single
+disk image, created with PyInstaller. The file will be in the form:
+edwaresetup-x.y.z.dmg (where x, y and z is the version number of the software).
+
+Double click the .dmg file to mount it. Then the .app file inside can be dragged over to
+Applications or run directly from the mounted disk image.
+
+*** Linux manually ********************
+
+Depending your linux distribution, the details of installing software from your
+package manager will vary. Please investigate how to install packages for your
+linux distribution.
+
+First try to find the packages mentioned below (except for EdWare!) in your
+distribution's package manage and install them from there. If you can't find them
+there, then go to the websites listed to install them manually.
+
+1) Install the latest version 2 of python
+   (version 2.7.9, https://www.python.org/downloads/)
+   
+2) Install the wxPython version that matches your python 
+   (version http://wxpython.org/download.php#linux)
+   
+3) Install the PyAudio version that matches your python
+   (http://people.csail.mit.edu/hubert/pyaudio/#downloads)
+   
+4) Install the JsonPickle version that matches your python version
+   (http://jsonpickle.github.io/#download-install)
+   
+5) Pick or create a directory to hold EdWare (say under your home directory)
+   (e.g. cd ~ ; mkdir edware)
+   
+6) Unzip the EdWare source into this directory
+   (e.g. cd edware ; unzip ../EdWareSrc-x.y.z.zip)
+   
+7) Execute edware , in this new directory, by typing: "python edware.py"
+   (e.g. cd ~/edware ; python2 edware.py)
+
+Note -- if you have both python 3 and python 2 installed, you may have to invoke
+edware by typing: "python2 edware.py".
+
+
+*** Windows manually ******************
+
+To Be Done -- but for now follow the linux instructions but install windows versions
+
+
+*** OSX manually **********************
+
+To Be Done -- but for now follow the linux instructions but install OSX versions
+

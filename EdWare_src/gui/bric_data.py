@@ -6,7 +6,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, Microbric Pty Ltd.
+# Copyright 2006, 2014 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 # GNU General Public License (in the docs/licenses directory)
 # for more details.
 #
-# Svn: $Id: bric_data.py 50 2006-12-02 01:10:37Z briand $
 # * **************************************************************** */
 
 import os

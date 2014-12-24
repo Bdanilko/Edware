@@ -7,7 +7,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, Microbric Pty Ltd.
+# Copyright 2006, 2014 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@
 # GNU General Public License (in the docs/licenses directory)
 # for more details.
 #
-# Svn: $Id: win_data.py 52 2006-12-03 00:44:40Z briand $
 # * **************************************************************** */
 
 #import json is needed so that pyinstaller realises that it's needed for jsonpickle
@@ -1148,7 +1147,7 @@ def get_code_stream(bric_id, end_bric, in_event, code_lines):
 
 
 def add_header_code(code_lines):
-    code_lines.append("# Do not edit! Created automatically by Microbric Works.")
+    code_lines.append("# Do not edit! Created automatically by EdWare.")
     code_lines.append("#")
 
     if (get_edison_mode()):

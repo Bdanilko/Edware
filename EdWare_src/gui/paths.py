@@ -6,7 +6,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2014, Microbric Pty Ltd.
+# Copyright 2014 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ if (new_path == path):
 else:
     STORE_DIR = new_path
 
-print "Platform:", PLATFORM, ", Frozen:", FROZEN, ", Run_dir:", RUN_DIR, ", Store_dir:", STORE_DIR
+#print "Platform:", PLATFORM, ", Frozen:", FROZEN, ", Run_dir:", RUN_DIR, ", Store_dir:", STORE_DIR
 
 def is_frozen():
     return FROZEN

@@ -6,7 +6,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, Microbric Pty Ltd.
+# Copyright 2006, 2014 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 # GNU General Public License (in the docs/licenses directory)
 # for more details.
 #
-# Svn: $Id: about.py 50 2006-12-02 01:10:37Z briand $
 # * **************************************************************** */
 
 
@@ -36,7 +35,7 @@ class AboutBox(wx.Dialog):
         <body>
         <center>
         <h1>Edison EdWare</h1>
-        <h2>Version 0.9.7.4</h2>
+        <h2>Version 0.9.8</h2>
         Programming your Edison Robot<br>
         http://www.microbric.com/
         </center>
@@ -68,6 +67,8 @@ class AboutBox(wx.Dialog):
         <li><b>pyWin32</b> (http://pywin32.sourceforge.net)
         <li><b>pyInstaller</b> (http://www.pyinstaller.org)
         <li><b>Inno Setup</b> (http://www.jrsoftware.org)
+        <li><b>JsonPickle</b> (http://jsonpickle.github.io)
+        <li><b>PyAudio</b> (http://people.csail.mit.edu/hubert/pyaudio)
         <li>----------- previous version components ----------------
         <li><b>pySerial</b> (http://pyserial.sourceforge.net)
         <li><b>comscan.py</b> from bitpim (http://www.bitpim.org)
