@@ -70,7 +70,8 @@ DOWNLOAD_PAUSE_MSECS = 2000
 
 if sys.platform.startswith("linux"):
     PLATFORM="linux"
-    import pyglet
+    if (not USE_PORTAUDIO):
+        import pyglet
 elif sys.platform.startswith("win"):
     PLATFORM="win"
 elif sys.platform.startswith("darwin"):

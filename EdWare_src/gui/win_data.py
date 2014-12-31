@@ -1223,17 +1223,21 @@ click_wav = None
 
 def click_sound():
     global click_wav
-    if (sys.platform=='win32' or
-        sys.platform.startswith('linux') or
-        sys.platform=='darwin'):
-        try:
-            if (not click_wav):
-                click_wav = wx.Sound()
-                click_wav.Create("Click.wav")
+    # trying without the click sound
+    if (True):
+        return
+    else:
+        if (sys.platform=='win32' or
+            sys.platform.startswith('linux') or
+            sys.platform=='darwin'):
+            try:
+                if (not click_wav):
+                    click_wav = wx.Sound()
+                    click_wav.Create("Click.wav")
 
-            click_wav.Play(flags=wx.SOUND_ASYNC)
-        except:
-            pass
+                click_wav.Play(flags=wx.SOUND_ASYNC)
+            except:
+                pass
 
 
 def selection_take(win_name, name_data, pos_data):
