@@ -264,29 +264,33 @@ class usb_downloader(wx.Dialog):
         # --------------- AUDIO dialog ----------------------------------
 
 class audio_downloader(wx.Dialog):
-    def __init__(self, file_name, title="Set Title!", size=(200, 200)):
-        wx.Dialog.__init__(self, None, -1, title, size=(500, 300))
+    def __init__(self, file_name, title="Set Title!"):
+        wx.Dialog.__init__(self, None, -1, title)
         if (paths.get_platform() != "mac"):
             self.SetBackgroundColour("lightgray")
 
-        self.grid = wx.GridBagSizer(5,5)
         self.progress_prompt = wx.StaticText(self, -1, "Download progress:")
         self.gauge = wx.Gauge(self, -1, range=100)
+        self.gauge.SetMinSize((500, -1))
         self.start = wx.Button(self, -1, "Start Download")
         self.cancel = wx.Button(self, -1, "Cancel Download")
         self.help_text = wx.StaticText(self, -1, "")
         
-        self.grid.Add(self.progress_prompt, (3,1), span=(1,2), flag=wx.EXPAND)
-        self.grid.Add(self.gauge, (4,1), span=(1,3), flag=wx.EXPAND)
-        
-        self.grid.Add(self.help_text, (6,1), span=(2,2), flag=wx.EXPAND)
+        grid = wx.FlexGridSizer(3 ,1, 5, 5)
+        grid.Add(self.progress_prompt)
+        grid.Add(self.gauge, flag=wx.EXPAND)
+        grid.Add(self.help_text, flag=wx.EXPAND)
 
-        self.grid.AddGrowableRow(7)
-        self.grid.Add(self.cancel, (8,2), flag=wx.ALIGN_RIGHT | wx.BOTTOM)
-        self.grid.Add(self.start, (8,3), flag=wx.ALIGN_LEFT | wx.BOTTOM)
-        self.grid.Add((1,1), (9,2))
+        buttons = wx.BoxSizer(wx.HORIZONTAL)
+        buttons.AddStretchSpacer()
+        buttons.Add(self.cancel)
+        buttons.Add(self.start, flag=wx.LEFT, border=10)
 
-        self.SetSizer(self.grid)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(grid, 1, flag=wx.ALL, border=10)
+        sizer.Add(buttons, 0, wx.EXPAND | wx.ALL, border=10)
+        self.SetSizer(sizer)
+        sizer.Fit(self)
         self.Layout()
 
         self.start.SetDefault()
@@ -379,15 +383,14 @@ class audio_downloader(wx.Dialog):
         # --------------- AUDIO FIRMWARE dialog ----------------------------------
         
 class audio_firmware_downloader(wx.Dialog):
-    def __init__(self, file_name, title="Set Title!", size=(200, 200)):
-        wx.Dialog.__init__(self, None, -1, title, size=(500, 300))
+    def __init__(self, file_name, title="Set Title!"):
+        wx.Dialog.__init__(self, None, -1, title)
         if (paths.get_platform() != "mac"):
             self.SetBackgroundColour("lightgray")
 
-        self.grid = wx.GridBagSizer(5,5)
-
         self.progress_prompt = wx.StaticText(self, -1, "Download progress:")
         self.gauge = wx.Gauge(self, -1, range=100)
+        self.gauge.SetMinSize((500, -1))
         self.start = wx.Button(self, -1, "Start Download")
         self.cancel = wx.Button(self, -1, "Cancel Download")
         self.help_text = wx.StaticText(self, -1, "")
@@ -397,19 +400,22 @@ class audio_firmware_downloader(wx.Dialog):
         if (paths.get_platform() != "mac"):
             self.file_browse.SetBackgroundColour("lightgray")
 
-        self.grid.Add(self.file_browse, (1,1), span=(1,6), flag=wx.EXPAND)
+        grid = wx.FlexGridSizer(4 ,1, 5, 5)
+        grid.Add(self.file_browse, flag=wx.EXPAND)
+        grid.Add(self.progress_prompt)
+        grid.Add(self.gauge, flag=wx.EXPAND)
+        grid.Add(self.help_text, flag=wx.EXPAND)
 
-        self.grid.Add(self.progress_prompt, (3,1), span=(1,2), flag=wx.EXPAND)
-        self.grid.Add(self.gauge, (4,1), span=(1,6), flag=wx.EXPAND)
-        
-        self.grid.Add(self.help_text, (6,1), span=(2,4), flag=wx.EXPAND)
-        
-        self.grid.AddGrowableRow(7)
-        self.grid.Add(self.cancel, (8,3), flag=wx.ALIGN_RIGHT | wx.BOTTOM)
-        self.grid.Add(self.start, (8,4), flag=wx.ALIGN_LEFT | wx.BOTTOM)
-        self.grid.Add((1,1), (10,2))
+        buttons = wx.BoxSizer(wx.HORIZONTAL)
+        buttons.AddStretchSpacer()
+        buttons.Add(self.cancel)
+        buttons.Add(self.start, flag=wx.LEFT, border=10)
 
-        self.SetSizer(self.grid)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(grid, 1, flag=wx.ALL, border=10)
+        sizer.Add(buttons, 0, wx.EXPAND | wx.ALL, border=10)
+        self.SetSizer(sizer)
+        sizer.Fit(self)
         self.Layout()
 
         self.start.SetDefault()
