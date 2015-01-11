@@ -130,7 +130,7 @@ class Program_work(work_win.Work_win):
         dc.Clear()
 
         ourGray = wx.Colour(red=108, green=109, blue=112)
-        ourPen = wx.Pen(ourGray, 11)
+        ourPen = wx.Pen(ourGray, 12)
         ourPen.SetCap(wx.CAP_BUTT)
         dc.SetPen(ourPen)
         dc.SetBrush(wx.Brush(ourGray, wx.SOLID))
