@@ -303,21 +303,21 @@ class Var_dialog(wx.Dialog):
             grid.Add(self.fields[i])
         
         del_button = wx.Button(self, wx.ID_DELETE)
+        if (data[0] == ""):
+            del_button.Enable(False)
         ok_button = wx.Button(self, wx.ID_OK)
         ok_button.SetDefault()
         cancel_button = wx.Button(self, wx.ID_CANCEL)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.AddSpacer((10,10))
-        sizer.Add(grid, 1)
-        sizer.AddSpacer((20,20))
+        sizer.Add(grid, 1, flag=wx.ALL, border=10)
         
         buttons = wx.BoxSizer(wx.HORIZONTAL)
         buttons.Add(del_button)
-        buttons.Add((20,20), 1)
+        buttons.AddStretchSpacer()
         buttons.Add(cancel_button)
-        buttons.Add(ok_button)
-        sizer.Add(buttons, 0, wx.BOTTOM | wx.EXPAND)
+        buttons.Add(ok_button, flag=wx.LEFT, border=10)
+        sizer.Add(buttons, 0, wx.EXPAND | wx.ALL, border=10)
 
         self.SetSizer(sizer)
         sizer.Fit(self)
