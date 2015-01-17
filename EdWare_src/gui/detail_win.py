@@ -217,8 +217,11 @@ class Detail_win(wx.ScrolledWindow):
     def update_dirty(self, dirty):
         if (dirty != self.dirty):
             self.dirty = dirty
-##            for b in self.buttons:
-##                b.Enable(dirty)
+
+            # Update the win_data dirty flag if it's now dirty. Only edware.py will reset
+            # this flag on saving.
+            if (dirty):
+                win_data.update_dirty(dirty)
 
     def switch_group(self, sel_group):
         self.sel_group = sel_group

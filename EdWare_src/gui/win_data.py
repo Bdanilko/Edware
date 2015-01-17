@@ -267,6 +267,7 @@ def update_dirty(dirty):
         tdata.dirty = dirty
         tdata.windows['frame'].change_dirty(dirty)
         status_dirty(dirty)
+        #print "win_data.update_dirty - dirty:", dirty
 
 
 def clear_pdata():
