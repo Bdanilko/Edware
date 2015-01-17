@@ -341,7 +341,7 @@ class Detail_win(wx.ScrolledWindow):
             self.update_dirty(False)
 
         self.SetVirtualSize(self.GetBestSize())
-        #self.FitInside()
+        self.FitInside()
         self.Layout()
         self.Refresh()
 
