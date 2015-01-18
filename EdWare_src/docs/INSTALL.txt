@@ -36,7 +36,11 @@ there, then go to the websites listed to install them manually.
    
 3) Install the PyAudio version that matches your python
    (http://people.csail.mit.edu/hubert/pyaudio/#downloads)
-   
+
+3.1) Alsa and it's plugins must be installed for the sound output
+   (particularly libasound_module_conf_pulse.so). This is normal on
+   most linux distributions, but must be installed if absent.
+
 4) Install the JsonPickle version that matches your python version
    (http://jsonpickle.github.io/#download-install)
    
@@ -51,6 +55,10 @@ there, then go to the websites listed to install them manually.
 
 Note -- if you have both python 3 and python 2 installed, you may have to invoke
 edware by typing: "python2 edware.py".
+
+NOTE -- a user contributed this info (edited to add libasound): 
+     for Ubuntu 14.04, install the needed packages with:
+     apt-get install python-jsonpickle python-pyaudio python-wxgtk2.8 libasound2-plugins
 
 
 *** Windows manually ******************

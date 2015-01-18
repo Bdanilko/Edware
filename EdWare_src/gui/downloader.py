@@ -70,8 +70,6 @@ DOWNLOAD_PAUSE_MSECS = 2000
 
 if sys.platform.startswith("linux"):
     PLATFORM="linux"
-    if (not USE_PORTAUDIO):
-        import pyglet
 elif sys.platform.startswith("win"):
     PLATFORM="win"
 elif sys.platform.startswith("darwin"):
@@ -334,7 +332,6 @@ class audio_downloader(wx.Dialog):
         WAV_FILE = os.path.join(paths.get_store_dir(), "program.wav")
 
         if USE_PORTAUDIO:
-            print "Using PORTAUDIO"
             wf = wave.open(WAV_FILE, 'rb')
             p = pyaudio.PyAudio()
 
@@ -365,10 +362,6 @@ class audio_downloader(wx.Dialog):
             stream.stop_stream()
             stream.close()
             p.terminate()
-            
-        elif PLATFORM == "linux":
-            s1 = pyglet.media.load(WAV_FILE, streaming=False)
-            s1.play()
             
         elif PLATFORM == "win":
             s1 = wx.Sound(WAV_FILE)
