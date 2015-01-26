@@ -331,11 +331,11 @@ class Detail_win(wx.ScrolledWindow):
 ##            for b in self.buttons:
 ##                hbox.Add(b, 0)
 ##            self.vbox.Add(hbox, flag=wx.EXPAND)
-            self.vbox.Add(self.title, 0)
-
+            self.vbox.Add(self.title, 0, wx.ALL|wx.EXPAND, 5)
+            self.vbox.Add(wx.StaticLine(self), 0, wx.ALL|wx.EXPAND, 5)
 
             # set new details
-            self.vbox.Add(self.detail_dict[name](bric_id, self.old_data))
+            self.vbox.Add(self.detail_dict[name](bric_id, self.old_data), 0, wx.ALL|wx.EXPAND, 5)
 
             # start out not dirty
             self.update_dirty(False)
@@ -364,11 +364,9 @@ class Detail_win(wx.ScrolledWindow):
 
         if (add_const):
             choices.insert(0, CONSTANT)
-            size = CONST_SIZE
 
         if (add_no_var):
             choices.insert(0, NO_VAR)
-            size = CONST_SIZE
 
         cb = wx.ComboBox(self, -1, choices[0], choices=choices,
                          style=wx.CB_READONLY, size=size)
@@ -387,13 +385,15 @@ class Detail_win(wx.ScrolledWindow):
                 #print "Setting:", value_list[i]
                 control_list[i].SetValue(value_list[i])
 
-    def add_with_prompt(self, grid, loc, prompt, controls, extra_info=None, ctrl_span=None):
+    def add_with_prompt(self, grid, loc, prompt, controls, extra_info=None, ctrl_span=None, expand=True):
         flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTRE_VERTICAL
         if (len(prompt)>0):
             grid.Add(wx.StaticText(self, -1, prompt), loc, flag=flag)
             loc = (loc[0], loc[1]+1)
         extra_loc = (loc[0]+1, loc[1])
         flag = wx.ALIGN_CENTRE_VERTICAL
+        if (expand):
+            flag |= wx.EXPAND
         for c in controls:
             if (ctrl_span):
                 grid.Add(c, loc, flag=flag, span=ctrl_span)
@@ -403,7 +403,7 @@ class Detail_win(wx.ScrolledWindow):
             loc = (loc[0], loc[1]+1)
 
         if (extra_info):
-            grid.Add(wx.StaticText(self, -1, '(%s)' % (extra_info,)), extra_loc, span=(1,2), flag=flag)
+            grid.Add(wx.StaticText(self, -1, '(%s)' % (extra_info,)), extra_loc, span=(1,3), flag=flag)
 
 
     def make_headings(self, grid, loc):
@@ -570,7 +570,7 @@ class Detail_win(wx.ScrolledWindow):
         self.add_with_prompt(grid, (grid_line,1), "", note_and_dur)
 
         grid.Add(rbs[1], (grid_line+1,0), flag=wx.ALIGN_CENTRE_VERTICAL)
-        self.add_with_prompt(grid, (grid_line+1,1), "", tune)
+        self.add_with_prompt(grid, (grid_line+1,1), "", tune, ctrl_span=(1,2))
 
         self.bind_event_handlers()
 
@@ -2539,7 +2539,7 @@ class Detail_win(wx.ScrolledWindow):
         if (len(modules) < 2):
             mod_choice.Hide()
         else:
-            self.add_with_prompt(grid, (grid_line,0), MODULE_PROMPT, (mod_choice,), ctrl_span=(1,2))
+            self.add_with_prompt(grid, (grid_line,0), MODULE_PROMPT, (mod_choice,))
             grid_line += 1
 
         self.make_headings(grid, (grid_line,1))
@@ -2820,7 +2820,7 @@ class Detail_win(wx.ScrolledWindow):
 ##        print self.cons_tc
 ##        print self.rbs
 
-        self.add_with_prompt(grid, (0,1), "Variable:", main_var)
+        self.add_with_prompt(grid, (0,1), "Variable:", main_var, ctrl_span=(1,2), expand=False)
 
         grid.Add(rbs[0], (1,0), flag=wx.ALIGN_CENTRE_VERTICAL)
         self.add_with_prompt(grid, (1,1), "Operation:", basic_op)
@@ -3819,7 +3819,7 @@ class Detail_win(wx.ScrolledWindow):
         ops = ['=', '!=', '<', '>', '<=', '>=']
 
         test = (self.make_combo(choices, add_no_var=True),
-                self.make_combo(ops, add_const=False, sort=False, size=(150, -1)),
+                self.make_combo(ops, add_const=False, sort=False, size=(50, -1)),
                 self.make_text_ctrl("0"))
 
         self.data_order = (None,)+test+(mod_choice, self.event_choice)
@@ -3841,7 +3841,7 @@ class Detail_win(wx.ScrolledWindow):
 
         grid.Add(rbs[1], (3,0), flag=wx.ALIGN_CENTRE_VERTICAL)
         self.add_with_prompt(grid, (3,1), "", (mod_choice,))
-        self.add_with_prompt(grid, (3,2), "", (self.event_choice,))
+        self.add_with_prompt(grid, (3,2), "", (self.event_choice,), ctrl_span=(1,2))
 
 
         self.bind_event_handlers()
@@ -4012,7 +4012,7 @@ class Detail_win(wx.ScrolledWindow):
         ops = ['=', '!=', '<', '>', '<=', '>=']
 
         test = (self.make_combo(choices, add_no_var=True),
-                self.make_combo(ops, add_const=False, sort=False, size=(150, -1)),
+                self.make_combo(ops, add_const=False, sort=False, size=(50, -1)),
                 self.make_text_ctrl("0"))
 
         self.data_order = (None,)+test+(mod_choice, self.event_choice)
@@ -4032,7 +4032,7 @@ class Detail_win(wx.ScrolledWindow):
 
         grid.Add(rbs[1], (2,0), flag=wx.ALIGN_CENTRE_VERTICAL)
         self.add_with_prompt(grid, (2,1), "", (mod_choice,))
-        self.add_with_prompt(grid, (2,2), "", (self.event_choice,))
+        self.add_with_prompt(grid, (2,2), "", (self.event_choice,), ctrl_span=(1,2))
 
         grid.Add(wx.StaticText(self, -1, "Else take the bottom (False) branch."), (3,1),
                  span=(1,2), flag=wx.ALIGN_LEFT)
