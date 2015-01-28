@@ -49,9 +49,9 @@ import time
 import time
 import wave
 
-USE_PORTAUDIO = True
-import pyaudio
-AUDIO_CHUNK = 1024
+USE_PYGAME = False
+USE_PORTAUDIO = False
+
 
 TOKEN_VERSION_STR = "\x20"
 TOKEN_VERSION_BYTE = 0x20
@@ -78,6 +78,28 @@ else:
     print "Unsupported platform -", sys.platform
     sys.exit(1)
 
+try:
+    import pyaudio
+    USE_PORTAUDIO = True
+    print "Using Pyaudio"
+except:
+    pass
+
+if (USE_PORTAUDIO == False):
+    try:
+        import pygame
+        USE_PYGAME = True
+        print "Using pygame"
+    except:
+        pass
+
+if (not (USE_PORTAUDIO or USE_PYGAME)) and (PLATFORM != "win"):
+    print "ERROR - No Audio package (pygame or pyaudio) installed!"
+    sys.exit(1)
+            
+AUDIO_CHUNK = 1024
+
+    
 import token_assembler
 import token_downloader
 import tokens
@@ -359,15 +381,44 @@ class audio_downloader(wx.Dialog):
                 if (framesRead > totalFrames):
                     framesRead = totalFrames
 
+            self.gauge.SetValue(totalFrames)
+            self.Update()
+
             stream.stop_stream()
             stream.close()
             p.terminate()
+
+        
+        elif USE_PYGAME:
+            if (pygame.mixer.get_init() == None):
+                pygame.mixer.init(frequency=44100, size=8, channels=2, buffer=4096)
+                pygame.mixer.init()
+            
+            s = pygame.mixer.Sound(WAV_FILE)
+            seconds = s.get_length()
+            #print "Sounds seconds:", seconds
+            if (seconds < 1):
+                seconds = 1
+            self.gauge.SetRange(seconds * 5)
+            self.gauge.SetValue(0)
+            elapsed = 0
+            s.play()
+            while ((elapsed < seconds) and pygame.mixer.get_busy()):
+                time.sleep(0.2)
+                elapsed += 0.2
+                if (elapsed < seconds):
+                    self.gauge.SetValue(elapsed * 5)
+                    self.Update()
+
+            self.gauge.SetValue(seconds * 5)
+            self.Update()
             
         elif PLATFORM == "win":
             s1 = wx.Sound(WAV_FILE)
             s1.Play(wx.SOUND_SYNC)
 
-        self.gauge.SetValue(self.byte_count)
+            
+        #self.gauge.SetValue(self.byte_count)
         self.help_text.SetLabel("Finished downloading")
         self.start.Enable()
 
@@ -452,8 +503,7 @@ class audio_firmware_downloader(wx.Dialog):
 
         time.sleep(1)
         
-        if PLATFORM == "linux":
-            import pyaudio
+        if USE_PORTAUDIO:
             wf = wave.open("firmware.wav", 'rb')
             p = pyaudio.PyAudio()
 
@@ -480,17 +530,44 @@ class audio_firmware_downloader(wx.Dialog):
                 framesRead += AUDIO_CHUNK
                 if (framesRead > totalFrames):
                     framesRead = totalFrames
-                
+
+            self.gauge.SetValue(totalFrames)
+            self.Update()
+            
             stream.stop_stream()
             stream.close()
 
             p.terminate()
 
+        elif USE_PYGAME:
+            if (pygame.mixer.get_init() == None):
+                pygame.mixer.init(frequency=44100, size=8, channels=2, buffer=4096)
+                pygame.mixer.init()
+            
+            s = pygame.mixer.Sound("firmware.wav")
+            seconds = s.get_length()
+            #print "Sounds seconds:", seconds
+            if (seconds < 1):
+                seconds = 1
+            self.gauge.SetRange(seconds * 5)
+            self.gauge.SetValue(0)
+            elapsed = 0
+            s.play()
+            while ((elapsed < seconds) and pygame.mixer.get_busy()):
+                time.sleep(0.2)
+                elapsed += 0.2
+                if (elapsed < seconds):
+                    self.gauge.SetValue(elapsed * 5)
+                    self.Update()
+
+            self.gauge.SetValue(seconds * 5)
+            self.Update()
+            
+            
         elif PLATFORM == "win":
             s1 = wx.Sound("firmware.wav")
             s1.Play(wx.SOUND_SYNC)
 
-        self.gauge.SetValue(self.byte_count)
         self.help_text.SetLabel("Finished downloading")
         self.start.Enable()
 

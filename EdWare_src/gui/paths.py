@@ -29,7 +29,6 @@ FROZEN = getattr(sys, 'frozen', False)
 
 if sys.platform.startswith("linux"):
     PLATFORM="linux"
-    import pyglet
 elif sys.platform.startswith("win"):
     PLATFORM="win"
 elif sys.platform.startswith("darwin"):

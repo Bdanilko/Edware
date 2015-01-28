@@ -70,3 +70,15 @@ To Be Done -- but for now follow the linux instructions but install windows vers
 
 To Be Done -- but for now follow the linux instructions but install OSX versions
 
+*** Raspberry PI manually **********************
+1) Installed Raspian from NOOBs using (language: English UK, Keyboard: US)
+2) Rebooted
+3) In raspi-config (which automatically comes up on first boot):
+   - 3. Set to use desktop login
+   - Under advanced options, set audio to go out 3.5" plug
+   - Finished and then rebooted
+4) amixer cset numid=3 1 (for analog output)
+5) alsamixer (to set the volume)
+5) apt-get install python-jsonpickle, python-pyaudio python-wxgtk2.8
+
+  

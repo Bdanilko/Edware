@@ -23,8 +23,12 @@
 #
 # * **************************************************************** */
 
-# this has to be imported early on as other imports bugger it up
-import pyaudio
+try:
+    # this has to be imported early on as other imports bugger it up
+    # but make sure that the system will continue if pyaudio isn't there
+    import pyaudio
+except:
+    print "Warning - pyaudio was not installed."
 
 import wx
 import os
