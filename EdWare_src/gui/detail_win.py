@@ -914,6 +914,13 @@ class Detail_win(wx.ScrolledWindow):
                 code_lines.append("bitclr $%d %s" % (bit, win_data.make_mod_reg(input[0], output)))
                 code_lines.append(labels[1])
 
+            if (name == "Obstacle Detection"):
+                # clear the register bits as they are from a previous detection or program run
+                code_lines.append("bitclr $3 %s" % (win_data.make_mod_reg("IR_RECEIVER1", 'status'),))
+                code_lines.append("bitclr $4 %s" % (win_data.make_mod_reg("IR_RECEIVER1", 'status'),))
+                code_lines.append("bitclr $5 %s" % (win_data.make_mod_reg("IR_RECEIVER1", 'status'),))
+                code_lines.append("bitclr $6 %s" % (win_data.make_mod_reg("IR_RECEIVER1", 'status'),))
+            
             return code_lines
 
         else:
