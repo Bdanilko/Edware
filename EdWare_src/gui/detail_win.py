@@ -116,12 +116,11 @@ EVENT_ALIASES = [(MOTHERBOARD, "Keypad"), (MOTHERBOARD, "Countdown timer"),
                  ("IR_RECEIVER1", "Data from another Edison"), ("IR_RECEIVER1", "Detect obstacle"),
                  ("IR_RECEIVER1", "Data from TV remote"), ("LINE_TRACKER1", "Line Tracker") ]
 
-# NEW_EVENT_BAD_EVENTS = ['Match #0 remote code', 'Match #1 remote code',
-#                         'Match #2 remote code', 'Match #3 remote code',
-#                         'Match #4 remote code', 'Match #5 remote code',
-#                         'Match #6 remote code', 'Match #7 remote code',
-#                         'Match #8 remote code']
-NEW_EVENT_BAD_EVENTS = []
+INVALID_NEW_EVENTS = ['Match #0 remote code', 'Match #1 remote code',
+                      'Match #2 remote code', 'Match #3 remote code',
+                      'Match #4 remote code', 'Match #5 remote code',
+                      'Match #6 remote code', 'Match #7 remote code',
+                      'Match #8 remote code']
 
 MOTOR_FWD = "Forward"
 MOTOR_STP = "Stop"
@@ -3486,8 +3485,8 @@ class Detail_win(wx.ScrolledWindow):
             #print m, choices
             # now remove any that are an bad_events or used_events
             for c in choices:
-                #print c[0], NEW_EVENT_BAD_EVENTS, used_choices
-                if ((c[0] not in NEW_EVENT_BAD_EVENTS) and
+                #print c[0], self.bad_events, used_choices
+                if ((c[0] not in self.bad_events) and
                     (c[0] not in used_choices)):
                     unused_choices.append(c[0])
 
@@ -3520,9 +3519,10 @@ class Detail_win(wx.ScrolledWindow):
         self.conv_func = self.event_convert
         self.dirty = False
         self.name = win_data.program().get_bric_name(bric_id)
-        self.bad_events = NEW_EVENT_BAD_EVENTS
+        self.bad_events = INVALID_NEW_EVENTS
 
         self.good_choices = self.get_unused_events(bric_id)
+        print "good_choices:", self.good_choices
         
         self.prop_title = bric_data.get_bric_prop_title(self.name)
         values = None
