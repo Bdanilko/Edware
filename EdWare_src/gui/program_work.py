@@ -177,7 +177,7 @@ class Program_work(work_win.Work_win):
                     x, y = point
                     if (not initialised):
                         x_max = x_min = x
-                        y_max = y_min = x
+                        y_max = y_min = y
                         initialised = True
                     else:
                         if (x > x_max):
@@ -185,7 +185,7 @@ class Program_work(work_win.Work_win):
                         if (x < x_min):
                             x_min = x
                         if (y > y_max):
-                            y_max = x
+                            y_max = y
                         if (y < y_min):
                             y_min = y
                 
