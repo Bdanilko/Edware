@@ -33,7 +33,7 @@ except:
 import wx
 import os
 import os.path
-import glob
+import argparse
 import sys
 import cPickle
 
@@ -88,10 +88,6 @@ class Bricworks_frame(wx.Frame):
     def __init__(self, parent, title="Edison EdWare"):
         wx.Frame.__init__(self, parent, title=title, size=(800, 500))
 
-##        splash_bmap = wx.Bitmap("gui/devices/motherboard.png", wx.BITMAP_TYPE_ANY)
-##        wx.SplashScreen(splash_bmap, wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT, 2000, self, -1)
-##        wx.Yield()
-
         self.save_path = gui.paths.get_store_dir()
         self.save_file = ""
 
@@ -106,29 +102,6 @@ class Bricworks_frame(wx.Frame):
                            ("Save &As", "Save the current program under a new name", self.menu_saveas),
                            ("", "", ""),
                            ("&Exit", "Exit EdWare", self.menu_exit)),
-
-                          # ("&View",
-                          #  ("*&Configuration view", "Edit the module configuration", self.menu_config),
-                          #  ("*&Program view", "Edit the program", self.menu_program),
-##                           ("", "", ""),
-##                           ("Zoom - &Normal", "Display the blocks at normal size", self.menu_zoom_normal),
-##                           ("Zoom - &Bigger", "Display the blocks at a larger size", self.menu_zoom_bigger),
-##                           ("Zoom - &Smaller", "Display the blocks at a smaller size", self.menu_zoom_smaller)),
-#                           ),
-#                          ("&Settings",
-
-##                           ("*&Basic mode", "Basic level programming mode", self.menu_basic_mode),
-##                           ("*&Advanced mode", "Advanced level programming mode", self.menu_adv_mode),
-#                           ("+&Advanced mode", "Advanced level programming mode", self.menu_adv_mode),
-#                           ("", "", ""),
-##                           ("&USB Device", "Set the usb device for downloading", self.menu_usb_device),
-##                           ("", "", ""),
-#                           ("+&Display toolbar", "Display the toolbar under the menu", self.menu_enable_toolbar),
-
-##                           ("", "", ""),
-##                           ("+&Strict version check", "Make sure saved programs are readable by Bricworks",
-##                            self.menu_strict_versions),
-#                           ),
 
 
                           ("&Program Edison",
@@ -223,6 +196,8 @@ class Bricworks_frame(wx.Frame):
         self.Bind(wx.EVT_MOVE, self.on_move)
         self.Bind(wx.EVT_CLOSE, self.on_close)
         self.Bind(wx.EVT_IDLE, self.on_idle)
+
+        self.SetInitialSize()
 
     def set_basic_mode(self):
         # basic mode
@@ -478,6 +453,8 @@ class Bricworks_frame(wx.Frame):
         self.status_bar.SetStatusWidths([-2,-1,-1])
 
     def init_menu(self):
+        if (gui.paths.get_platform() == "mac"):
+            wx.MenuBar.SetAutoWindowMenu(False)
         self.menu_bar = wx.MenuBar()
         for md in self.menu_data:
             menu_label = md[0]
@@ -550,8 +527,6 @@ class Bricworks_frame(wx.Frame):
         self.add_prog_button = wx.Button(self.tool_bar, self.add_prog_id, "Program Edison", size=(140,-1))
         self.tool_bar.AddControl(self.add_prog_button)
         self.Bind(wx.EVT_BUTTON, self.on_program_button, id=self.add_prog_id)
-
-
 
         self.tool_bar.Realize()
         # start it on
@@ -936,13 +911,19 @@ class BricworksApp(wx.App):
         self.frame.Show(True)
         self.frame.Update()
         return True
-
+    
     def load(self, file_path):
         #print "Loading", file_path
         self.frame.load_existing_path(file_path)
         self.frame.Update()
 
-def main2(file_path=None):
+    # Overriding this method to make sure that clicking on the dock icon brings
+    # the window to the top
+    def MacReopenApp(self):
+        self.GetTopWindow().Raise()
+        
+def main2(file_path=None, selected_audio="any"):
+    gui.downloader.set_audio_output(selected_audio)
     app = BricworksApp(False)
     if (file_path):
         app.load(file_path)
@@ -950,8 +931,16 @@ def main2(file_path=None):
 
 
 if __name__ == '__main__':
-    file_path = None
-    if (len(sys.argv) > 1):
-        file_path = sys.argv[1]
+    
+    parser = argparse.ArgumentParser(description='EdWare Edison progamming environment')
+    parser.add_argument('filename', metavar='FILE', nargs='?', default="",
+                        help='An optional edware file to load')
+    parser.add_argument('-a', '--audio', dest='selected_audio',
+                        default='any',
+                        help="Select a specific audio output if it's installed")
+    parser.add_argument('-v', '--version', action='version', version='1.0.0')
 
-    main2(file_path)
+    args = parser.parse_args()
+    #print args
+
+    main2(args.filename, args.selected_audio)

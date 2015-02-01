@@ -6,7 +6,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, 2014 Microbric Pty Ltd.
+# Copyright 2006, 2014, 2015 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,13 +35,13 @@ class AboutBox(wx.Dialog):
         <body>
         <center>
         <h1>Edison EdWare</h1>
-        <h2>Version 0.9.8.1</h2>
+        <h2>Version 1.0.0</h2>
         Programming your Edison Robot<br>
         http://www.microbric.com/
         </center>
         <p>
         <font size="-2">
-        Copyright 2006,2014 Microbric Pty Ltd<br>
+        Copyright 2006,2014,2015 Microbric Pty Ltd<br>
         This program is distributed under the terms of the Gnu General Public License, version 2
         (for the full text, see gpl.txt in the docs directory)
         </font>

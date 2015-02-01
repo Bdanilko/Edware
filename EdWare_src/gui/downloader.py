@@ -49,6 +49,8 @@ import time
 import time
 import wave
 
+PORTAUDIO_PRESENT = False
+PYGAME_PRESENT = False
 USE_PYGAME = False
 USE_PORTAUDIO = False
 
@@ -68,37 +70,76 @@ FIRMWARE_VERSION_BYTE = 0x20
 DOWNLOAD_BYTES_BETWEEN_PAUSES = 1536
 DOWNLOAD_PAUSE_MSECS = 2000
 
-if sys.platform.startswith("linux"):
-    PLATFORM="linux"
-elif sys.platform.startswith("win"):
-    PLATFORM="win"
-elif sys.platform.startswith("darwin"):
-    PLATFORM="mac"
-else:
-    print "Unsupported platform -", sys.platform
-    sys.exit(1)
-
 try:
     import pyaudio
-    USE_PORTAUDIO = True
-    print "Using Pyaudio"
+    PORTAUDIO_PRESENT = True
+    #print "Pyaudio installed"
 except:
     pass
 
-if (USE_PORTAUDIO == False):
-    try:
-        import pygame
-        USE_PYGAME = True
-        print "Using pygame"
-    except:
-        pass
+try:
+    import pygame
+    PYGAME_PRESENT = True
+    #print "Pygame installed"
+except:
+    pass
 
-if (not (USE_PORTAUDIO or USE_PYGAME)) and (PLATFORM != "win"):
+
+if (not (PORTAUDIO_PRESENT or PYGAME_PRESENT)) and (paths.get_platform() != "win"):
     print "ERROR - No Audio package (pygame or pyaudio) installed!"
     sys.exit(1)
             
 AUDIO_CHUNK = 1024
 
+def set_audio_output(choice):
+    global USE_PORTAUDIO
+    global USE_PYGAME
+    choice = choice.lower()
+
+    if (PORTAUDIO_PRESENT and PYGAME_PRESENT):
+        installed = "portaudio, pygame"
+    elif (PORTAUDIO_PRESENT):
+        installed += "portaudio"
+    elif (PYGAME_PRESENT):
+        installed += "pygame"
+    else:
+        installed = "no extra audio backends"
+        
+    print "(Audio installed: %s" % (installed),
+    
+    if (choice == "any"):
+        if (PORTAUDIO_PRESENT):
+            USE_PORTAUDIO = True
+            using = "portaudio"
+        elif (PYGAME_PRESENT):
+            USE_PYGAME = True
+            using = "pygame"
+        else:
+            # must be windows built-in
+            using = "windows-built-in"
+
+    elif (choice == "portaudio"):
+        if (not PORTAUDIO_PRESENT):
+            print "\nERROR - selected audio 'portaudio' is not installed!"
+            sys.exit(1)
+        else:
+            USE_PORTAUDIO = True
+            using = choice
+
+    elif (choice == "pygame"):
+        if (not PYGAME_PRESENT):
+            print "\nERROR - selected audio 'pygame' is not installed!"
+            sys.exit(1)
+        else:
+            USE_PYGAME = True
+            using = choice
+
+    else:
+        print "\nERROR - selected audio '%s' is unknown!" % (choice)
+        sys.exit(2)
+
+    print "-  Audio to be used: %s)\n" % (using)
+            
     
 import token_assembler
 import token_downloader
@@ -413,7 +454,7 @@ class audio_downloader(wx.Dialog):
             self.gauge.SetValue(seconds * 5)
             self.Update()
             
-        elif PLATFORM == "win":
+        elif paths.get_platform() == "win":
             s1 = wx.Sound(WAV_FILE)
             s1.Play(wx.SOUND_SYNC)
 

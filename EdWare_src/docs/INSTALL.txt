@@ -36,6 +36,7 @@ there, then go to the websites listed to install them manually.
    
 3) Install the PyAudio version that matches your python
    (http://people.csail.mit.edu/hubert/pyaudio/#downloads)
+   [NOTE -- pygame can be used instead of pyaudio]
 
 3.1) Alsa and it's plugins must be installed for the sound output
    (particularly libasound_module_conf_pulse.so). This is normal on
@@ -51,34 +52,75 @@ there, then go to the websites listed to install them manually.
    (e.g. cd edware ; unzip ../EdWareSrc-x.y.z.zip)
    
 7) Execute edware , in this new directory, by typing: "python edware.py"
-   (e.g. cd ~/edware ; python2 edware.py)
+   (e.g. cd ~/edware ; python edware.py)
 
 Note -- if you have both python 3 and python 2 installed, you may have to invoke
 edware by typing: "python2 edware.py".
+
+8) From here on, just need to open a terminal window, go to the edware directory
+   and type "python edware.py" (or "python2 edware.py")
+
 
 NOTE -- a user contributed this info (edited to add libasound): 
      for Ubuntu 14.04, install the needed packages with:
      apt-get install python-jsonpickle python-pyaudio python-wxgtk2.8 libasound2-plugins
 
 
-*** Windows manually ******************
-
-To Be Done -- but for now follow the linux instructions but install windows versions
-
-
-*** OSX manually **********************
-
-To Be Done -- but for now follow the linux instructions but install OSX versions
-
 *** Raspberry PI manually **********************
-1) Installed Raspian from NOOBs using (language: English UK, Keyboard: US)
-2) Rebooted
-3) In raspi-config (which automatically comes up on first boot):
-   - 3. Set to use desktop login
-   - Under advanced options, set audio to go out 3.5" plug
-   - Finished and then rebooted
-4) amixer cset numid=3 1 (for analog output)
-5) alsamixer (to set the volume)
-5) apt-get install python-jsonpickle, python-pyaudio python-wxgtk2.8
+
+First setup Raspian if you haven't already:
+   a) Installed Raspian from NOOBs using (language: English UK, Keyboard: US)
+
+   b) Reboot
+
+   c) In raspi-config (which automatically comes up on first boot):
+      - 3. Set to use desktop login
+      - Under advanced options, set audio to go out 3.5" plug
+      - Finished and then reboot
+
+1) After logging in, open a terminal window. All input will be typed there.
+
+2) In the terminal window, to set audio output through audio jack,
+   type: "amixer cset numid=3 1"
+
+3) In the terminal window, run "alsamixer" to set the volume
+
+4) In the terminal window, type "apt-get install python-jsonpickle python-wxgtk2.8"
+   [Note -- pygame is already installed, and will be used,
+    but if you would prefer to use pyaudio then ALSO do:
+    apt-get install python-pyaudio]
+
+5) Pick or create a directory to hold EdWare (say under your home directory)
+   (e.g. cd ~ ; mkdir edware)
+   
+6) Unzip the EdWare source into this directory
+   (e.g. cd edware ; unzip ../EdWareSrc-x.y.z.zip)
+   
+7) Execute edware , in this new directory, by typing: "python edware.py"
+   (e.g. cd ~/edware ; python edware.py)
+
+8) From here on, just need open a terminal window, go to the edware directory
+   and type "python edware.py"
+
+*** Choosing different audio outputs **********************
+
+Currently EdWare can use 3 different audio backends. They are:
+a) Windows built-in (only on windows)
+b) Portaudio        (from package python-pyaudio)
+c) Pygame audio     (from package python-pygame)
+
+If Pyaudio is installed, then it will be used. If it isn't installed but Pygame is then
+it will be used. If neither is installed, but you are running on windows then the windows
+built-in audio will be used. If neither is installed, and you aren't running windows then
+EdWare will stop as it can't program Edison without audio.
+
+If have both installed, or you want to test the different backends, then you can override
+which audio backend to use. When invoking EdWare type:
+python edware.py -a pygame (to force using pygame), or
+python edware.py -a portaudio (to force using portaudio).
+
+Note that the package must be installed (python-pyaudio, python-pygame) before you can force
+EdWare to use it.
+
 
   
