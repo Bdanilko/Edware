@@ -28,7 +28,8 @@ try:
     # but make sure that the system will continue if pyaudio isn't there
     import pyaudio
 except:
-    print "Warning - pyaudio was not installed."
+    #print "Warning - pyaudio was not installed."
+    pass
 
 import wx
 import os

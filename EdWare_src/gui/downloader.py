@@ -95,13 +95,15 @@ def set_audio_output(choice):
     global USE_PORTAUDIO
     global USE_PYGAME
     choice = choice.lower()
+    installed = "unknown"
+    using = "unknown"
 
     if (PORTAUDIO_PRESENT and PYGAME_PRESENT):
         installed = "portaudio, pygame"
     elif (PORTAUDIO_PRESENT):
-        installed += "portaudio"
+        installed = "portaudio"
     elif (PYGAME_PRESENT):
-        installed += "pygame"
+        installed = "pygame"
     else:
         installed = "no extra audio backends"
         
