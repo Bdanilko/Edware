@@ -727,7 +727,7 @@ class Detail_win(wx.ScrolledWindow):
 
         if (self.prop_extra_text):
             # create a multi-line text box
-            grid.Add(wx.StaticText(self, -1, self.prop_extra_text), (grid_line+1, 0),
+            grid.Add(wx.StaticText(self, -1, self.prop_extra_text), (grid_line, 0),
                      span=(2,2), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
             
         self.bind_event_handlers()
