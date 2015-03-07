@@ -3304,7 +3304,7 @@ class Detail_win(wx.ScrolledWindow):
         for title, stuff, if_variant in events:
             if (title in self.bad_events):
                 continue
-            if (self.good_choices and self.good_choices.has_key(value)):
+            if (self.name == "Event" and self.good_choices and self.good_choices.has_key(value)):
                 if (title not in self.good_choices[value]):
                     continue
             self.event_choice.Append(title)
@@ -3480,6 +3480,7 @@ class Detail_win(wx.ScrolledWindow):
 
         unused_choices = []
         modules = self.get_event_modules()
+        #print "bad_events:", self.bad_events
         for m in modules:
             choices = self.get_event_choices(m)
             #print m, choices
@@ -3522,7 +3523,7 @@ class Detail_win(wx.ScrolledWindow):
         self.bad_events = INVALID_NEW_EVENTS
 
         self.good_choices = self.get_unused_events(bric_id)
-        print "good_choices:", self.good_choices
+        #print "good_choices:", self.good_choices
         
         self.prop_title = bric_data.get_bric_prop_title(self.name)
         values = None
@@ -3648,7 +3649,6 @@ class Detail_win(wx.ScrolledWindow):
         modules = self.get_event_modules()
         mod_choice = self.make_combo(modules, size=(EVENT_COMBO_PIXELS, -1))
         self.event_choice = wx.ComboBox(self, -1, "", style=wx.CB_READONLY, size=(EVENT_COMBO_PIXELS,-1))
-
         self.Bind(wx.EVT_COMBOBOX, self.on_event_mod_change, mod_choice)
 
         choices = win_data.vars_names(S_NAME)
