@@ -114,7 +114,7 @@ class Var_win(wx.Panel):
         self.list.SetStringItem(index, 1, "")
         self.list.SetStringItem(index, 2, "")
         item = self.list.GetItem(index)
-        item.SetBackgroundColour("lightblue")
+        item.SetBackgroundColour("light blue")
         self.list.SetItem(item)
                                
         self.list.resize_columns()
