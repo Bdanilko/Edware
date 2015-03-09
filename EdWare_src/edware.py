@@ -928,8 +928,13 @@ def main2(file_path=None, selected_audio="any"):
     app = BricworksApp(False)
     if (file_path):
         app.load(file_path)
-    app.MainLoop()
 
+    # Test colour names
+    #db = wx.ColourDatabase()
+    #co = db.Find("light grey")
+    #print co, co.IsOk()
+
+    app.MainLoop()
 
 if __name__ == '__main__':
     
@@ -943,5 +948,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     #print args
+
 
     main2(args.filename, args.selected_audio)
