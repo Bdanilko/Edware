@@ -240,7 +240,7 @@ class usb_downloader(wx.Dialog):
     def __init__(self, usb_device, file_name, title="Set Title!", size=(200, 200)):
         wx.Dialog.__init__(self, None, -1, title, size=(500, 300))
         if (paths.get_platform() != "mac"):
-            self.SetBackgroundColour("lightgray")
+            self.SetBackgroundColour("light grey")
 
         # self.ports = get_possible_ports()
         # if (usb_device not in self.ports):
@@ -330,7 +330,11 @@ class audio_downloader(wx.Dialog):
     def __init__(self, file_name, title="Set Title!"):
         wx.Dialog.__init__(self, None, -1, title)
         if (paths.get_platform() != "mac"):
-            self.SetBackgroundColour("lightgray")
+            co = wx.ColourDatabase().Find("light grey")
+            print co
+            #self.SetBackgroundColour(co)
+            self.SetBackgroundColour("lightgrey")
+        print self.GetBackgroundColour()
 
         self.progress_prompt = wx.StaticText(self, -1, "Download progress:")
         self.gauge = wx.Gauge(self, -1, range=100)
@@ -473,7 +477,7 @@ class audio_firmware_downloader(wx.Dialog):
     def __init__(self, file_name, title="Set Title!"):
         wx.Dialog.__init__(self, None, -1, title)
         if (paths.get_platform() != "mac"):
-            self.SetBackgroundColour("lightgray")
+            self.SetBackgroundColour("light grey")
 
         self.progress_prompt = wx.StaticText(self, -1, "Download progress:")
         self.gauge = wx.Gauge(self, -1, range=100)
@@ -485,7 +489,7 @@ class audio_firmware_downloader(wx.Dialog):
                                                 dialogTitle="Find a Firmware File",
                                                 fileMode=wx.OPEN)
         if (paths.get_platform() != "mac"):
-            self.file_browse.SetBackgroundColour("lightgray")
+            self.file_browse.SetBackgroundColour("light grey")
 
         grid = wx.FlexGridSizer(4 ,1, 5, 5)
         grid.Add(self.file_browse, flag=wx.EXPAND)
@@ -623,7 +627,7 @@ class screen_downloader(wx.Dialog):
     def __init__(self, file_name, title="Set Title!", size=(500, 600)):
         wx.Dialog.__init__(self, None, -1, title, size=size)
 
-        self.SetBackgroundColour("lightgray")
+        self.SetBackgroundColour("light grey")
         
         self.grid = wx.GridBagSizer(5,5)
 
@@ -759,7 +763,7 @@ class screen_downloader(wx.Dialog):
 class firmware_downloader(wx.Dialog):
     def __init__(self, usb_device, file_name, title="Set Title!", size=(200, 200)):
         wx.Dialog.__init__(self, None, -1, title, size=(500, 300))
-        self.SetBackgroundColour("lightgray")
+        self.SetBackgroundColour("light grey")
 
         # self.ports = get_possible_ports()
         # if (usb_device not in self.ports):
@@ -783,7 +787,7 @@ class firmware_downloader(wx.Dialog):
         self.file_browse = fbb.FileBrowseButton(self, -1, labelText="Firmware File:",
                                                 dialogTitle="Find a Firmware File",
                                                 fileMode=wx.OPEN)
-        self.file_browse.SetBackgroundColour("lightgray")
+        self.file_browse.SetBackgroundColour("light grey")
 
         self.grid.Add(self.file_browse, (1,1), span=(1,3), flag=wx.EXPAND)
         self.grid.Add(self.usb_prompt, (2,1),
@@ -956,7 +960,7 @@ def hex_to_bin(file_handle):
 class hex_downloader(wx.Dialog):
     def __init__(self, usb_device, file_name, title="Set Title!", size=(200, 200)):
         wx.Dialog.__init__(self, None, -1, title, size=(500, 300))
-        self.SetBackgroundColour("lightgray")
+        self.SetBackgroundColour("light grey")
 
         # self.ports = get_possible_ports()
         # if (usb_device not in self.ports):
@@ -981,7 +985,7 @@ class hex_downloader(wx.Dialog):
                                                 dialogTitle="Find an Intel Hex File",
                                                 fileMode=wx.OPEN,
                                                 fileMask="Hex files (*.hex)|*.hex|All files (*.*)|*.*")
-        self.file_browse.SetBackgroundColour("lightgray")
+        self.file_browse.SetBackgroundColour("light grey")
 
         self.grid.Add(self.file_browse, (1,1), span=(1,3), flag=wx.EXPAND)
         self.grid.Add(self.usb_prompt, (2,1),

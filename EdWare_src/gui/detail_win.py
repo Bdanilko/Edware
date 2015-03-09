@@ -3487,9 +3487,10 @@ class Detail_win(wx.ScrolledWindow):
             # now remove any that are an bad_events or used_events
             for c in choices:
                 #print c[0], self.bad_events, used_choices
-                if (hasattr(self, 'bad_events') and (c[0] not in self.bad_events)):
-                    if (c[0] not in used_choices):
-                        unused_choices.append(c[0])
+                if (((hasattr(self, 'bad_events') and (c[0] not in self.bad_events)) or \
+                     (not hasattr(self, 'bad_events'))) \
+                    and (c[0] not in used_choices)):
+                    unused_choices.append(c[0])
 
         #print unused_events
         return unused_choices
