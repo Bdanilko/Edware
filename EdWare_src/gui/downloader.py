@@ -331,10 +331,10 @@ class audio_downloader(wx.Dialog):
         wx.Dialog.__init__(self, None, -1, title)
         if (paths.get_platform() != "mac"):
             co = wx.ColourDatabase().Find("light grey")
-            print co
+            #print co
             #self.SetBackgroundColour(co)
             self.SetBackgroundColour("lightgrey")
-        print self.GetBackgroundColour()
+        #print self.GetBackgroundColour()
 
         self.progress_prompt = wx.StaticText(self, -1, "Download progress:")
         self.gauge = wx.Gauge(self, -1, range=100)
@@ -1066,7 +1066,7 @@ class hex_downloader(wx.Dialog):
 
 
 def convert(binString, outFilePath):
-    print "Debug: in convert() with binString of length", len(binString)
+    #print "Debug: in convert() with binString of length", len(binString)
     waveWriter = wave.open(outFilePath, 'wb')
     waveWriter.setnchannels(2)
     waveWriter.setsampwidth(1)

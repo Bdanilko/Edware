@@ -1414,6 +1414,7 @@ class Detail_win(wx.ScrolledWindow):
 # -------------- Read Light details  --------------------
 
     def readlight_details(self, bric_id, data):
+        #print "readlight_details", bric_id, data
         self.conv_func = self.readlight_convert
         self.dirty = False
         self.name = win_data.program().get_bric_name(bric_id)
@@ -1465,6 +1466,8 @@ class Detail_win(wx.ScrolledWindow):
     def readlight_convert(self, input, command, name, bric_id):
         """Data: mod, var"""
         #print "readlight_convert", bric_id, command, name, input
+        self.module_aliases = [("Left_LED", "Left light level"), ("Right_LED", "Right light level"),
+                               ("LINE_TRACKER1", "Line light level")]
 
         if (command == 'from_ids'):
             output= [win_data.config_name_from_id(input[0]), win_data.vars_get_name(input[1])]
@@ -1558,6 +1561,7 @@ class Detail_win(wx.ScrolledWindow):
     def readdist_convert(self, input, command, name, bric_id):
         """Data: mod, var"""
         #print "readdist_convert", bric_id, command, name, input
+        self.module_aliases = [("Left_Motor", "Left drive"), ("Right_Motor", "Right drive")]
 
         if (command == 'from_ids'):
             output= [win_data.config_name_from_id(input[0]), win_data.vars_get_name(input[1])]
