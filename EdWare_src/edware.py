@@ -924,7 +924,9 @@ class BricworksApp(wx.App):
         self.GetTopWindow().Raise()
         
 def main2(file_path=None, selected_audio="any"):
-    gui.downloader.set_audio_output(selected_audio)
+    audioToBeUsed = gui.downloader.set_audio_output(selected_audio)
+    #print audioToBeUsed
+    
     app = BricworksApp(False)
     if (file_path):
         app.load(file_path)
@@ -942,9 +944,9 @@ if __name__ == '__main__':
     parser.add_argument('filename', metavar='FILE', nargs='?', default="",
                         help='An optional edware file to load')
     parser.add_argument('-a', '--audio', dest='selected_audio',
-                        default='any',
+                        default='any', choices=("any", "portaudio", "pygame", "winsound"),
                         help="Select a specific audio output if it's installed")
-    parser.add_argument('-v', '--version', action='version', version='1.0.0')
+    parser.add_argument('-v', '--version', action='version', version='1.0.3')
 
     args = parser.parse_args()
     #print args

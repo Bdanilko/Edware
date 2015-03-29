@@ -53,6 +53,7 @@ PORTAUDIO_PRESENT = False
 PYGAME_PRESENT = False
 USE_PYGAME = False
 USE_PORTAUDIO = False
+USE_WINSOUND = False
 
 
 TOKEN_VERSION_STR = "\x20"
@@ -90,13 +91,17 @@ if (not (PORTAUDIO_PRESENT or PYGAME_PRESENT)) and (paths.get_platform() != "win
     sys.exit(1)
             
 AUDIO_CHUNK = 1024
-
+AUDIO_STRING = ""
 def set_audio_output(choice):
     global USE_PORTAUDIO
     global USE_PYGAME
+    global USE_WINSOUND
+    global AUDIO_STRING
+    
     choice = choice.lower()
     installed = "unknown"
     using = "unknown"
+    
 
     if (PORTAUDIO_PRESENT and PYGAME_PRESENT):
         installed = "portaudio, pygame"
@@ -106,8 +111,8 @@ def set_audio_output(choice):
         installed = "pygame"
     else:
         installed = "no extra audio backends"
-        
-    print "(Audio installed: %s" % (installed),
+
+    AUDIO_STRING = "(Audio installed: %s" % (installed)
     
     if (choice == "any"):
         if (PORTAUDIO_PRESENT):
@@ -117,8 +122,9 @@ def set_audio_output(choice):
             USE_PYGAME = True
             using = "pygame"
         else:
+            USE_WINSOUND = True
             # must be windows built-in
-            using = "windows-built-in"
+            using = "built-in winsound"
 
     elif (choice == "portaudio"):
         if (not PORTAUDIO_PRESENT):
@@ -136,11 +142,22 @@ def set_audio_output(choice):
             USE_PYGAME = True
             using = choice
 
+    elif (choice == "winsound"):
+        if (paths.get_platform() != "win"):
+            print "\nERROR - selected audio 'winsound' is not available on non-window systems"
+            sys.exit(1)
+        else:
+            USE_WINSOUND = True
+            using = "built-in winsound"
+            
     else:
         print "\nERROR - selected audio '%s' is unknown!" % (choice)
         sys.exit(2)
 
-    print "-  Audio to be used: %s)\n" % (using)
+    AUDIO_STRING +=" -  Audio to be used: %s)" % (using)
+
+    #print AUDIO_STRING
+    return AUDIO_STRING
             
     
 import token_assembler
@@ -337,8 +354,12 @@ class audio_downloader(wx.Dialog):
         #print self.GetBackgroundColour()
 
         self.progress_prompt = wx.StaticText(self, -1, "Download progress:")
-        self.gauge = wx.Gauge(self, -1, range=100)
-        self.gauge.SetMinSize((500, -1))
+        if (USE_WINSOUND):
+            self.gauge = wx.StaticText(self, -1, "")
+        else:
+            self.gauge = wx.Gauge(self, -1, range=100)
+            self.gauge.SetMinSize((500, -1))
+            
         self.start = wx.Button(self, -1, "Start Download")
         self.cancel = wx.Button(self, -1, "Cancel Download")
         self.help_text = wx.StaticText(self, -1, "")
@@ -368,10 +389,14 @@ class audio_downloader(wx.Dialog):
         self.download_bytes, self.dtype, self.version = get_bytes(file_name)
         
         self.byte_count = len(self.download_bytes)
-        self.gauge.SetRange(self.byte_count)
-        self.gauge.SetValue(0)
         
-        self.help_text.SetLabel("Download size is %d bytes." % (self.byte_count,))
+        if (USE_WINSOUND):
+            self.gauge.SetLabel("")
+        else:
+            self.gauge.SetRange(self.byte_count)
+            self.gauge.SetValue(0)
+        
+        self.help_text.SetLabel("Download size is %d bytes" % (self.byte_count,))
 
         # convert to wav file
         WAV_FILE = os.path.join(paths.get_store_dir(), "program.wav")
@@ -383,18 +408,17 @@ class audio_downloader(wx.Dialog):
 
 
     def on_start(self, event):
-        # get the device
-        #device = self.usb_ctrl.GetValue()
-        device = None
-##        if (not os.path.exists(device) or not os.access(device, os.R_OK|os.W_OK)):
-##            self.help_text.SetLabel("ERROR - device %s doesn't exist or isn't readable and writable." % (device))
-##            return
-        
         # can't start twice so disable this button
         self.start.Disable()
-        self.help_text.SetLabel("Starting download of %d bytes." % (self.byte_count,))
-        self.gauge.SetValue(0)
-        self.gauge.Update()
+        self.cancel.Disable()
+        self.help_text.SetLabel("Downloading %d bytes." % (self.byte_count,))
+
+        if (USE_WINSOUND):
+            self.gauge.SetLabel("...DOWNLOADING...")
+        else:
+            self.gauge.SetValue(0)
+            self.gauge.Update()
+            
         self.Update()
 
         time.sleep(1)
@@ -460,14 +484,16 @@ class audio_downloader(wx.Dialog):
             self.gauge.SetValue(seconds * 5)
             self.Update()
             
-        elif paths.get_platform() == "win":
+        elif USE_WINSOUND:
             s1 = wx.Sound(WAV_FILE)
             s1.Play(wx.SOUND_SYNC)
 
+            self.gauge.SetLabel("")
             
-        #self.gauge.SetValue(self.byte_count)
+        
         self.help_text.SetLabel("Finished downloading")
         self.start.Enable()
+        self.cancel.Enable()
 
         self.Refresh()
         
@@ -480,11 +506,15 @@ class audio_firmware_downloader(wx.Dialog):
             self.SetBackgroundColour("light grey")
 
         self.progress_prompt = wx.StaticText(self, -1, "Download progress:")
-        self.gauge = wx.Gauge(self, -1, range=100)
-        self.gauge.SetMinSize((500, -1))
+        if (USE_WINSOUND):
+            self.gauge = wx.StaticText(self, -1, "")
+        else:
+            self.gauge = wx.Gauge(self, -1, range=100)
+            self.gauge.SetMinSize((500, -1))
+
         self.start = wx.Button(self, -1, "Start Download")
         self.cancel = wx.Button(self, -1, "Cancel Download")
-        self.help_text = wx.StaticText(self, -1, "")
+        self.help_text = wx.StaticText(self, -1, AUDIO_STRING)
         self.file_browse = fbb.FileBrowseButton(self, -1, labelText="Firmware File:",
                                                 dialogTitle="Find a Firmware File",
                                                 fileMode=wx.OPEN)
@@ -516,7 +546,7 @@ class audio_firmware_downloader(wx.Dialog):
 
     def on_cancel(self, event):
         self.EndModal(wx.ID_CANCEL)
-
+        
     def on_start(self, event):
         filename = self.file_browse.GetValue()
         if (not os.path.exists(filename)):
@@ -530,10 +560,14 @@ class audio_firmware_downloader(wx.Dialog):
         firmware_string = file_handle.read()
         file_handle.close()
         self.download_bytes = bytearray(firmware_string)
-
         self.byte_count = len(self.download_bytes)
-        self.gauge.SetRange(self.byte_count)
-        self.gauge.SetValue(0)
+        
+        if (USE_WINSOUND):
+            self.gauge.SetLabel("")
+        else:
+            self.gauge.SetRange(self.byte_count)
+            self.gauge.SetValue(0)
+            
         self.help_text.SetLabel("Creating audio file.")
         self.Update()
         
@@ -543,9 +577,15 @@ class audio_firmware_downloader(wx.Dialog):
         
         # can't start twice so disable this button
         self.start.Disable()
-        self.help_text.SetLabel("Starting download of %d bytes." % (self.byte_count,))
-        self.gauge.SetValue(0)
-        self.gauge.Update()
+        self.cancel.Disable()
+        self.help_text.SetLabel("Downloading %d bytes." % (self.byte_count,))
+
+        if (USE_WINSOUND):
+            self.gauge.SetLabel("...DOWNLOADING...")
+        else:
+            self.gauge.SetValue(0)
+            self.gauge.Update()
+            
         self.Update()
 
         time.sleep(1)
@@ -610,13 +650,16 @@ class audio_firmware_downloader(wx.Dialog):
             self.gauge.SetValue(seconds * 5)
             self.Update()
             
-            
-        elif PLATFORM == "win":
+
+        elif USE_WINSOUND:
             s1 = wx.Sound("firmware.wav")
             s1.Play(wx.SOUND_SYNC)
 
+            self.gauge.SetLabel("")
+
         self.help_text.SetLabel("Finished downloading")
         self.start.Enable()
+        self.cancel.Enable()
 
         self.Refresh()
 
@@ -1083,7 +1126,7 @@ def convert(binString, outFilePath):
         
     while (index < len(binString)):
         data = binString[index]
-        print "..debug: coding value", data
+        #print "..debug: coding value", data
         # add start
         waveWriter.writeframes(createAudio(6))
         
@@ -1117,6 +1160,16 @@ def convert(binString, outFilePath):
         waveWriter.writeframes(createAudio(0))
         preamble += 1
 
+def waveFileLenInSeconds(waveFilePath):
+    waveReader = wave.open(waveFilePath, 'rb')
+    rate = waveReader.getframerate()
+    frames = waveReader.getnframes()
+    seconds = (frames / rate) + 1
+    waveReader.close()
+    #print "waveFileLenInSeconds - rate:%d, frames:%d, seconds:%d" % (rate, frames, seconds)
+    return seconds
+
+    
 def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
     #print "Debug: in convert() with binString of length", len(binString)
     waveWriter = wave.open(outFilePath, 'wb')

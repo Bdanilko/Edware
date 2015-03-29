@@ -171,7 +171,7 @@ def loadEdisonAsJson(file_obj, strict):
     #print "jsonData:", jsonData
 
     test = jsonpickle.decode(jsonData)
-    #print "Decoded:", test
+    print "Decoded:", test
 
     if (strict and (test.version != pdata.version)):
         wx.MessageBox("Version of data in file '%s' doesn't match this version of Bricworks." % (file_obj.name,),
