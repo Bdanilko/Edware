@@ -1,0 +1,2851 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Bluefish 2.2.6" />
+<title>Microbric Hybrid Token Design</title>
+<meta name="date" content="2014-04-26T12:11:04+0930" />
+<meta name="author" content="Brian Danilko" />
+<meta name="copyright" content="2006,2014 Microbric Pty Ltd" />
+<style type="text/css">
+
+/*
+:Author: David Goodger
+:Contact: goodger@users.sourceforge.net
+:Date: $Date: 2005-12-18 01:56:14 +0100 (Sun, 18 Dec 2005) $
+:Revision: $Revision: 4224 $
+:Copyright: This stylesheet has been placed in the public domain.
+
+Default cascading style sheet for the HTML output of Docutils.
+
+See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
+customize this style sheet.
+*/
+
+/* used to remove borders from tables and images */
+.borderless, table.borderless td, table.borderless th {
+  border: 0 }
+
+table.borderless td, table.borderless th {
+  /* Override padding for "table.docutils td" with "! important".
+     The right padding separates the table cells. */
+  padding: 0 0.5em 0 0 ! important }
+
+.first {
+  /* Override more specific margin styles with "! important". */
+  margin-top: 0 ! important }
+
+.last, .with-subtitle {
+  margin-bottom: 0 ! important }
+
+.hidden {
+  display: none }
+
+a.toc-backref {
+  text-decoration: none ;
+  color: black }
+
+blockquote.epigraph {
+  margin: 2em 5em ; }
+
+dl.docutils dd {
+  margin-bottom: 0.5em }
+
+/* Uncomment (and remove this text!) to get bold-faced definition list terms
+dl.docutils dt {
+  font-weight: bold }
+*/
+
+div.abstract {
+  margin: 2em 5em }
+
+div.abstract p.topic-title {
+  font-weight: bold ;
+  text-align: center }
+
+div.admonition, div.attention, div.caution, div.danger, div.error,
+div.hint, div.important, div.note, div.tip, div.warning {
+  margin: 2em ;
+  border: medium outset ;
+  padding: 1em }
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title {
+  font-weight: bold ;
+  font-family: sans-serif }
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title {
+  color: red ;
+  font-weight: bold ;
+  font-family: sans-serif }
+
+/* Uncomment (and remove this text!) to get reduced vertical space in
+   compound paragraphs.
+div.compound .compound-first, div.compound .compound-middle {
+  margin-bottom: 0.5em }
+
+div.compound .compound-last, div.compound .compound-middle {
+  margin-top: 0.5em }
+*/
+
+div.dedication {
+  margin: 2em 5em ;
+  text-align: center ;
+  font-style: italic }
+
+div.dedication p.topic-title {
+  font-weight: bold ;
+  font-style: normal }
+
+div.figure {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+div.footer, div.header {
+  clear: both;
+  font-size: smaller }
+
+div.line-block {
+  display: block ;
+  margin-top: 1em ;
+  margin-bottom: 1em }
+
+div.line-block div.line-block {
+  margin-top: 0 ;
+  margin-bottom: 0 ;
+  margin-left: 1.5em }
+
+div.sidebar {
+  margin-left: 1em ;
+  border: medium outset ;
+  padding: 1em ;
+  background-color: #ffffee ;
+  width: 40% ;
+  float: right ;
+  clear: right }
+
+div.sidebar p.rubric {
+  font-family: sans-serif ;
+  font-size: medium }
+
+div.system-messages {
+  margin: 5em }
+
+div.system-messages h1 {
+  color: red }
+
+div.system-message {
+  border: medium outset ;
+  padding: 1em }
+
+div.system-message p.system-message-title {
+  color: red ;
+  font-weight: bold }
+
+div.topic {
+  margin: 2em }
+
+h1.section-subtitle, h2.section-subtitle, h3.section-subtitle,
+h4.section-subtitle, h5.section-subtitle, h6.section-subtitle {
+  margin-top: 0.4em }
+
+h1.title {
+  text-align: center }
+
+h2.subtitle {
+  text-align: center }
+
+hr.docutils {
+  width: 75% }
+
+img.align-left {
+  clear: left }
+
+img.align-right {
+  clear: right }
+
+ol.simple, ul.simple {
+  margin-bottom: 1em }
+
+ol.arabic {
+  list-style: decimal }
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+p.attribution {
+  text-align: right ;
+  margin-left: 50% }
+
+p.caption {
+  font-style: italic }
+
+p.credits {
+  font-style: italic ;
+  font-size: smaller }
+
+p.label {
+  white-space: nowrap }
+
+p.rubric {
+  font-weight: bold ;
+  font-size: larger ;
+  color: maroon ;
+  text-align: center }
+
+p.sidebar-title {
+  font-family: sans-serif ;
+  font-weight: bold ;
+  font-size: larger }
+
+p.sidebar-subtitle {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+p.topic-title {
+  font-weight: bold }
+
+pre.address {
+  margin-bottom: 0 ;
+  margin-top: 0 ;
+  font-family: serif ;
+  font-size: 100% }
+
+pre.literal-block, pre.doctest-block {
+  margin-left: 2em ;
+  margin-right: 2em ;
+  background-color: #eeeeee }
+
+span.classifier {
+  font-family: sans-serif ;
+  font-style: oblique }
+
+span.classifier-delimiter {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+span.interpreted {
+  font-family: sans-serif }
+
+span.option {
+  white-space: nowrap }
+
+span.pre {
+  white-space: pre }
+
+span.problematic {
+  color: red }
+
+span.section-subtitle {
+  /* font-size relative to parent (h1..h6 element) */
+  font-size: 80% }
+
+table.citation {
+  border-left: solid 1px gray;
+  margin-left: 1px }
+
+table.docinfo {
+  margin: 2em 4em }
+
+table.docutils {
+  margin-top: 0.5em ;
+  margin-bottom: 0.5em }
+
+table.footnote {
+  border-left: solid 1px black;
+  margin-left: 1px }
+
+table.docutils td, table.docutils th,
+table.docinfo td, table.docinfo th {
+  padding-left: 0.5em ;
+  padding-right: 0.5em ;
+  vertical-align: top }
+
+table.docutils th.field-name, table.docinfo th.docinfo-name {
+  font-weight: bold ;
+  text-align: left ;
+  white-space: nowrap ;
+  padding-left: 0 }
+
+h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
+h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
+  font-size: 100% }
+
+tt.docutils {
+  background-color: #eeeeee }
+
+ul.auto-toc {
+  list-style-type: none }
+
+</style>
+</head>
+<body>
+<div class="document" id="microbric-hybrid-token-design">
+<h1 class="title">Microbric Edison/Hybrid Token Design</h1>
+<table class="docinfo" frame="void" rules="none">
+<col class="docinfo-name" />
+<col class="docinfo-content" />
+<tbody valign="top">
+<tr><th class="docinfo-name">Date:</th>
+<td>2014-10-06</td></tr>
+<tr><th class="docinfo-name">Version:</th>
+<td>3.9</td></tr>
+<tr><th class="docinfo-name">Author:</th>
+<td>Brian Danilko, Likeable Software</td></tr>
+<tr><th class="docinfo-name">Copyright:</th>
+<td>2006,2014 Microbric Pty Ltd</td></tr>
+<tr class="field"><th class="docinfo-name">License:</th><td class="field-body">GNU GPL version 2</td>
+</tr>
+</tbody>
+</table>
+<!-- Some short forms -->
+<div class="contents topic">
+<p class="topic-title first"><a id="contents" name="contents">Contents</a></p>
+<ul class="simple">
+<li><a class="reference" href="#document-history" id="id1" name="id1">Document History</a></li>
+<li><a class="reference" href="#todo" id="id2" name="id2">Todo</a></li>
+<li><a class="reference" href="#introduction" id="id3" name="id3">Introduction</a></li>
+<li><a class="reference" href="#implementation-notes" id="id4" name="id4">Implementation Notes</a></li>
+<li><a class="reference" href="#special-tokens" id="id5" name="id5">Special Tokens</a><ul>
+<li><a class="reference" href="#module-types" id="id6" name="id6">Module Types</a></li>
+<li><a class="reference" href="#module-locations" id="id7" name="id7">Module Locations</a></li>
+<li><a class="reference" href="#special-token-notes" id="id8" name="id8">Special Token Notes</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#move-data-tokens" id="id9" name="id9">Move Data Tokens</a><ul>
+<li><a class="reference" href="#move-data-notes" id="id10" name="id10">Move Data Notes</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#math-tokens" id="id11" name="id11">Math Tokens</a><ul>
+<li><a class="reference" href="#math-token-notes" id="id12" name="id12">Math Token Notes</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#branching-tokens" id="id13" name="id13">Branching Tokens</a><ul>
+<li><a class="reference" href="#branching-tokens-notes" id="id14" name="id14">Branching Tokens Notes</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#error-strategy" id="id15" name="id15">Error Strategy</a></li>
+<li><a class="reference" href="#memory-map" id="id16" name="id16">Memory Map</a></li>
+<li><a class="reference" href="#event-handling" id="id17" name="id17">Event Handling</a></li>
+<li><a class="reference" href="#module-registers" id="id18" name="id18">Module Registers</a><ul>
+<li><a class="reference" href="#locations-0-b" id="id19" name="id19">Locations 0-b</a></li>
+<li><a class="reference" href="#index-location-c" id="id20" name="id20">INDEX (location c)</a></li>
+<li><a class="reference" href="#devices-location-d" id="id21" name="id21">Devices (location d)</a></li>
+<li><a class="reference" href="#timers-location-e" id="id22" name="id22">Timers (location e)</a></li>
+<li><a class="reference" href="#cpu-location-f" id="id23" name="id23">CPU (location f)</a></li>
+<li><a class="reference" href="#module-register-notes" id="id24" name="id24">Module Register Notes</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#connectable-module-registers" id="id25" name="id25">Connectable Module Registers</a><ul>
+<li><a class="reference" href="#motors-a-b" id="id26" name="id26">Motors A&amp;B</a></li>
+<li><a class="reference" href="#digital-in" id="id27" name="id27">Digital In</a></li>
+<li><a class="reference" href="#digital-out" id="id28" name="id28">Digital Out</a></li>
+<li><a class="reference" href="#analog-in" id="id29" name="id29">Analog In</a></li>
+<li><a class="reference" href="#line-tracker" id="id30" name="id30">Line Tracker</a></li>
+<li><a class="reference" href="#beeper" id="id31" name="id31">Beeper</a><ul>
+<li><a class="reference" href="#tone-frequency" id="id32" name="id32">Tone Frequency</a></li>
+<li><a class="reference" href="#tune-notation" id="id33" name="id33">Tune Notation</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#ir-transmit" id="id34" name="id34">IR Transmit</a></li>
+<li><a class="reference" href="#ir-receive" id="id35" name="id35">IR Receive</a></li>
+<li><a class="reference" href="#bumper" id="id36" name="id36">Bumper</a></li>
+<li><a class="reference" href="#led" id="id37" name="id37">LED</a></li>
+<li><a class="reference" href="#connectable-module-register-notes" id="id38" name="id38">Connectable Module Register Notes</a></li>
+<li><a class="reference" href="#basic-configuration-for-the-hybrid" id="id39" name="id39">Basic configuration for the Hybrid</a></li>
+<li><a class="reference" href="#edison-configuration" id="id100" name="id100">Edison configuration</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#module-status-bit-details" id="id40" name="id40">Module Status bit details</a></li>
+<li><a class="reference" href="#downloading-and-communication-settings" id="id41" name="id41">Downloading and Communication Settings</a><ul>
+<li><a class="reference" href="#download-triggering-usb-cable" id="id42" name="id42">Download triggering - USB cable</a></li>
+<li><a class="reference" href="#download-triggering-flashing-rectangle" id="id43" name="id43">Download triggering - Flashing Rectangle</a></li>
+<li><a class="reference" href="#versioning" id="id44" name="id44">Versioning</a></li>
+<li><a class="reference" href="#download-format" id="id45" name="id45">Download format</a></li>
+<li><a class="reference" href="#download-edison" id="id101" name="id101">Download Specifics for Edison</a></li>
+<li><a class="reference" href="#special-characters" id="id46" name="id46">Special Characters</a></li>
+<li><a class="reference" href="#flashing-rectangle-communications" id="id47" name="id47">Flashing Rectangle communications</a></li>
+<li><a class="reference" href="#usb-cable-communications" id="id48" name="id48">USB cable communications</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section">
+<h1><a class="toc-backref" href="#id1" id="document-history" name="document-history">Document History</a></h1>
+<table border="1" class="docutils">
+<colgroup>
+<col width="5%" />
+<col width="16%" />
+<col width="80%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Ver.</th>
+<th class="head">Date released</th>
+<th class="head">Notes</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>3.9</td>
+<td>2014-10-06</td>
+<td><p class="first">Edison download formats:</p>
+<p>Documented download format for tokens and firmware</p>
+  <p class="last">Documented audio download technique</p>
+</td>
+</tr>
+<tr><td>3.8</td>
+<td>2014-05-18</td>
+<td><p class="first">More changes for the new Edison robot:</p>
+<p>Motor has a new event: distance covered</p>
+<p>IR rx obstacle events have been re-worked</p>
+  <p class="last">Update to the Event Handling documentation</p>
+</td>
+</tr>
+<tr><td>3.7</td>
+<td>2014-04-26</td>
+<td><p class="first">Changes for the new Edison robot:</p>
+<p>Changes to version number for download of Edison code</p>
+<p>Documented implicit configuration for Edison</p>
+<p>Changes to motor, beeper, LED, IR modules for Edison</p>
+  <p class="last">Made all of the status registers read AND write so that manually cleared statuses can be cleared.</p>
+</td>
+</tr>
+<tr><td>3.6</td>
+<td>2006-10-05</td>
+<td><p class="first">Changed the NOP to 'stop' to help reduce the size of the
+interpreter.</p>
+<p>Added a new field 'Button' to the end of devices. It holds the
+current button press.</p>
+<p>Added timer action bits for the backlight and backlight timer.
+Removed a disused timer disable action bit.</p>
+<p class="last">Updated flashing rectangle communications parameters.</p>
+</td>
+</tr>
+<tr><td>3.5</td>
+<td>2006-09-28</td>
+<td>Added an action field to digital outputs for generating a pulse.</td>
+</tr>
+<tr><td>3.4</td>
+<td>2006-09-27</td>
+<td><p class="first">Updated the Beeper entry with Tune and Tone information.</p>
+<p>Updated the copy to LCD to use seperate row and col values.</p>
+<p>Time base is now 10mS. Updated all references to times.</p>
+<p>Put an allowable range for motor speeds (0-10).</p>
+<p class="last">Removed done todo items.</p>
+</td>
+</tr>
+<tr><td>3.3</td>
+<td>2006-09-26</td>
+<td><p class="first">Updates from conversation with Bill. Changed flashing rectangle
+comms, seperated row/col pointers on the LCD, added light level
+to the line-tracker, updated size of analog inputs, analog
+input constraints.</p>
+<p class="last">All units defined except for tune/tones in Beeper.</p>
+</td>
+</tr>
+<tr><td>3.2</td>
+<td>2006-09-23</td>
+<td>Added the new module types - LED, Bumper and defined the Basic
+Configuration of the Hybrid.</td>
+</tr>
+<tr><td>3.1</td>
+<td>2006-09-23</td>
+<td>Changed the move to allow for move of both 8bit and 16bit
+mod/regs. The move source now uses the LS bit for size info in
+most cases. Also move of small constants also encodes the size.</td>
+</tr>
+<tr><td>3.0</td>
+<td>2006-09-08</td>
+<td>Added a statement about the USB comms.</td>
+</tr>
+<tr><td>2.2</td>
+<td>2006-08-22</td>
+<td>In implementing the new downloading saw and corrected some
+mistakes: storage offsets in the module table are now 8bits,
+table length is variable and uses a marker to signal the end,
+made a larger ENTER DOWNLOAD MODE string.</td>
+</tr>
+<tr><td>2.1</td>
+<td>2006-08-21</td>
+<td><p class="first">Modified the downloading to make it more straightforward for
+Bill. Last section is now Downloading and Communication
+Settings.</p>
+<p>Upped the USB baud rate to 38400 and ACK/NACKs are now every
+256 bytes.</p>
+<p>Removed most of the special tokens since the download protocol
+takes care of what those tokens did. Instead added set and
+clear bit (just for mod/regs) into specials and removed
+setbit from the bottom of the math tokens.</p>
+<p>Moved NOP to a more satisfying all 1s token (see end of branch
+table).</p>
+<p class="last">Recorded how the mod/reg split could be moved to MMMMM/RRR
+instead of 4/4 for better future proofing. I expect that
+in a future version.</p>
+</td>
+</tr>
+<tr><td>2.0</td>
+<td>2006-08-17</td>
+<td><p class="first">LCD pixel addressing is moved to row and column for simplicity.
+Updates in the 00110000 token and in the Devices module.</p>
+<p>Updated the Index module for action bit use. This was the last
+module to be moved to the action bit method.</p>
+<p>Added information on the module locations and how to specify
+the location for a motor module.</p>
+<p>Added information on how to deal with the module status bits.
+Updated the event source information.</p>
+<p class="last">Added a status bit for digital in to make it a better
+event source (capture finished, level changed). Added a status bit
+to the line tracker (changed) for the same reason. Added status
+bits to the beeper for the same reason.</p>
+</td>
+</tr>
+<tr><td>1.4</td>
+<td>2006-08-16</td>
+<td><p class="first">Changes to the fixed modules to use the action bit method and
+clean-up associated with it. Added a sleep enable/disable to
+the timers, cleaned up the LCD stuff.</p>
+<p class="last">Changes to the motor modules (for A and B) and renumbered
+them.</p>
+</td>
+</tr>
+<tr><td>1.3</td>
+<td>2006-08-15</td>
+<td><p class="first">Changes to connectable modules: IR split into two,
+'action bit' registers to make the interpreter easier,
+Line Tracker split from Analog In, Motor simplified,
+Beeper volume removed, Digitals revamped.</p>
+<p>Added a bit-set token (just for mod/regs)
+at the end of the math tokens.</p>
+<p class="last">Tightened up when serial comms pauses happen to reflect that
+not storing the configuration token with the other tokens.</p>
+</td>
+</tr>
+<tr><td>1.2</td>
+<td>2006-08-07</td>
+<td><p class="first">Added a short version of push/pop the accumulator and
+communication settings. Removed special comms token, instead
+communication settings say when to ack/nack.</p>
+<p>Major changes to the mod/reg tables to reflect move some
+things to the connectable modules (i.e. beeper module can have
+the tone and tune functions, etc.) and to refactor others.</p>
+<p class="last">Removed the pdf version since it has major problems with
+long lines.</p>
+</td>
+</tr>
+<tr><td>1.1</td>
+<td>2006-07-25</td>
+<td><p class="first">Corrections of pixel data download and missing '1' in math.
+Added more things to sacrifice for space.</p>
+<p class="last">Defined the firmware download format and revamped the special
+tokens so that we can more easily pause at sector boundaries
+for erasing.</p>
+</td>
+</tr>
+<tr><td>1.0</td>
+<td>2006-06-15</td>
+<td><p class="first">Corrections after meeting with Bill (tone freq, version
+mismatch error, lcd pixel addressing, nop). Also added
+implementation notes of what to cut if we run out of time
+or space.</p>
+<p class="last">Bumped to version 1.0 because I will start implementing to this
+version.</p>
+</td>
+</tr>
+<tr><td>0.75</td>
+<td>2006-06-15</td>
+<td>Added LCD writes of numbers, mod/reg push/pops,
+separated tones and tunes</td>
+</tr>
+<tr><td>0.7</td>
+<td>2006-06-14</td>
+<td>Added Memory map, modules/registers, error strategy, decrement
+and branch token. Draft of connectable module registers.</td>
+</tr>
+<tr><td>0.6</td>
+<td>2006-06-09</td>
+<td>Removed incrementing moves</td>
+</tr>
+<tr><td>0.5</td>
+<td>2006-05-26</td>
+<td>Initial version but enough to assess the work it would require
+of Bill so that we can remove stuff if needed.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section">
+<h1><a class="toc-backref" href="#id2" id="todo" name="todo">Todo</a></h1>
+<ol class="arabic simple">
+<li>In a future version of the firmware (and this spec) could shift the
+mod/reg from 4 bits each to 5 for mod and 3 for reg. Currently only
+three module types use more then 8 bytes so they could be refactored
+and then we could handle motherboards with 24 connection points.</li>
+</ol>
+</div>
+<div class="section">
+<h1><a class="toc-backref" href="#id3" id="introduction" name="introduction">Introduction</a></h1>
+<p>This document is for the design of tokens which are sent
+down to the Hybrid interpreter from the PC based GUI. The tokens are
+of variable length but are always a multiple of 8 bits.The tokens are
+quite low level which implies that the GUI would turn most Microbric
+instructions (a single GUI block) into multiple tokens. Though, for
+simple blocks and programs, the tokens have been designed so that very
+few would be needed.</p>
+<p>There are 4 token types: Special tokens, Move data tokens, Math tokens
+and Branch tokens. These tokens, with module register definitions will
+be able to accomplish everything that the Hybrid is supposed to do.</p>
+<p>A module is any of the 12 locations where it can be fastened plus it's
+type (digital, etc.), or it is an internal device (tone/timers, LCD,
+math accumulator, etc.). Each of the types will have a set of
+registers defined for them. These modules/registers together with the
+move_data tokens allows
+for real programs to be written (since data can come from variables
+instead of just constants)!</p>
+<p>Finally, it gives an easy model that can be changed or added to late
+in development if we need to, since the token structure doesn't
+change, only the meaning of the modules/registers need to.</p>
+</div>
+<div class="section">
+<h1><a class="toc-backref" href="#id4" id="implementation-notes" name="implementation-notes">Implementation Notes</a></h1>
+<p>Some elements of this specification could be implemented in a later version if we have a
+time crunch or will be in a full downloadable firmware that doesn't include other
+builtin programs. They are:</p>
+<ul class="simple">
+<li>the INDEX module</li>
+<li>subroutines and the stack</li>
+<li>Divide and Modulus</li>
+<li>Multiply</li>
+<li>pixel addressing to the LCD (special token 00110000 and parts of the DEVICES module)</li>
+<li>tunes (BEEPER module)</li>
+<li>serial in/out (parts of DEVICES module)</li>
+<li>random (part of DEVICES module)</li>
+<li>16bit variables</li>
+</ul>
+</div>
+<div class="section">
+<h1><a class="toc-backref" href="#id5" id="special-tokens" name="special-tokens">Special Tokens</a></h1>
+<p>Special tokens deal with setting and clearing bits in mod/regs, and sending bulk data down to
+the hybrid.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="4%" />
+<col width="3%" />
+<col width="5%" />
+<col width="18%" />
+<col width="69%" />
+</colgroup>
+<tbody valign="top">
+<tr><td colspan="5">Special Tokens</td>
+</tr>
+<tr><td>00</td>
+<td colspan="4">&nbsp;</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td colspan="4">Bit clear/set in the mod/regs. (Used for triggering actions and clearing status)</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>00</td>
+<td>0bbb</td>
+<td>mod/reg(8)</td>
+<td>Clear bit bbb in mod/reg.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>00</td>
+<td>1bbb</td>
+<td>mod/reg(8)</td>
+<td>Set bit bbb in mod/reg.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td colspan="4">Copy data into 8 bit, 16 bit or LCD spaces (at most 15 data elements at a time)</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>01</td>
+<td>nnnn</td>
+<td>dest(8)</td>
+<td>Copy nnnn bytes of 8 bit data starting at dest in 8 bit space.
+nnnn bytes of data follows.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>10</td>
+<td>nnnn</td>
+<td>dest(8)</td>
+<td>Copy nnnn words of 16 bit data starting at dest in 16 bit
+space. nnnn*2 words of data follows.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>11</td>
+<td>nnnn</td>
+<td>row(8) column(8)</td>
+<td>Copy nnnn bytes of 8 bit ascii data starting at row, column in LCD
+space using font bitmaps. nnnn bytes of data follows.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>11</td>
+<td>0000</td>
+<td>pixel_bytes(8)
+pixel start -
+row(8), col(8)</td>
+<td>Raw copy pixel_bytes of pixel data to LCD starting at pixel_start
+(this is pixel not font based), pixel_bytes of data follows so
+there will always be a multiple of 8 pixels affected.</td>
+</tr>
+</tbody>
+</table>
+<div class="section">
+<h2><a class="toc-backref" href="#id6" id="module-types" name="module-types">Module Types</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="6%" />
+<col width="17%" />
+<col width="77%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Type</th>
+<th class="head">Module</th>
+<th class="head">Notes</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>0000</td>
+<td>Not Used</td>
+<td>&nbsp;</td>
+</tr>
+<tr><td>0001</td>
+<td>Digital In</td>
+<td>Used for generic 1-bit digital outputs.</td>
+</tr>
+<tr><td>0010</td>
+<td>Digital Out</td>
+<td>Used for generic 1-bit digital inputs.</td>
+</tr>
+<tr><td>0011</td>
+<td>Analog In</td>
+<td>Used for light sensor, temp sensor, etc.</td>
+</tr>
+<tr><td>0100</td>
+<td>Line Tracker</td>
+<td>Used for tracking lines. MUST BE IN LOCATION 0 IF USED.</td>
+</tr>
+<tr><td>0101</td>
+<td>IR Transmit</td>
+<td>Used for transmitting characters via IR, or transmitting IR for obstacle detection.</td>
+</tr>
+<tr><td>0110</td>
+<td>IR Receive</td>
+<td>Used for receiving characters and remote control bursts via IR, and for obstacle detection.</td>
+</tr>
+<tr><td>0111</td>
+<td>Beeper</td>
+<td>Used for beeping, tones and tunes.</td>
+</tr>
+<tr><td>1000</td>
+<td>Motor A</td>
+<td><p class="first">Variable speed motor control - type A.</p>
+<p class="last">Uses two consecutive locations, use the lowest one of
+the two in the module table (see <a class="reference" href="#download-format">Download format</a>).</p>
+</td>
+</tr>
+<tr><td>1001</td>
+<td>Motor B</td>
+<td><p class="first">Variable speed motor control - type B.</p>
+<p class="last">Uses two consecutive locations, use the lowest one of
+the two in the module table (see <a class="reference" href="#download-format">Download format</a>).</p>
+</td>
+</tr>
+<tr><td>1010</td>
+<td>Bumper</td>
+<td>Used for reading the status of a Bumper (a special digital input).</td>
+</tr>
+<tr><td>1011</td>
+<td>LED</td>
+<td>Used for controlling switching a LED on/orr, and to monitor light levels</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section">
+<h2><a class="toc-backref" href="#id7" id="module-locations" name="module-locations">Module Locations</a></h2>
+<p>There are twelve locations where modules can be connected to the motherboard. With the motherboard
+oriented so that the writing is visible and the right way up, we have:</p>
+<ul class="simple">
+<li>location 0 is in the top middle</li>
+<li>location 1 is to the right of 0</li>
+<li>the rest of the locations continue around the motherboard in a clockwise fashion</li>
+<li>location 11 is to the left of 0</li>
+</ul>
+</div>
+<div class="section">
+<h2><a class="toc-backref" href="#id8" id="special-token-notes" name="special-token-notes">Special Token Notes</a></h2>
+<ol class="arabic simple">
+<li>The copy data tokens move at most 15 pieces of data at a time.
+For the amount of data that we are looking at in the Hybrid, this isn't much of a restriction.</li>
+<li>A copy data token with all zeros for nnnn means to zero the total space (8, 16 or LCD)</li>
+<li>For the last copy (pixel based) I suggest that we define pixel_start (0,0) to be the upper
+left corner, and increment by one across the rows, wrapping over to the next line at the
+right edge.</li>
+</ol>
+</div>
+</div>
+<div class="section">
+<h1><a class="toc-backref" href="#id9" id="move-data-tokens" name="move-data-tokens">Move Data Tokens</a></h1>
+<p>These take care of most module control and queries since the source or destination
+of these moves can be registers mapped to the different locations and types of modules.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="4%" />
+<col width="7%" />
+<col width="6%" />
+<col width="18%" />
+<col width="65%" />
+</colgroup>
+<tbody valign="top">
+<tr><td colspan="5">Move data tokens.</td>
+</tr>
+<tr><td>01</td>
+<td colspan="4">The e flag (in CPU module) is affected on every move. It is set if the
+source value is 0, else it is cleared.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>0nns</td>
+<td>dd</td>
+<td colspan="2">Move a small constant (nn so 0-3) to destination type dd. s
+is 0 for 8 bit moves, 1 for 16 bit moves.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>1sss</td>
+<td>dd</td>
+<td colspan="2">Move from source type sss to destination type dd. Details
+follow, split into sources then destinations.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td colspan="2">Source details:</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>1000</td>
+<td>dd</td>
+<td>mod(4) reg(4)</td>
+<td>Source is the module mod, register reg. See
+<a class="reference" href="#module-locations">Module Locations</a> and <a class="reference" href="#module-registers">Module Registers</a> for
+definitions of these values. The source has an
+8 bit value.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>1001</td>
+<td>dd</td>
+<td>mod(4) reg(4)</td>
+<td>Source is the module mod, register reg which
+has a 16 bit value.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>1010</td>
+<td>dd</td>
+<td>const(8)</td>
+<td>Source is the 8 bit constant following the
+token.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>1011</td>
+<td>dd</td>
+<td>const(16)</td>
+<td>Source is the 16 bit constant following the
+token.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>1100</td>
+<td>dd</td>
+<td>8bit_var(8)</td>
+<td>Source is the contents of the variable in 8 bit
+space.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>1101</td>
+<td>dd</td>
+<td>16bit_var(8)</td>
+<td>Source is the contents of the variable in 16
+bit space.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>1110</td>
+<td>dd</td>
+<td>16bit_var(8)</td>
+<td>Source is the system time (see <a class="reference" href="#timers-location-e">Timers
+(location e)</a>) with the contents of the 16 bit
+variable added to it. The destination must be a
+variable in 8 bit space else it is a Size
+Mismatch error.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>1111</td>
+<td>dd</td>
+<td>const(16)</td>
+<td>Source is the system time (see <a class="reference" href="#timers-location-e">Timers
+(location e)</a>) with the constant added to
+it. The destination must be a variable in 8 bit
+space else it is a Size Mismatch error.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td colspan="2">Destination details (the 8 bits of data here, follow any
+needed by the source bits):</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>1sss</td>
+<td>00</td>
+<td>mod(4) reg(4)</td>
+<td>Destination is the module mod, register reg.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>1sss</td>
+<td>01</td>
+<td>8bit_var(8)</td>
+<td>Destination is this variable in 8 bit space.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>1sss</td>
+<td>10</td>
+<td>16bit_var(8)</td>
+<td>Destination is this variable in 16 bit space.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>1sss</td>
+<td>11</td>
+<td>8bit_var(8)</td>
+<td>Destination is this variable in the LCD space.</td>
+</tr>
+</tbody>
+</table>
+<div class="section">
+<h2><a class="toc-backref" href="#id10" id="move-data-notes" name="move-data-notes">Move Data Notes</a></h2>
+<ol class="arabic">
+<li><p class="first">Small constants are encoded in the token so that writing 0 or 1
+to a module only takes a token of 2 bytes - the same as now.</p>
+</li>
+<li><p class="first">The smallest token is 2 bytes, the largest is 4.</p>
+</li>
+<li><p class="first">Moves can also be done through the INDEX module which uses an incrementing
+cursor for the reads or writes for LCD, 8bit and 16bit spaces.</p>
+</li>
+<li><p class="first">The System time add_and_moves seem complicated but aren't. And they allow
+for easy timed operations so that a Microbric instruction of motor forward
+for 10 seconds becomes 4 tokens: 1) motor on, 2) move time data +10 seconds,
+3) compare times (see below), 4) loop back 1 if less then.</p>
+<p>The point of all of this is so that no (or very few) tokens take long to
+execute. Then it is an easy for the interpreter to execute a token, then
+check for events, then repeat. Polling can work for most things then.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="section">
+<h1><a class="toc-backref" href="#id11" id="math-tokens" name="math-tokens">Math Tokens</a></h1>
+<table border="1" class="docutils">
+<colgroup>
+<col width="5%" />
+<col width="6%" />
+<col width="3%" />
+<col width="3%" />
+<col width="5%" />
+<col width="11%" />
+<col width="67%" />
+</colgroup>
+<tbody valign="top">
+<tr><td colspan="7">Math Tokens</td>
+</tr>
+<tr><td>10</td>
+<td colspan="6">The e flag (in CPU module) is affected by all operations. When the
+operation is not compare then it is set when the result is zero,
+cleared otherwise. On compare e is set if the values are the same,
+cleared otherwise. On compare g&amp;l are affected as well.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>00</td>
+<td colspan="5">Unary Operators</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td colspan="4">Size. 0 means 8 bit, 1 means 16 bit.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>0</td>
+<td colspan="3">Value to modify is in the accumulator, result goes into
+the accumulator</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>0</td>
+<td>00</td>
+<td colspan="2">NOT the accumulator (size determined by s).</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>0</td>
+<td>01</td>
+<td colspan="2">INCrement the accumulator (size determined by s).</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>0</td>
+<td>10</td>
+<td colspan="2">DECrement the accumulator (size determined by s).</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>0</td>
+<td>11</td>
+<td colspan="2">CONVERT the value in the accumulator to the other
+data type (if accumulator has 8bit value then
+convert to 16 bit value, else: if s=0, use the lsb
+for the 8bit value, if s=1, use the msb).</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>1</td>
+<td colspan="3">Value to modify is in a variable - result goes back to
+the variable (and accumulator).</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>1</td>
+<td>00</td>
+<td>var(8)</td>
+<td>NOT the variable var (size determined by s)
+.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>1</td>
+<td>01</td>
+<td>var(8)</td>
+<td>INCrement the variable var (size determined
+by s).</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>1</td>
+<td>10</td>
+<td>var(8)</td>
+<td>DECrement the variable var
+(size determined by s).</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>1</td>
+<td>11</td>
+<td>var(8)</td>
+<td>Compare the system time (see <a class="reference" href="#timers-location-e">Timers
+(location e)</a>) and the bytes starting at
+this variable in 8bit space. Set the flags
+for equal, greater or less. Size in this
+token is ignored and the accumulator and
+variable are unchanged.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>01</td>
+<td colspan="5">Basic Arithmetic (left hand side - lhs, is in the acc. and
+the result goes back into the acc.)</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td colspan="4">Size. 0 means 8 bit, 1 means 16 bit.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>0</td>
+<td colspan="3">Variable (right hand side - rhs, is in the variable
+(space determined by s))</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>0</td>
+<td>00</td>
+<td>var(8)</td>
+<td>ADD the acc and value in var.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>0</td>
+<td>01</td>
+<td>var(8)</td>
+<td>SUBTRACT the value in var from the acc.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>0</td>
+<td>10</td>
+<td>var(8)</td>
+<td>MULTIPLY the acc and value in var.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>0</td>
+<td>11</td>
+<td>var(8)</td>
+<td>COMPARE the acc and the value in var. Flags
+are set for equal, rhs&gt;lhs, rhs&lt;lhs.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>1</td>
+<td colspan="3">Constant (value following token is a constant--rhs, if
+s=0, 8bit value follows, else a 16bit value follows.)</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>1</td>
+<td>00</td>
+<td>const
+(8/16)</td>
+<td>ADD the acc and constant.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>1</td>
+<td>01</td>
+<td>const
+(8/16)</td>
+<td>SUBTRACT the constant from the acc.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>1</td>
+<td>10</td>
+<td>const
+(8/16)</td>
+<td>MULTIPLY the acc and the constant.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>1</td>
+<td>11</td>
+<td>const
+(8/16)</td>
+<td>COMPARE the acc and the constant. Flags are
+set for equal, rhs&gt;lhs, rhs&lt;lhs.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>10</td>
+<td colspan="5">Shifts and Divides. LHS is the acc and the result goes back
+into the acc. 16bit values are handled in a signed way (so
+easy mult/div by powers of 2) which means that the leftmost
+bit is replicated on a right shift.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td colspan="4">Size of data in acc. 0 means 8 bit, 1 means 16 bit.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>0</td>
+<td colspan="3">Variable (rhs value is in the variable number in 8bit
+space)</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>0</td>
+<td>00</td>
+<td>var(8)</td>
+<td>SHIFT LEFT the acc by the value in var.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>0</td>
+<td>01</td>
+<td>var(8)</td>
+<td>SHIFT RIGHT the acc by the value in var.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>0</td>
+<td>10</td>
+<td>var(8)</td>
+<td>DIVIDE the acc by the value in var and put
+the integer part of the result into the
+acc.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>0</td>
+<td>11</td>
+<td>var(8)</td>
+<td>MODULUS the acc by the value in var and put
+the result in acc (returns the remainder of
+a division).</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>1</td>
+<td colspan="3">Constant (rhs value is the 8bit constant following the
+token)</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>1</td>
+<td>00</td>
+<td>const
+(8)</td>
+<td>SHIFT LEFT the acc by the constant.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>1</td>
+<td>01</td>
+<td>const
+(8)</td>
+<td>SHIFT RIGHT the acc by the constant.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>1</td>
+<td>10</td>
+<td>const
+(8)</td>
+<td>DIVIDE the acc by the constant and put the
+integer part of the result into the acc.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td>1</td>
+<td>11</td>
+<td>const
+(8)</td>
+<td>MODULUS the acc by the constant and put the
+result in acc.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>11</td>
+<td colspan="5">BITWISE Arithmetic. LHS in in the acc and the result goes
+back into the acc.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>0</td>
+<td colspan="4">Size. These operations are only defined on 8bit values.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>0</td>
+<td>0</td>
+<td colspan="3">Variable (rhs value is in the variable number in 8bit
+space)</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>0</td>
+<td>0</td>
+<td>00</td>
+<td>var(8)</td>
+<td>OR the acc by the value in var.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>0</td>
+<td>0</td>
+<td>01</td>
+<td>var(8)</td>
+<td>AND the acc by the value in var.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>0</td>
+<td>0</td>
+<td>10</td>
+<td>var(8)</td>
+<td>XOR the acc by the value in var.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>0</td>
+<td>1</td>
+<td colspan="3">Constant (rhs value is the 8bit constant following the
+token)</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>0</td>
+<td>1</td>
+<td>00</td>
+<td>const
+(8)</td>
+<td>OR the acc by the constant.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>0</td>
+<td>1</td>
+<td>01</td>
+<td>const
+(8)</td>
+<td>AND the acc by the constant.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>0</td>
+<td>1</td>
+<td>10</td>
+<td>const
+(8)</td>
+<td>XOR the acc by the constant.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>11</td>
+<td colspan="5">Specials - enable or disable event processing between tokens
+and set a bit in a mod/reg.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>11</td>
+<td>0</td>
+<td>0</td>
+<td>11</td>
+<td colspan="2">Disable event processing</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>11</td>
+<td>0</td>
+<td>1</td>
+<td>11</td>
+<td colspan="2">Enable event processing (default on start)</td>
+</tr>
+</tbody>
+</table>
+<div class="section">
+<h2><a class="toc-backref" href="#id12" id="math-token-notes" name="math-token-notes">Math Token Notes</a></h2>
+<ol class="arabic simple">
+<li>I have only defined division by positive 8bit values.
+I think that this will simplify Bill's life and should be adequate.</li>
+<li>Handling multiplication and division will be non-trivial in the interpreter.</li>
+<li>Catching overflow is a pretty hard problem too!</li>
+</ol>
+</div>
+</div>
+<div class="section">
+<h1><a class="toc-backref" href="#id13" id="branching-tokens" name="branching-tokens">Branching Tokens</a></h1>
+<table border="1" class="docutils">
+<colgroup>
+<col width="4%" />
+<col width="3%" />
+<col width="3%" />
+<col width="7%" />
+<col width="6%" />
+<col width="10%" />
+<col width="6%" />
+<col width="60%" />
+</colgroup>
+<tbody valign="top">
+<tr><td colspan="8">Branching Tokens</td>
+</tr>
+<tr><td>11</td>
+<td colspan="7">&nbsp;</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>0</td>
+<td colspan="6">Branch</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>f</td>
+<td colspan="5">Far: 0 means short (8bit signed offset), 1 means long (16bit
+signed offset).</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>p</td>
+<td colspan="4">Push return frame: 0 means no, 1 means yes. The frame
+layout is documented in module CPU - it is the first 3
+words of that module.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>000</td>
+<td colspan="2">offset(8/16)</td>
+<td>branch to the new location (pc + offset
+bytes).</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>001</td>
+<td colspan="2">offset(8/16)</td>
+<td>branch to the new location if the last
+compare was ==</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>010</td>
+<td colspan="2">offset(8/16)</td>
+<td>branch to the new location if the last
+compare was !=</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>011</td>
+<td colspan="2">offset(8/16)</td>
+<td>branch to the new location if the last
+compare was &gt;</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>100</td>
+<td colspan="2">offset(8/16)</td>
+<td>branch to the new location if the last
+compare was &gt;=</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>101</td>
+<td colspan="2">offset(8/16)</td>
+<td>branch to the new location if the last
+compare was &lt;</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>110</td>
+<td colspan="2">offset(8/16)</td>
+<td>branch to the new location if the last
+compare was &lt;=</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>111</td>
+<td colspan="2">offset(8/16)</td>
+<td>Decrement the CPU register counter and
+branch to the new location if non-zero</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>1</td>
+<td colspan="6">Push/Pop</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>s</td>
+<td colspan="5">Size. 0 means 8bit, 1 means 16bit.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>0000</td>
+<td colspan="2">const(8/16)</td>
+<td colspan="2">Push the constant value (8 or 16bits) on the
+stack.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>0001</td>
+<td colspan="2">var(8)</td>
+<td colspan="2">Push the contents of the variable (from 8bit
+or 16bit space depending on s) on the stack.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>0010</td>
+<td colspan="2">mod(4)reg(4)</td>
+<td colspan="2">Push the contents of the module register on to
+the stack.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>0011</td>
+<td colspan="2">&nbsp;</td>
+<td colspan="2">Push the accumulator (this is a short version
+of the token 111s0010 above).</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>0100</td>
+<td colspan="2">&nbsp;</td>
+<td colspan="2">Pop the accumulator (this is a short version
+of the token 111s0010 above).</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>0101</td>
+<td colspan="2">var(8)</td>
+<td colspan="2">Pop the top of the stack into the variable
+(into 8bit or 16bit space depending on s).</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>0110</td>
+<td colspan="2">mod(4)reg(4)</td>
+<td colspan="2">Pop the top of the stack into the module
+register.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>1000</td>
+<td colspan="4">Return from a subroutine by popping the return frame off of
+the stack.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td colspan="7">Special very laid back token</td>
+</tr>
+<tr><td>11</td>
+<td>1</td>
+<td>1</td>
+<td>1111</td>
+<td colspan="4">Stop - tells the interpreter where the end of code is</td>
+</tr>
+</tbody>
+</table>
+<div class="section">
+<h2><a class="toc-backref" href="#id14" id="branching-tokens-notes" name="branching-tokens-notes">Branching Tokens Notes</a></h2>
+<ol class="arabic simple">
+<li>I suggest that the stack be limited to say 64 words and that
+recursion isn't supported. Pushing onto a full stack is bad
+which should stop the program and put something on the LCD or
+allow the GUI to get the info on the next download.</li>
+<li>I would make the stack 2 bytes wide (a word) and pushing
+8-bit values has zeros in the top half.</li>
+<li>It is the responsibility of the token writer to use
+the stack correctly.</li>
+<li>A branch only (short) only takes 2 bytes. A very complicated
+test may require 3 bytes to load the accumulator, 3 bytes for the
+comparison and 2 or 3 bytes for the branch, though usually the value
+will already be in the accumulator after math operations.</li>
+</ol>
+</div>
+</div>
+<div class="section">
+<h1><a class="toc-backref" href="#id15" id="error-strategy" name="error-strategy">Error Strategy</a></h1>
+<p>On an error (as listed below) we can either bumble forward or stop the program
+and (hopefully) tell the programmer what went wrong. In this project we are taking
+the first choice for errors, and either the first or second choice on warnings,
+selectable by the programmer.</p>
+<p>On an error, the LED will flash and an error message will be displayed on the LCD.
+The message will contain a token number which the gui will be able to interpret to
+say which Microbric had the problem.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="10%" />
+<col width="20%" />
+<col width="70%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>Type</td>
+<td>Name</td>
+<td>Description</td>
+</tr>
+<tr><td>Error</td>
+<td>Stack Overflow</td>
+<td>Did a push or branch without sufficent room on the stack</td>
+</tr>
+<tr><td>Error</td>
+<td>Divide by zero</td>
+<td>Doing division or modulus with a zero denominator</td>
+</tr>
+<tr><td>Error</td>
+<td>Size Mismatch</td>
+<td>Attempting to move 8bit to 16 or vica versa</td>
+</tr>
+<tr><td>Error</td>
+<td>Out of Range</td>
+<td>Accessing a space or register outside of valid range</td>
+</tr>
+<tr><td>Error</td>
+<td>Version Mismatch</td>
+<td>When the downloaded program isn't a version that the
+firmware can handle.</td>
+</tr>
+<tr><td>Warning</td>
+<td>Read Only</td>
+<td>Tried to write to a readonly location</td>
+</tr>
+<tr><td>Warning</td>
+<td>Overflow</td>
+<td>A calculation which overflowed the destination</td>
+</tr>
+</tbody>
+</table>
+<p>I would suggest that on a write to the LCD with a value out-of-range of the defined
+glyphs, that we use a special glyph to show that instead of raising and out-of-range
+error.</p>
+</div>
+<div class="section">
+<h1><a class="toc-backref" href="#id16" id="memory-map" name="memory-map">Memory Map</a></h1>
+<p>The memory in the interpreter is not contiguous, but is a number of seperate
+spaces. Which space is accessed is defined by bits in each token.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="27%" />
+<col width="59%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>Name</td>
+<td>Size (in bytes)</td>
+<td>Description</td>
+</tr>
+<tr><td>8-bit</td>
+<td>256</td>
+<td>8 bit unsigned values.</td>
+</tr>
+<tr><td>16-bit</td>
+<td>up to 128*2 (256)</td>
+<td>16 bit signed values (may restrict size to
+less then this number)</td>
+</tr>
+<tr><td>LCD</td>
+<td>16*4 (64 in device)</td>
+<td>Virtual space - writing an 8 bit value here
+selects a bitmap to be written on the LCD</td>
+</tr>
+<tr><td>stack</td>
+<td>up to 64*2 (128)</td>
+<td>All elements on the stack are 16 bits wide.</td>
+</tr>
+<tr><td>IR table</td>
+<td>up to 24*6(?) (144)</td>
+<td>Contains the IR signatures used to trigger
+actions (assuming 8 bits for size and action
+(say 2 bits and 6 bits), 32 bits for IR
+data, and 8 bits for type)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section">
+<h1><a class="toc-backref" href="#id17" id="event-handling" name="event-handling">Event Handling</a></h1>
+<p>Each token should be handled in it's entirety before jumping to an event handler.
+The interpreter my handle its own interrupts in the middle of a token but it will have
+to store the results until finished processing the current token.</p>
+<p>Note that most of these tokens are finished very quickly with the exception of
+causing an IR transmission.</p>
+<p>Between tokens:</p>
+<ul class="simple">
+<li>if 1/100 of a second up then update system time.</li>
+<li>if system time updated then update timers</li>
+<li>if IR data recvd then check for IR match</li>
+<li>if playing a tune then play the next note (so playing tunes is playing one note
+between each token).</li>
+<li>etc.</li>
+</ul>
+<p>Event sources:</p>
+<ul class="simple">
+<li>Digital in level change</li>
+<li>Digital in capture finished</li>
+<li>Digital out pulse finished</li>
+<li>Line tracker change</li>
+<li>Bumper level change</li>
+<li>Beeper tune finished</li>
+<li>Beeper tone finished</li>
+<li>Beeper clap detected</li>
+<li>IR rx match</li>
+<li>IR rx character</li>
+<li>IR rx obstacle detected</li>
+<li>IR rx obstacle detected to the Left/Centre/Right</li>
+<li>Devices rx serial character</li>
+<li>Devices keypress</li>
+<li>Timers one-shot expired</li>
+<li>Motor distance has been covered</li>
+<li>Motor strain gauge has exceeded limits</li>
+
+
+</ul>
+</div>
+<div class="section">
+<h1><a class="toc-backref" href="#id18" id="module-registers" name="module-registers">Module Registers</a></h1>
+<div class="section">
+<h2><a class="toc-backref" href="#id19" id="locations-0-b" name="locations-0-b">Locations 0-b</a></h2>
+<p>See the Connectable Module Registers section following.</p>
+</div>
+<div class="section">
+<h2><a class="toc-backref" href="#id20" id="index-location-c" name="index-location-c">INDEX (location c)</a></h2>
+<p>This module provides for indexed access to memory spaces with incrementing
+after the read or write.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="27%" />
+<col width="58%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="0">
+<li>action bits (w-8)</li>
+</ol>
+</td>
+<td>Format: ?rwclgpm. R is read 8bit1, W is write
+8bit1, C is copy from 8bit1 to 8bit2, L is
+copy from 8bit1 to LCD Ascii and trigger LCD
+output, G is read 16bit, P is write 16bit, M
+is a copy from 16bit1 to 16bit2. Note that
+all of these operations update the relevant
+cursors using the step registers.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>1. 8bit1 cursor
+(r/w-8).</td>
+<td>Cursor into 8bit space</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>2. 8bit1 step
+(r/w-8).</td>
+<td>Amount to add to 8bit1 cursor after use
+triggered by R, W, C or L in action
+bits. Defaults to 1</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>3. 8bit1 window
+(r/w-8)</td>
+<td>Window to write to before triggering W, C or
+L in action bits, or read from after R.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>4. 8bit2 cursor
+(r/w-8)</td>
+<td>Cursor in 8bit space only used as copy
+destination</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>5. 8bit2 step
+(r/w-8).</td>
+<td>Amount to add to 8bit2 cursor after use
+triggered by C in action bits. Defaults to 1</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>6. 16bit1 cursor
+(r/w-8)</td>
+<td>Cursor into 16bit space</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>7. 16bit1 step
+(r/w-8)</td>
+<td>Amount to add to 16bit1 cursor after use
+triggered by G, P or M in action bits.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>8. 16bit window
+(r/w-16)</td>
+<td>Window to write to before triggering P or M
+in action bits, or read from after G.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>a. 16bit2 cursor
+(r/w-8)</td>
+<td>Cursor in 16bit space only used as copy
+destination</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>b. 16bit2 step
+(r/w-8).</td>
+<td>Amount to add to 16bit2 cursor after use
+triggered by M in action bits. Defaults to 1.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section">
+<h2><a class="toc-backref" href="#id21" id="devices-location-d" name="devices-location-d">Devices (location d)</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="27%" />
+<col width="58%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="0">
+<li>Status bits (r/w-8)</li>
+</ol>
+</td>
+<td>Format:???r1234, R-byte received. 1, 2, 3, 4
+represent the motherboard buttons being held
+down (after debounce).</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple">
+<li>Action bits (w-8)</li>
+</ol>
+</td>
+<td>Format:?xtraehs. X means update serial
+settings, T transmit a byte, R need new
+random byte, A write ascii to LCD, E write
+8-bit to LCD, H write 8-bit to LCD in hex, S
+write 16-bit to LCD. After an LCD write the
+row/col pointers are adjusted.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>2. LCD cmd action
+bits (w-8)</td>
+<td>Format: ???rnspc. R to reset LCD (clear LCD,
+wp=0), N next line, S output a space, P-pixel
+set, C-pixel clear. All operations affect the
+row/col pointers.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>3. serial settings 1
+(r/w-8)</td>
+<td>Baud and such -- <strong>*Not used*</strong></td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>4. serial settings 2
+(r/w-8)</td>
+<td><strong>*Not used*</strong></td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>5. serial rcv char
+(r-8)</td>
+<td>Last serial byte received</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>6. serial transmit
+char (w-8)</td>
+<td>Byte to transmit</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>7. LCD ascii or 8-bit
+number to write to
+LCD (r/w-8)</td>
+<td>An 8-bit number or ascii value to write to
+the LCD (depending on A, E or H action bits).</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>8. LCD row pointer/
+pixel row pointer
+(r/w-8)</td>
+<td>The row on the LCD (with 0 being the top) to
+next write to, or the pixel row number (for P
+or C in LCD action bits). Note that most LCD
+commands or actions update this register.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>9. LCD col pointer/
+pixel column pointer
+pointer (r/w-8)</td>
+<td>The column on the LCD (with 0 being left) to
+next write to, or the pixel column number
+(for P or C in the LCD cmd action bits). Note
+that most LCD commands or actions update this
+register.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>a. LCD long number
+(r/w-16)</td>
+<td>A 16-bit number to write to the LCD when the
+S action bit is set.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last loweralpha simple" start="3">
+<li>Random (r/w-8)</li>
+</ol>
+</td>
+<td>Reading this returns a pseudo-random 8bit
+quantity. It returns the same value until R
+is set in the action bits.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last loweralpha simple" start="4">
+<li>Button (r-8)</li>
+</ol>
+</td>
+<td>Reading this the gives the current button that is being
+held down (after debounce).</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section">
+<h2><a class="toc-backref" href="#id22" id="timers-location-e" name="timers-location-e">Timers (location e)</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="27%" />
+<col width="58%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="0">
+<li>Status bits (r/w-8)</li>
+</ol>
+</td>
+<td>Format: ??????re. R one shot timer running, E
+- one shot timer expired.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple">
+<li>Action bits (w-8)</li>
+</ol>
+</td>
+<td>Format: ???btepo. B enables backlight, T
+enables backlight timer, E enables sleep
+timer, P triggers pause timer, O triggers
+one-shot timer.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>2. Pause timer
+(r/w-16)</td>
+<td>Wait until this time expires before executing
+next token (though event handling still
+happens). 10mS units (max 327.67 secs)</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>4. One shot timer
+(r/w-16)</td>
+<td>Set a timer which when expired, sets the E
+flag in status bits. Doesn't pause token
+execution. 10mS units (max 327.67 secs)</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>6. System Time
+(r/w-32)</td>
+<td>Four byte (32 bit) unsigned time that the
+system has been powered up in 100ths of a
+second (so range is &gt; 5900 hours)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section">
+<h2><a class="toc-backref" href="#id23" id="cpu-location-f" name="cpu-location-f">CPU (location f)</a></h2>
+<p>Virtualisation of the CPU. Note that a stack frame is the first 6 bytes of
+this structure (ACC, Flags, Counter &amp; PC).</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="27%" />
+<col width="58%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="0">
+<li>ACC (r/w-16)</li>
+</ol>
+</td>
+<td>Can hold either 8bit or 16bit values (token
+bits say which one, flag s records it).</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="2">
+<li>Flags (r-8)</li>
+</ol>
+</td>
+<td>Flags are: seglh??c. S reflects the size the
+data in ACC (0-8, 1-16), E for the last
+compare being equal or the last operation =0,
+G&amp;L for the last compare being greater (or
+less respectively). H means in handler, C is
+a carry flag used in adds and subtracts</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="3">
+<li>Counter (r/w-8)</li>
+</ol>
+</td>
+<td>Used to control tight loops</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="4">
+<li>PC (r/w-16)</li>
+</ol>
+</td>
+<td>Unsigned - for the interpreter to keep track
+of the token being executed</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>6. Stack Pointer
+(r/w-8)</td>
+<td>Points to the current top of stack</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td>7. Cont on Warning
+(r/w-8)</td>
+<td>If 1 then execution continues if there is a
+warning condition.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section">
+<h2><a class="toc-backref" href="#id24" id="module-register-notes" name="module-register-notes">Module Register Notes</a></h2>
+<ol class="arabic simple">
+<li>Serial settings should just be ones that are easy to do on our hardware</li>
+<li>A different set of CPU registers (first 6 bytes) are used in event handling which is
+transparent to the user. This means that we don't have to save a stack frame on
+event handling since event handlers don't nest. This is a nicety -- we can just use
+the stack to make everything easier!</li>
+<li>The pixel based LCD is clumsy, but the special token (00110000) allows for large
+sets of pixels to be affected, so this method is just for setting small numbers
+of pixels.</li>
+<li>Bits called '?' are reserved and are read as 0 and should be written as 0.</li>
+</ol>
+</div>
+</div>
+<div class="section">
+<h1><a class="toc-backref" href="#id25" id="connectable-module-registers" name="connectable-module-registers">Connectable Module Registers</a></h1>
+<p>I expect that these will change as the project progresses. That is fine though
+as this approach was adopted to allow that.</p>
+<p>Basically through download (see <cite>Download format</cite>) the interpretor is told which
+device is connect at which point (0-11). So the modules are numbered 0-11 but the registers
+are configured as the device that is connected. So for each different type of device we
+have different types of virtual registers.</p>
+<div class="section">
+<h2><a class="toc-backref" href="#id26" id="motors-a-b" name="motors-a-b">Motors A&amp;B</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="41%" />
+<col width="41%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="0">
+<li>Motor Status (r/w-8)</li>
+</ol>
+</td>
+  <td>Format: ??????DS. D is set to one when zero is written into the distance register.
+    S is set to one when the strain on the motor goes over a safe value.
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="1">
+<li>Motor Control (r/w-8)</li>
+</ol>
+</td>
+<td>Format: ccc?ssss. CCC are control
+bytes (00?-coast, 010-forward continuous using speed in SSSS, 011-forward using distance register,
+  100-backward continuous using speed in SSSS, 101-backward using distance register, 11?-brake).
+  Speeds in SSSS can range from 0 to 10.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="2">
+<li>Distance (r/w-16)</li>
+</ol>
+</td>
+<td>When this register is non-zero, and the control register has forward or
+     backword distance set, then the motor will do this many half-motor
+     rotations which equates to the value in the register X 7.5 degrees, or the value X 2.5 mm (.1 inch)
+     As the unit is moving, this register will be updated (counting down).</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section">
+<h2><a class="toc-backref" href="#id27" id="digital-in" name="digital-in">Digital In</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="41%" />
+<col width="41%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="0">
+<li>Status bits (r/w-8)</li>
+</ol>
+</td>
+<td>Format: xcfnpl. X means that the
+input level changed, C means
+that pulse capturing is
+happening, F means that pulse
+capturing is finished, N means
+that no pulse was found by max
+time, P means that a pulse was
+found, and L is the input level.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple">
+<li>Action bits (r/w-8)</li>
+</ol>
+</td>
+<td>Format: ???????c. C means to try
+to capture a pulse.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="2">
+<li>Pulse capture time (r/w-16)</li>
+</ol>
+</td>
+<td>Write this before starting a
+capture for the max time to
+wait. Read after a capture when
+status P is set for the pulse
+time. 10mS units (max time is
+327.67 sec)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section">
+<h2><a class="toc-backref" href="#id28" id="digital-out" name="digital-out">Digital Out</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="41%" />
+<col width="41%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="0">
+<li>Status bits (r/w-8)</li>
+</ol>
+</td>
+<td>Format: ???????p. P means pulse
+time expired.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple">
+<li>Action bits (r/w-8)</li>
+</ol>
+</td>
+<td>Format: ???????p. P means to
+output a pulse using pulse time
+below.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="2">
+<li>Output driver level (r/w-8)</li>
+</ol>
+</td>
+<td>Write 0 for low output, 1 for
+high. Reading returns last
+write.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="3">
+<li>Pulse time (r/w-16)</li>
+</ol>
+</td>
+<td>Write this before triggering
+action bit P, reading gives time
+left. Pulse is opposite of the
+output driver level. 10mS Units
+(max time is 327.67 sec)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section">
+<h2><a class="toc-backref" href="#id29" id="analog-in" name="analog-in">Analog In</a></h2>
+<p>Note: This module can NOT be connected at locations 2, 4, 8 and 10!</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="41%" />
+<col width="41%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="0">
+<li>Input level (r-16)</li>
+</ol>
+</td>
+<td>Format: ??????nnnnnnnnnn
+(10bit). N is the input level.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section">
+<h2><a class="toc-backref" href="#id30" id="line-tracker" name="line-tracker">Line Tracker</a></h2>
+<p>Note: This module can only be connected at location 0!</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="41%" />
+<col width="41%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="0">
+<li>Status bits (r/w-8)</li>
+</ol>
+</td>
+<td>Format: ??????cl. C is set if
+there is a change, L is 1 if the
+tracker is over a line, 0
+otherwise</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple">
+<li>Power on (r/w-8)</li>
+</ol>
+</td>
+<td>Writing a 0 turns off power to
+the line tracker, 1 turns it on.
+Reading gives last value
+written.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="2">
+<li>lightlevel (r-16)</li>
+</ol>
+</td>
+<td>Format: ??????nnnnnnnnnn
+(10bit). N is the input light level detected.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section">
+<h2><a class="toc-backref" href="#id31" id="beeper" name="beeper">Beeper</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="41%" />
+<col width="41%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="0">
+<li>Status bits (r/w-8)</li>
+</ol>
+</td>
+<td>Format: ?????cou: C means that a clap was detected, O tone is
+done, U tune is done. (Write 0 to this register to clear the status)</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple">
+<li>Action bits (w-8)</li>
+</ol>
+</td>
+<td>Format: ?????bou. B means to do
+a beep, O to sound a tone, U to
+sound a tune.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="2">
+<li>Tone Frequency (r/w-16)</li>
+</ol>
+</td>
+<td>Calculated value for the
+frequency. See below.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="4">
+<li>Tone Duration (r/w-16)</li>
+</ol>
+</td>
+<td>10mS units (max is 327.67
+seconds).</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="6">
+<li>Tune Pointer (r/w-8)</li>
+</ol>
+</td>
+<td>Start of Bill's Tune notation in
+8-bit memory. The notation is
+documented below.</td>
+</tr>
+</tbody>
+</table>
+<div class="section">
+<h3><a class="toc-backref" href="#id32" id="tone-frequency" name="tone-frequency">Tone Frequency</a></h3>
+<p>The frequency value, f = 5529600 / desired freq in Hz. The desired freq in Hz
+can range from 1000 Hz to 5000 Hz.</p>
+</div>
+<div class="section">
+<h3><a class="toc-backref" href="#id33" id="tune-notation" name="tune-notation">Tune Notation</a></h3>
+<p>A sequence of bytes, terminated by a zero byte. Each byte is in the following format:
+RTTTNNNN, where R is a rest marker (and NNNN is ignored), TTT is the note time in
+units of 50mS each, and NNNN is the note to play, following this table:</p>
+<ol class="arabic simple" start="0">
+<li>A (6th octave)</li>
+<li>B#</li>
+<li>B</li>
+<li>C (7th octave)</li>
+<li>D#</li>
+<li>D</li>
+<li>E#</li>
+<li>E</li>
+<li>F</li>
+<li>G#</li>
+<li>G</li>
+<li>A#</li>
+<li>A</li>
+<li>B#</li>
+<li>B</li>
+<li>C (8th octave)</li>
+</ol>
+</div>
+</div>
+<div class="section">
+<h2><a class="toc-backref" href="#id34" id="ir-transmit" name="ir-transmit">IR Transmit</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="41%" />
+<col width="41%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="0">
+<li>Action bits (w-8)</li>
+</ol>
+</td>
+  <td>Format: ??????dt. D means to do obstacle detection, T means to transmit a character.
+    Note that D and T can not both be set to 1!
+  </td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple">
+<li>Transmit Character (w-8)</li>
+</ol>
+</td>
+<td>Character to transmit in Bill
+protocol.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section">
+<h2><a class="toc-backref" href="#id35" id="ir-receive" name="ir-receive">IR Receive</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="41%" />
+<col width="41%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="0">
+<li>Status bits (r/w-8)</li>
+</ol>
+</td>
+  <td>Format: ?dlcrvmb. D is 1 if an obstacle was detected (if the IR transmitter
+    is configured to do obstacle detection). If D is set, then the actual obstacle detection is
+    on the left (L), centre (C) or right (R).
+    V means that the last check was valid, M means that an IR transmission matched in the IR table,
+    and B means that a Bill protocol character was received.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple">
+<li>Action bits (w-8)</li>
+</ol>
+</td>
+<td>Format: ???????c. C means to
+check the check index to see if
+it has valid bits captured.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="2">
+<li>Check index (r/w-8)</li>
+</ol>
+</td>
+<td>Index of the IR table to check
+for valid bits using the C
+action bit.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="3">
+<li>Match index (r-8)</li>
+</ol>
+</td>
+<td>The last IR transmission matched
+the bits at this index in the IR
+table.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="4">
+<li>Received Character (r-8)</li>
+</ol>
+</td>
+<td>The last received IR character
+in Bill protocol.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section">
+<h2><a class="toc-backref" href="#id36" id="bumper" name="bumper">Bumper</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="41%" />
+<col width="41%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="0">
+<li>Status bits (r/w-8)</li>
+</ol>
+</td>
+<td>Format: x????l. X means that the
+input level changed, and L is
+the input level (0 for not
+pressed, 1 for pressed).</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section">
+<h2><a class="toc-backref" href="#id37" id="led" name="led">LED</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="41%" />
+<col width="41%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="0">
+<li>Status bits (r/w-8)</li>
+</ol>
+</td>
+<td>Format: ????????. No status bits
+used.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple">
+<li>Output driver level (r/w-8)</li>
+</ol>
+</td>
+<td>Write 0 for LED off, 1 for LED
+on. Reading returns the last
+write.</td>
+</tr>
+<tr><td>&nbsp;</td>
+<td><ol class="first last arabic simple" start="2">
+<li>lightlevel (r-16)</li>
+</ol>
+</td>
+<td>Format: ??????nnnnnnnnnn
+(10bit). N is the input light level detected.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section">
+<h2><a class="toc-backref" href="#id38" id="connectable-module-register-notes" name="connectable-module-register-notes">Connectable Module Register Notes</a></h2>
+<ol class="arabic simple">
+<li>Bits called '?' are reserved and are read as 0 and should be written as 0.</li>
+</ol>
+</div>
+<div class="section">
+<h2><a class="toc-backref" href="#id39" id="basic-configuration-for-the-hybrid" name="basic-configuration-for-the-hybrid">Basic configuration for the Hybrid</a></h2>
+<ol class="arabic simple" start="0">
+<li>Line Tracker</li>
+<li>Bumper</li>
+<li>LED</li>
+<li>Motor-a</li>
+<li>Continuation of Motor-a</li>
+<li>IR Rx</li>
+<li>Beeper</li>
+<li>IR Tx</li>
+<li>Motor-b</li>
+<li>Continuation of Motor-b</li>
+<li>LED</li>
+<li>Bumper</li>
+</ol>
+</div>
+</div>
+<div class="section">
+<h2><a class="toc-backref" href="#id100" id="edison-configuration" name="edison-configuration">Edison Configuration</a></h2>
+<ol class="arabic simple" start="0">
+<li>Line Tracker</li>
+<li>LED</li>
+<li></li>
+<li>Motor-a</li>
+<li>Continuation of Motor-a</li>
+<li>IR Rx</li>
+<li>Beeper</li>
+<li>IR Tx</li>
+<li>Motor-b</li>
+<li>Continuation of Motor-b</li>
+<li></li>
+<li>LED</li>
+</ol>
+</div>
+</div>
+<div class="section">
+<h1><a class="toc-backref" href="#id40" id="module-status-bit-details" name="module-status-bit-details">Module Status bit details</a></h1>
+<p>Module status bits are set by the interpreter and are sometimes cleared by the interpreter
+and sometimes by the user. This allows the user to either poll them or set up an
+event handler to be triggered by them.</p>
+<p>The following events marked <strong>man</strong> are manually cleared by the user so are ideal event
+sources.</p>
+<p>To clear a status bit, the bitset math token can be used.</p>
+<ul class="simple">
+<li>Digital In<ul>
+<li>X: (<strong>man</strong>) set when the input level changes. User needs to clear it.</li>
+<li>C: (auto) set when pulse capture is happening (both waiting and capturing) and
+cleared when it is done</li>
+<li>F: (<strong>man</strong>) set when C is cleared (capture finished). User needs to clear it.</li>
+<li>N: (auto) set when C is cleared if waiting for a pulse timed out, otherwise
+cleared</li>
+<li>P: (auto) set when C is cleared if a pulse was found, otherwise
+cleared</li>
+<li>L: (auto) reflects the current level of the digital input (1-high, 0-low)</li>
+</ul>
+</li>
+<li>Digital Out<ul>
+<li>P: (<strong>man</strong>) set when an output pulse has finished. User needs to clear it.</li>
+</ul>
+</li>
+<li>Line Tracker<ul>
+<li>C: (<strong>man</strong>) set when the moving on-to or off-of a line. User needs to clear it.</li>
+<li>L: (auto) set to 1 when over a line, set to 0 when not</li>
+</ul>
+</li>
+<li>Motor<ul>
+<li>D: (<strong>man</strong>) set when the motor is running in distance mode, and the distance has been covered. User needs to clear it.</li>
+<li>S: (<strong>man</strong>) set when the motor's strain sensor has triggered. User needs to clear it.</li>
+</ul>
+</li>
+<li>Beeper<ul>
+<li>O: (<strong>man</strong>) set when a tone finishes. Users needs to clear it.</li>
+<li>U: (<strong>man</strong>) set when a tune finishes. Users needs to clear it.</li>
+<li>C: (<strong>man</strong>) set when a clap is detected. Users needs to clear it.</li>
+</ul>
+</li>
+<li>IR Receive<ul>
+<li>V: (auto) set if the last Check Index was valid, cleared otherwise</li>
+<li>M: (<strong>man</strong>) set on an IR transmission match. User needs to clear it. Note
+that if a second match happens before dealing with the first, the first
+match info will be lost.</li>
+<li>B: (<strong>man</strong>) set on receiving an IR character. User needs to clear it. Note
+that if a second character arrived before dealing with the first, the first
+character will be lost.</li>
+<li>D: (<strong>man</strong>) set when an obstacle has been detected. At least one of
+  L,C,R will also be set. User needs to clear it.</li>
+<li>L: (<strong>man</strong>) set when an obstacle has been detected to the left. User needs to clear it.</li>
+<li>C: (<strong>man</strong>) set when an obstacle has been detected in the centre. User needs to clear it.</li>
+<li>R: (<strong>man</strong>) set when an obstacle has been detected to the right. User needs to clear it.</li>
+</ul>
+</li>
+<li>Bumper<ul>
+<li>X: (<strong>man</strong>) set when the input level changes. User needs to clear it.</li>
+<li>L: (auto) reflects the current level of the digital input (1-high, 0-low)</li>
+</ul>
+</li>
+<li>Devices<ul>
+<li>R: (<strong>man</strong>) set on receiving a serial character. User needs to clear it.
+Note that if a second character arrived before dealing with the first, the first
+character will be lost.</li>
+<li>1-4: (<strong>man</strong>) set on detecting a keypress. User needs to clear it.
+Note that if a second keypress arrived before dealing with the first, the fact
+of the first keypress would be lost.</li>
+</ul>
+</li>
+<li>Timers<ul>
+<li>R: (auto) set when the one-shot timer is running, cleared otherwise</li>
+<li>E: (<strong>man</strong>) set when the one-shot timer expires. User needs to clear it.</li>
+</ul>
+</li>
+<li>CPU<ul>
+<li>Flags: (auto) reflect the last operation and change depending on the operation.</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section">
+<h1><a class="toc-backref" href="#id41" id="downloading-and-communication-settings" name="downloading-and-communication-settings">Downloading and Communication Settings</a></h1>
+<div class="section">
+<h2><a class="toc-backref" href="#id42" id="download-triggering-usb-cable" name="download-triggering-usb-cable">Download triggering - USB cable</a></h2>
+<p>Whenever the hybrid is powered on, and not currently downloading, it will monitor
+the serial channel (USB cable). If it receives the following sequence it will ACK
+(or NACK if the version is incompatible) the serial channel. If ACKED it will then
+wait for the Download Data.</p>
+<ul class="simple">
+<li>ENTER DOWNLOAD MODE sequence (64 bits)</li>
+<li>FIRMWARE MARKER | PROGRAM MARKER (8bits)</li>
+<li>VERSION (MMMMmmmm) (8bits)</li>
+</ul>
+<p>After this header, the Download Data will be transmitted with pauses as per the
+USB cable communications, protocol flow control below.</p>
+</div>
+<div class="section">
+<h2><a class="toc-backref" href="#id43" id="download-triggering-flashing-rectangle" name="download-triggering-flashing-rectangle">Download triggering - Flashing Rectangle</a></h2>
+<p>If the download is done via the flashing block then the hybrid will have to be
+put into download mode via the LCD and buttons and then the computer instructed
+to send:</p>
+<ul class="simple">
+<li>CONFIG BYTE</li>
+<li>PROGRAM MARKER</li>
+<li>VERSION (MMMMmmmm) (8bits)</li>
+</ul>
+<p>After this header, the Download Data will be transmitted with no pauses and not
+looking for any ACKs or NACKs.</p>
+</div>
+<div class="section">
+<h2><a class="toc-backref" href="#id44" id="versioning" name="versioning">Versioning</a></h2>
+<p>Note that the version is split into major (M), and minor (m) bits.
+The idea is that a difference in a Major would be definitly incompatible, while
+a minor change should be compatible. The firmware should be able to handle different
+versions of minor changes (say a difference in hardware requiring a different
+setting in a CPU register) but just NACK a difference in Major.</p>
+<p>The first versions are:</p>
+<ul class="simple">
+<li>0x00 (00000000) the hybrid with Advertiser functionality</li>
+<li>0x10 (00010000) the hybrid with the alternate firmware downloaded</li>
+<li>0x20 (00100000) the Edison Robot (module table is <strong>NOT</strong> allowed for this version)</li>
+</ul>
+</div>
+<div class="section">
+<h2><a class="toc-backref" href="#id45" id="download-format" name="download-format">Download format</a></h2>
+<p>Download Data looks like:</p>
+<ul class="simple">
+<li>Download program:<ul>
+<li>data size n (size of all data not including this size and crc) (16bits)</li>
+<li>crc (of all data not including size and this crc) (16bits)</li>
+<li>module table offset (0 means not used) (8bits)</li>
+<li>event table offset (0 means not used) (8bits)</li>
+<li>main program offset (16bits)</li>
+<li>table data (optional, size t)</li>
+<li>program tokens (n - t - 4 bytes)</li>
+</ul>
+</li>
+<li>Download firmware:<ul>
+<li>data size n (size of all firmware data) (16bits)</li>
+<li>crc (of all firmware data) (16bits)</li>
+<li>firmware data (n bytes)</li>
+</ul>
+</li>
+</ul>
+<p>Notes:</p>
+<ul class="simple">
+<li>The 0 offset for the module table, event table and program tokens is the start of the
+download data (first byte of data size)</li>
+<li>Offsets are in bytes</li>
+</ul>
+<p>Module table entries:</p>
+<ul class="simple">
+<li>type (see <a class="reference" href="#module-types">Module Types</a>) (8bits)</li>
+<li>storage offset (8bits)</li>
+</ul>
+<p>Notes:</p>
+<ul class="simple">
+<li>The entries in the table correspond to the locations on the motherboard
+(see <a class="reference" href="#module-locations">Module Locations</a>). So the first
+entry is location 0, second is location 1, and so on.</li>
+<li>The first storage offset starts at 0. Each offset provides for enough space for the
+published token spec registers and extras that the firmware needs.</li>
+<li>The last entry has 0xff for the 'type' and 0x00 for the offset.
+It is just used to mark the end of table.</li>
+</ul>
+<p>Event table entries:</p>
+<ul class="simple">
+<li>token offset (16bits)</li>
+<li>mod/reg (8bits)</li>
+<li>mask (8bits)</li>
+<li>value (8bits)</li>
+</ul>
+<p>Notes:</p>
+<ul class="simple">
+<li>The token offsets have 0 as the start of the 'data size' bytes in the download data.</li>
+<li>The last entry has 0 for the 'token offset' and the other fields are not accessed
+(so may be absent).</li>
+</ul>
+</div>
+
+<div class="section">
+  <h2><a class="toc-backref" href="#id101" id="download-edison" name="download-edison">Download Specifics for Edison</h2>
+  <p>Edison uses an audio-to-light communications method which is much more reliable then the flashing
+    rectangle, but doesn't need USB transceiver hardware. It does mean that downloads are one-way, but
+    as they are faster and more accurate, that isn't a problem.
+  </p>
+  <p>The format for the download header for Edison is the same as detailed above,
+    but with the addition of a DOWNLOAD_TYPE_BYTE in front. The format for tokens downloads is then:</p>
+  <ul class="simple">
+    <li>DOWNLOAD_TYPE_BYTE -- 0xf1 (tokens)</li>
+    <li>VERSION_BYTE -- for Edison this will always have the major version of 0x20</li>
+    <li>data size n (size of all data not including this size and crc) (16bits, LE)</li>
+    <li>crc (of all data not including size and this crc) (16bits, LE)</li>
+    <li>module table offset (MUST be 0 for Edison)</li>
+    <li>event table offset (0 means not used) (8bits)</li>
+    <li>main program offset (16bits)</li>
+    <li>table data (optional, size t)</li>
+    <li>program tokens (n - t - 4 bytes)</li>
+  </ul>
+
+    <p>The format for firmware downloads is:</p>
+  <ul class="simple">
+    <li>DOWNLOAD_TYPE_BYTE -- 0xf2 (firmware)</li>
+    <li>VERSION_BYTE -- for Edison this will always have the major version of 0x20</li>
+    <li>data size n (size of all firmware data) (16bits, LE)</li>
+    <li>crc (of all firmware data) (16bits, LE)</li>
+    <li>firmware data (n bytes)</li>
+  </ul>
+
+  <h3>Audio downloading specifics</h3>
+  <p>Binary data to be communicated to Edison is converted to an audio 'wav' file first.
+    The audio file is a 2 channel, 8-bit per channel, file with a frame rate of 44100Hz.
+    Each byte is encoded with a start bit, 8 data bits (LSB first) and then a stop bit.</p>
+  <p>Each bit uses a sequence where the left and right channels are set to: left=255,
+    right=0 called FAR; left=0, right=255 called NEAR; and left=128, right=128 called MID.</p>
+  <p>The sequence representing the bits and preambles are:</p>
+  <ul class="simple">
+    <li>preamble:</li>
+    <ul class="simple">
+      <li>Repeated 20 times:</li>
+      <li>FAR for 0.5ms</li>
+      <li>NEAR for 0.5ms</li>
+    </ul>
+    <li>start bit:</li>
+    <ul class="simple">
+      <li>FAR for 0.5ms</li>
+      <li>NEAR for 0.5ms</li>
+      <li>MID for 3ms</li>
+    </ul>
+    <li>0 bit:</li>
+    <ul class="simple">
+      <li>FAR for 0.5ms</li>
+      <li>NEAR for 0.5ms</li>
+    </ul>
+    <li>1 bit:</li>
+    <ul class="simple">
+      <li>FAR for 0.5ms</li>
+      <li>NEAR for 0.5ms</li>
+      <li>MID for 1ms</li>
+    </ul>
+    <li>stop bit:</li>
+    <ul class="simple">
+      <li>FAR for 0.5ms</li>
+      <li>NEAR for 0.5ms</li>
+      <li>MID for 4ms</li>
+    </ul>
+    <li>postscript:</li>
+    <ul class="simple">
+      <li>Repeated 20 times:</li>
+      <li>FAR for 0.5ms</li>
+      <li>NEAR for 0.5ms</li>
+    </ul>
+  </ul>
+  
+  <p>The data is downloaded over the audio hardware in this order:</p>
+  <ul class="simple">
+    <li>Preamble</li>
+    <li>Header</li>
+    <li>Data</li>
+    <li>Postscript</li>
+  </ul>
+</div>
+
+
+<div class="section">
+<h2><a class="toc-backref" href="#id46" id="special-characters" name="special-characters">Special Characters</a></h2>
+<p>No characters are escaped (no framing controls) but the following are used for
+protocol flow control and downloading:</p>
+<ul class="simple">
+<li>ACK : 0x06</li>
+<li>NACK : 0x15</li>
+<li>ENTER DOWNLOAD MODE : 0x1b 0x00 0xde 0xad 0xbe 0xef 0xff 0x1b</li>
+<li>PROGRAM MARKER: 0xa1</li>
+<li>FIRMWARE MARKER: 0x56</li>
+<li>CONFIG BYTE: 0xff</li>
+</ul>
+</div>
+<div class="section">
+<h2><a class="toc-backref" href="#id47" id="flashing-rectangle-communications" name="flashing-rectangle-communications">Flashing Rectangle communications</a></h2>
+<p>This type of communications doesn't need any cables but is extremely slow and not
+duplex. Information can only be transmitted by the computer and not by the hybrid.</p>
+<p>The comms parameters are:</p>
+<ul class="simple">
+<li>16 baud with 1 start bit, 1 stop bit, 8 data bits and no parity.</li>
+<li>No flow control (hard or soft).</li>
+<li>Stop bit is all white.</li>
+<li>Start bit is all black.</li>
+<li>1 bit is all black.</li>
+<li>0 bit is all white.</li>
+<li>Data is transmitted MSB first.</li>
+<li>A special byte (the CONFIG BYTE) is transmitted as a pre-cursor to normal communications.</li>
+</ul>
+<p>Note: For the hybrid the stop bit has been stretched to be approximately 1.3 bit times.</p>
+</div>
+<div class="section">
+<h2><a class="toc-backref" href="#id48" id="usb-cable-communications" name="usb-cable-communications">USB cable communications</a></h2>
+<p>This type of communication is much faster the the Flashing rectangle and is full duplex.</p>
+<p>The USB reference device is the ATEN UC-232A (PL2303 based) USB to serial converter. All tests on
+the computer system will use this device. It is assumed that other USB to serial converters
+will work but the reference device is what the host computer is aiming to interoperate with.</p>
+<p>The comms parameters are:</p>
+<ul class="simple">
+<li>38400 baud with 1 start bit, 1 stop bit, 8 data bits and no parity.</li>
+<li>No standard flow control, but there is a protocol flow control. See the
+following table for the protocol flow control.</li>
+<li>Space, Mark, 1 and 0 are as defined by the computer and USB cable.</li>
+</ul>
+<p>Protocol flow control:</p>
+<p>At certain times the computer will stop transmitting and wait for a single byte
+from the hybrid.</p>
+<ul class="simple">
+<li>These times are:<ul>
+<li>After sending the ENTER DOWNLOAD MODE, PROGRAM or FIRMWARE MARKER and VERSION</li>
+<li>After sending 256 bytes since last stopping transmission</li>
+<li>At the end of the transmission as long as it is not already stopped because of
+one of the other rules in this section.</li>
+</ul>
+</li>
+<li>After stopping then if:<ul>
+<li>an ACK is received from the hybrid: transmission can continue (successful if at end)</li>
+<li>a NACK is received from the hybrid: transmission is aborted (failed)</li>
+<li>an other character is received from the hybrid: transmission is aborted (failed)</li>
+<li>2 seconds pass with no character received: tranmission is aborted (failed)</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</body>
+</html>

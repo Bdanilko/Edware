@@ -38,7 +38,7 @@ else:
     sys.exit(1)
 
 if FROZEN:
-    RUN_DIR = sys._MEIPASS
+    RUN_DIR = os.path.join(os.path.dirname(sys.executable))
 else:
     RUN_DIR = os.getcwd()
 
