@@ -58,9 +58,7 @@ for resource_dir in resource_dirs:
 
 ## Append required files
 for required_file in required_files:
-    include_files.append(required_file)    
-
-include_files.append(os.path.join(site_dir, "portaudio_x86.dll"))
+    include_files.append(required_file)
 
 base = None
 

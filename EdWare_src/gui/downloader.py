@@ -437,10 +437,11 @@ class audio_downloader(wx.Dialog):
                             rate=wf.getframerate(),
                             output=True)
 
-            data = wf.readframes(AUDIO_CHUNK)
-            framesRead += AUDIO_CHUNK
+            data = wf.readframes(47)
+            framesRead += 47
             if (framesRead > totalFrames):
                 framesRead = totalFrames
+            stream.write(data)
 
             while data != '':
                 stream.write(data)
@@ -454,7 +455,8 @@ class audio_downloader(wx.Dialog):
 
             self.gauge.SetValue(totalFrames)
             self.Update()
-
+            correction = float(stream.get_write_available() - 32)/wf.getframerate()
+            time.sleep(stream.get_output_latency() - correction)
             stream.stop_stream()
             stream.close()
             p.terminate()
@@ -603,10 +605,11 @@ class audio_firmware_downloader(wx.Dialog):
                             rate=wf.getframerate(),
                             output=True)
 
-            data = wf.readframes(AUDIO_CHUNK)
-            framesRead += AUDIO_CHUNK
+            data = wf.readframes(47)
+            framesRead += 47
             if (framesRead > totalFrames):
                 framesRead = totalFrames
+            stream.write(data)
 
             while data != '':
                 stream.write(data)
@@ -620,7 +623,8 @@ class audio_firmware_downloader(wx.Dialog):
 
             self.gauge.SetValue(totalFrames)
             self.Update()
-            
+            correction = float(stream.get_write_available() - 32)/wf.getframerate()
+            time.sleep(stream.get_output_latency() - correction)
             stream.stop_stream()
             stream.close()
 
