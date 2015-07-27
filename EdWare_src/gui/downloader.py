@@ -6,7 +6,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, 2014 Microbric Pty Ltd.
+# Copyright 2006-2015, 2014 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -463,7 +463,7 @@ class audio_downloader(wx.Dialog):
 
             self.gauge.SetValue(totalFrames)
             self.Update()
-            correction = float(stream.get_write_available() - 32)/wf.getframerate()
+            correction = float(stream.get_write_available() - 32)/sample_rate
             time.sleep(stream.get_output_latency() - correction)
             stream.stop_stream()
             stream.close()
@@ -636,7 +636,7 @@ class audio_firmware_downloader(wx.Dialog):
 
             self.gauge.SetValue(totalFrames)
             self.Update()
-            correction = float(stream.get_write_available() - 32)/wf.getframerate()
+            correction = float(stream.get_write_available() - 32)/sample_rate
             time.sleep(stream.get_output_latency() - correction)
             stream.stop_stream()
             stream.close()
