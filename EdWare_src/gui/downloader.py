@@ -49,12 +49,15 @@ import time
 import time
 import wave
 
+import subprocess
+
 PORTAUDIO_PRESENT = False
 PYGAME_PRESENT = False
+WAVER_PRESENT = False
 USE_PYGAME = False
 USE_PORTAUDIO = False
 USE_WINSOUND = False
-
+USE_WAVER = False
 
 TOKEN_VERSION_STR = "\x20"
 TOKEN_VERSION_BYTE = 0x20
@@ -99,26 +102,35 @@ def set_audio_output(choice):
     global USE_PORTAUDIO
     global USE_PYGAME
     global USE_WINSOUND
+    global USE_WAVER
     global AUDIO_STRING
     
     choice = choice.lower()
     installed = "unknown"
     using = "unknown"
-    
 
-    if (PORTAUDIO_PRESENT and PYGAME_PRESENT):
-        installed = "portaudio, pygame"
+    waver_path = os.path.join(paths.get_run_dir(), "waver", "waver.exe")
+    if os.path.isfile(waver_path):
+        WAVER_PRESENT = True
+
+    if (PORTAUDIO_PRESENT and PYGAME_PRESENT and WAVER_PRESENT):
+        installed = "portaudio, pygame, waver"
     elif (PORTAUDIO_PRESENT):
         installed = "portaudio"
     elif (PYGAME_PRESENT):
         installed = "pygame"
+    elif WAVER_PRESENT:
+        installed = "waver"
     else:
         installed = "no extra audio backends"
 
     AUDIO_STRING = "(Audio installed: %s" % (installed)
     
     if (choice == "any"):
-        if (PORTAUDIO_PRESENT):
+        if WAVER_PRESENT:
+            USE_WAVER = True
+            using = "waver"
+        elif (PORTAUDIO_PRESENT):
             USE_PORTAUDIO = True
             using = "portaudio"
         elif (PYGAME_PRESENT):
@@ -427,7 +439,15 @@ class audio_downloader(wx.Dialog):
         time.sleep(1)
         WAV_FILE = os.path.join(paths.get_store_dir(), "program.wav")
 
-        if USE_PORTAUDIO:
+        if USE_WAVER:
+            logfile = open("waver.log", "w")
+            waver_path = os.path.join(paths.get_run_dir(), "waver", "waver.exe")
+            process = subprocess.Popen([waver_path, WAV_FILE], stdout=logfile)
+            self.gauge.SetLabel("")
+            process.wait()
+            logfile.close()
+
+        elif USE_PORTAUDIO:
             wf = wave.open(WAV_FILE, 'rb')
             p = pyaudio.PyAudio()
 
@@ -599,8 +619,15 @@ class audio_firmware_downloader(wx.Dialog):
         self.Update()
 
         time.sleep(1)
-        
-        if USE_PORTAUDIO:
+        if USE_WAVER:
+            logfile = open("waver.log", "w")
+            waver_path = os.path.join(paths.get_run_dir(), "waver", "waver.exe")
+            process = subprocess.Popen([waver_path, "firmware.wav"], stdout=logfile)
+            self.gauge.SetLabel("")
+            process.wait()
+            logfile.close()
+
+        elif USE_PORTAUDIO:
             wf = wave.open("firmware.wav", 'rb')
             p = pyaudio.PyAudio()
 

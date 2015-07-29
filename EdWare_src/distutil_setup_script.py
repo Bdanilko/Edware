@@ -45,7 +45,8 @@ required_files = ["Click.wav",
 ## into it and copy all the necessary files
 resource_dirs = ["gui\\brics",
                  "gui\\devices",
-                 "docs"]
+                 "docs",
+                 "waver"]
 
 ## Create the list of includes as cx_freeze likes
 include_files = []
