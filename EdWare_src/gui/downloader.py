@@ -112,15 +112,17 @@ def set_audio_output(choice):
     waver_path = os.path.join(paths.get_run_dir(), "waver", "waver.exe")
     if os.path.isfile(waver_path):
         WAVER_PRESENT = True
+    else:
+        WAVER_PRESENT = False
 
     if (PORTAUDIO_PRESENT and PYGAME_PRESENT and WAVER_PRESENT):
         installed = "portaudio, pygame, waver"
+    elif WAVER_PRESENT:
+        installed = "waver"
     elif (PORTAUDIO_PRESENT):
         installed = "portaudio"
     elif (PYGAME_PRESENT):
         installed = "pygame"
-    elif WAVER_PRESENT:
-        installed = "waver"
     else:
         installed = "no extra audio backends"
 
@@ -140,6 +142,14 @@ def set_audio_output(choice):
             USE_WINSOUND = True
             # must be windows built-in
             using = "built-in winsound"
+
+    elif (choice == "waver"):
+        if (not WAVER_PRESENT):
+            print "\nERROR - selected audio 'waver' is not installed!"
+            sys.exit(1)
+        else:
+            USE_WAVER = True
+            using = choice
 
     elif (choice == "portaudio"):
         if (not PORTAUDIO_PRESENT):
@@ -440,9 +450,11 @@ class audio_downloader(wx.Dialog):
         WAV_FILE = os.path.join(paths.get_store_dir(), "program.wav")
 
         if USE_WAVER:
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             logfile = open("waver.log", "w")
             waver_path = os.path.join(paths.get_run_dir(), "waver", "waver.exe")
-            process = subprocess.Popen([waver_path, WAV_FILE], stdout=logfile)
+            process = subprocess.Popen([waver_path, WAV_FILE], startupinfo=startupinfo, stdout=logfile)
             self.gauge.SetLabel("")
             process.wait()
             logfile.close()
@@ -620,9 +632,11 @@ class audio_firmware_downloader(wx.Dialog):
 
         time.sleep(1)
         if USE_WAVER:
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             logfile = open("waver.log", "w")
             waver_path = os.path.join(paths.get_run_dir(), "waver", "waver.exe")
-            process = subprocess.Popen([waver_path, "firmware.wav"], stdout=logfile)
+            process = subprocess.Popen([waver_path, "firmware.wav"], startupinfo=startupinfo, stdout=logfile)
             self.gauge.SetLabel("")
             process.wait()
             logfile.close()
