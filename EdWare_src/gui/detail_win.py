@@ -3352,7 +3352,7 @@ class Detail_win(wx.ScrolledWindow):
         return if_variant
 
     def create_event_code(self, code_lines, mod_alias, event, label):
-        match = None
+        match = -1
         value = None
         bit = -1
         mod = None
@@ -3396,6 +3396,10 @@ class Detail_win(wx.ScrolledWindow):
             match = int(event[7])
             #print "Matching IR code:", match
             # any match is handled without any special case
+
+            # Don't clear the status in this case unless the test is true.
+            # That way subsequent tests can be run too.
+            clear_status = False
         else:
             mask = 1 << int(bit)
 
@@ -3411,10 +3415,12 @@ class Detail_win(wx.ScrolledWindow):
         if (clear_status):
             code_lines.append("bitclr $%s %s" % (bit, win_data.make_mod_reg(mod, 'status')))
 
-        if (match):
+        if (match >= 0):
             code_lines.append("movb %s %%_cpu:acc" % (win_data.make_mod_reg(mod, 'match'),))
             code_lines.append("cmpb $%s" % (match,))
             code_lines.append('brne %s' % (label,))
+            # Test passed -- now clear the status
+            code_lines.append("bitclr $%s %s" % (bit, win_data.make_mod_reg(mod, 'status')))
 
         #print "if_variant:", if_variant
         return if_variant
