@@ -1231,7 +1231,7 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
     pauseCount = 0
 
     while (preamble < 20):
-        waveWriter.writeframes(createAudio(0))
+        waveWriter.writeframes(createAudio(0, sample_rate))
         preamble += 1
         
     while (index < len(binString)):
@@ -1240,24 +1240,24 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
             #print "Debug -- pausing for", pauseMsecs, "msecs, after", index, "bytes"
             preamble = 0
             while (preamble < pauseMsecs):
-                waveWriter.writeframes(createAudio(0))
+                waveWriter.writeframes(createAudio(0, sample_rate))
                 preamble += 1
             pauseCount = 0
         
         data = binString[index]
         #print "..debug: coding value", data
         # add start
-        waveWriter.writeframes(createAudio(6))
+        waveWriter.writeframes(createAudio(6, sample_rate))
         
         # now the actual data -- big endian or little endian
         mask = 1
         ones = 0
         while (mask <= 0x80):
             if (data & mask):
-                waveWriter.writeframes(createAudio(2))
+                waveWriter.writeframes(createAudio(2, sample_rate))
                 ones += 1
             else:
-                waveWriter.writeframes(createAudio(0))
+                waveWriter.writeframes(createAudio(0, sample_rate))
             mask <<= 1
 
         # add parity
@@ -1269,7 +1269,7 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
         #     waveWriter.writeframes(createAudio(0))
 
         # add stop - BBB Changed to 8 - differs from start 
-        waveWriter.writeframes(createAudio(8))
+        waveWriter.writeframes(createAudio(8, sample_rate))
 
         index += 1
         pauseCount += 1
@@ -1277,29 +1277,33 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
     #added to end as well - to ensure entire data is played. - ## BBB
     preamble = 0    
     while (preamble < 20):
-        waveWriter.writeframes(createAudio(0))
+        waveWriter.writeframes(createAudio(0, sample_rate))
         preamble += 1
 
     waveWriter.close()
         
-def createAudio(midQuantas):
+def createAudio(midQuantas, sample_rate):
+    if sample_rate == 44100:
+        sample_count = 22
+    elif sample_rate == 48000:
+        sample_count = 24
     data = ""
     
     # write fars
     count = 0
-    while (count < 22):
+    while (count < sample_count):
         data += chr(255) + chr(0)
         count += 1
 
     # write nears
     count = 0
-    while (count < 22):
+    while (count < sample_count):
         data += chr(0) + chr(255)
         count += 1
 
     if (midQuantas > 0):
         count = 0
-        samples = midQuantas * 22
+        samples = midQuantas * sample_count
         while (count < samples):
             data += chr(128) + chr(128)
             count += 1
