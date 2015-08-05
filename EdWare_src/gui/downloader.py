@@ -95,8 +95,6 @@ if (not (PORTAUDIO_PRESENT or PYGAME_PRESENT)) and (paths.get_platform() != "win
             
 AUDIO_CHUNK = 1024
 AUDIO_STRING = ""
-standard_sample_rates = [44100, 48000, 88200, 96000,
-                         192000]
 
 def set_audio_output(choice):
     global USE_PORTAUDIO
@@ -467,16 +465,10 @@ class audio_downloader(wx.Dialog):
             framesRead = 0
             self.gauge.SetRange(totalFrames)
             self.gauge.SetValue(0)
-            for sample_rate in standard_sample_rates:
-                try:
-                    stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
-                                    channels=wf.getnchannels(),
-                                    rate=sample_rate,
-                                    output=True)
-                except IOError:
-                    continue
-                else:
-                    break
+            stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
+                            channels=wf.getnchannels(),
+                            rate=wf.getframerate(),
+                            output=True)
             data = wf.readframes(47)
             framesRead += 47
             if (framesRead > totalFrames):
@@ -649,16 +641,10 @@ class audio_firmware_downloader(wx.Dialog):
             framesRead = 0
             self.gauge.SetRange(totalFrames)
             self.gauge.SetValue(0)
-            for sample_rate in standard_sample_rates:
-                try:
-                    stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
-                                    channels=wf.getnchannels(),
-                                    rate=sample_rate,
-                                    output=True)
-                except IOError:
-                    continue
-                else:
-                    break
+            stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
+                            channels=wf.getnchannels(),
+                            rate=wf.getframerate(),
+                            output=True)
             data = wf.readframes(47)
             framesRead += 47
             if (framesRead > totalFrames):
@@ -1233,7 +1219,10 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
     waveWriter = wave.open(outFilePath, 'wb')
     waveWriter.setnchannels(2)
     waveWriter.setsampwidth(1)
-    waveWriter.setframerate(44100)
+    p = pyaudio.PyAudio()
+    sample_rate = int(p.get_default_output_device_info()['defaultSampleRate'])
+    p.terminate()
+    waveWriter.setframerate(sample_rate)
     waveWriter.setcomptype("NONE", "")
 
     # now generate the file
