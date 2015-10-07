@@ -452,7 +452,7 @@ class audio_downloader(wx.Dialog):
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             logfile = open("waver.log", "w")
             waver_path = os.path.join(paths.get_run_dir(), "waver", "waver.exe")
-            process = subprocess.Popen([waver_path, WAV_FILE], startupinfo=startupinfo, stdout=logfile)
+            process = subprocess.Popen([waver_path, "/delay:500", WAV_FILE], startupinfo=startupinfo, stdout=logfile)
             self.gauge.SetLabel("")
             process.wait()
             logfile.close()
@@ -628,7 +628,7 @@ class audio_firmware_downloader(wx.Dialog):
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             logfile = open("waver.log", "w")
             waver_path = os.path.join(paths.get_run_dir(), "waver", "waver.exe")
-            process = subprocess.Popen([waver_path, "firmware.wav"], startupinfo=startupinfo, stdout=logfile)
+            process = subprocess.Popen([waver_path, "/delay:500", "firmware.wav"], startupinfo=startupinfo, stdout=logfile)
             self.gauge.SetLabel("")
             process.wait()
             logfile.close()
@@ -1230,6 +1230,9 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
     preamble = 0
     pauseCount = 0
 
+    # write silence in the begining
+    #waveWriter.writeframes(createAudio(1000, sample_rate, True))
+
     while (preamble < 20):
         waveWriter.writeframes(createAudio(0, sample_rate))
         preamble += 1
@@ -1280,26 +1283,30 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
         waveWriter.writeframes(createAudio(0, sample_rate))
         preamble += 1
 
+    # write silence in the end
+    #waveWriter.writeframes(createAudio(1000, sample_rate, True))
+
     waveWriter.close()
         
-def createAudio(midQuantas, sample_rate):
+def createAudio(midQuantas, sample_rate, silence=False):
     if sample_rate == 44100:
         sample_count = 22
     elif sample_rate == 48000:
         sample_count = 24
     data = ""
     
-    # write fars
-    count = 0
-    while (count < sample_count):
-        data += chr(255) + chr(0)
-        count += 1
+    if not silence:
+        # write fars
+        count = 0
+        while (count < sample_count):
+            data += chr(255) + chr(0)
+            count += 1
 
-    # write nears
-    count = 0
-    while (count < sample_count):
-        data += chr(0) + chr(255)
-        count += 1
+        # write nears
+        count = 0
+        while (count < sample_count):
+            data += chr(0) + chr(255)
+            count += 1
 
     if (midQuantas > 0):
         count = 0
