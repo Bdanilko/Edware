@@ -89,9 +89,9 @@ except:
     pass
 
 
-if (not (PORTAUDIO_PRESENT or PYGAME_PRESENT)) and (paths.get_platform() != "win"):
-    print "ERROR - No Audio package (pygame or pyaudio) installed!"
-    sys.exit(1)
+# if (not (PORTAUDIO_PRESENT or PYGAME_PRESENT)) and (paths.get_platform() != "win"):
+#     print "ERROR - No Audio package (pygame or pyaudio) installed!"
+#     sys.exit(1)
             
 AUDIO_CHUNK = 1024
 AUDIO_STRING = ""
@@ -452,7 +452,7 @@ class audio_downloader(wx.Dialog):
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             logfile = open("waver.log", "w")
             waver_path = os.path.join(paths.get_run_dir(), "waver", "waver.exe")
-            process = subprocess.Popen([waver_path, "/delay:500", WAV_FILE], startupinfo=startupinfo, stdout=logfile)
+            process = subprocess.Popen([waver_path, WAV_FILE], startupinfo=startupinfo, stdout=logfile)
             self.gauge.SetLabel("")
             process.wait()
             logfile.close()
@@ -628,7 +628,7 @@ class audio_firmware_downloader(wx.Dialog):
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             logfile = open("waver.log", "w")
             waver_path = os.path.join(paths.get_run_dir(), "waver", "waver.exe")
-            process = subprocess.Popen([waver_path, "/delay:500", "firmware.wav"], startupinfo=startupinfo, stdout=logfile)
+            process = subprocess.Popen([waver_path, "firmware.wav"], startupinfo=startupinfo, stdout=logfile)
             self.gauge.SetLabel("")
             process.wait()
             logfile.close()
@@ -1231,7 +1231,7 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
     pauseCount = 0
 
     # write silence in the begining
-    #waveWriter.writeframes(createAudio(1000, sample_rate, True))
+    waveWriter.writeframes(createAudio(1000, sample_rate, True))
 
     while (preamble < 20):
         waveWriter.writeframes(createAudio(0, sample_rate))
@@ -1284,7 +1284,7 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
         preamble += 1
 
     # write silence in the end
-    #waveWriter.writeframes(createAudio(1000, sample_rate, True))
+    waveWriter.writeframes(createAudio(1000, sample_rate, True))
 
     waveWriter.close()
         
