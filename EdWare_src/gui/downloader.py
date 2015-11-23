@@ -71,6 +71,12 @@ FIRMWARE_VERSION_BYTE = 0x20
 DOWNLOAD_BYTES_BETWEEN_PAUSES = 1536
 DOWNLOAD_PAUSE_MSECS = 2000
 
+WAVE_SAMPLE_RATE_HZ = 48000
+
+# A quanta is a 1/2 a microsecond. As the sample rate is in
+# Hz, we have to divide it by 2000 to get samples per 0.5ms.
+SAMPLES_PER_QUANTA = WAVE_SAMPLE_RATE_HZ / 2000
+
 try:
     import pyaudio
     PORTAUDIO_PRESENT = True
@@ -462,7 +468,7 @@ class audio_downloader(wx.Dialog):
         
         elif USE_PYGAME:
             if (pygame.mixer.get_init() == None):
-                pygame.mixer.init(frequency=44100, size=8, channels=2, buffer=4096)
+                pygame.mixer.init(frequency=WAVE_SAMPLE_RATE_HZ, size=8, channels=2, buffer=4096)
                 pygame.mixer.init()
             
             s = pygame.mixer.Sound(WAV_FILE)
@@ -628,7 +634,7 @@ class audio_firmware_downloader(wx.Dialog):
 
         elif USE_PYGAME:
             if (pygame.mixer.get_init() == None):
-                pygame.mixer.init(frequency=44100, size=8, channels=2, buffer=4096)
+                pygame.mixer.init(frequency=WAVE_SAMPLE_RATE_HZ, size=8, channels=2, buffer=4096)
                 pygame.mixer.init()
             
             s = pygame.mixer.Sound("firmware.wav")
@@ -1113,7 +1119,7 @@ def convert(binString, outFilePath):
     waveWriter = wave.open(outFilePath, 'wb')
     waveWriter.setnchannels(2)
     waveWriter.setsampwidth(1)
-    waveWriter.setframerate(44100)
+    waveWriter.setframerate(WAVE_SAMPLE_RATE_HZ)
     waveWriter.setcomptype("NONE", "")
 
     # now generate the file
@@ -1169,13 +1175,13 @@ def waveFileLenInSeconds(waveFilePath):
     #print "waveFileLenInSeconds - rate:%d, frames:%d, seconds:%d" % (rate, frames, seconds)
     return seconds
 
-    
+
 def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
-    #print "Debug: in convert() with binString of length", len(binString)
+    # print "Debug: in convert() with binString of length", len(binString)
     waveWriter = wave.open(outFilePath, 'wb')
     waveWriter.setnchannels(2)
     waveWriter.setsampwidth(1)
-    waveWriter.setframerate(44100)
+    waveWriter.setframerate(WAVE_SAMPLE_RATE_HZ)
     waveWriter.setcomptype("NONE", "")
 
     # now generate the file
@@ -1183,25 +1189,26 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
     preamble = 0
     pauseCount = 0
 
-    while (preamble < 20):
+    preamble = 0
+    while (preamble < SAMPLES_PER_QUANTA):
         waveWriter.writeframes(createAudio(0))
         preamble += 1
-        
+
     while (index < len(binString)):
         if (pauseCount == bytesBetweenPauses):
             # insert more preamble -- one preamble is 1ms
-            #print "Debug -- pausing for", pauseMsecs, "msecs, after", index, "bytes"
+            # print "Debug -- pausing for", pauseMsecs, "msecs, after", index, "bytes"
             preamble = 0
             while (preamble < pauseMsecs):
                 waveWriter.writeframes(createAudio(0))
                 preamble += 1
             pauseCount = 0
-        
+
         data = binString[index]
-        #print "..debug: coding value", data
+        # print "..debug: coding value", data
         # add start
         waveWriter.writeframes(createAudio(6))
-        
+
         # now the actual data -- big endian or little endian
         mask = 1
         ones = 0
@@ -1221,42 +1228,41 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
         #     # even so add a zero
         #     waveWriter.writeframes(createAudio(0))
 
-        # add stop - BBB Changed to 8 - differs from start 
+        # add stop - BBB Changed to 8 - differs from start
         waveWriter.writeframes(createAudio(8))
 
         index += 1
         pauseCount += 1
 
-    #added to end as well - to ensure entire data is played. - ## BBB
-    preamble = 0    
-    while (preamble < 20):
+    # added to end as well - to ensure entire data is played. - ## BBB
+    preamble = 0
+    while (preamble < SAMPLES_PER_QUANTA):
         waveWriter.writeframes(createAudio(0))
         preamble += 1
 
     waveWriter.close()
-        
+
+
 def createAudio(midQuantas):
     data = ""
-    
+
     # write fars
     count = 0
-    while (count < 22):
+    while (count < SAMPLES_PER_QUANTA):
         data += chr(255) + chr(0)
         count += 1
 
     # write nears
     count = 0
-    while (count < 22):
+    while (count < SAMPLES_PER_QUANTA):
         data += chr(0) + chr(255)
         count += 1
 
     if (midQuantas > 0):
         count = 0
-        samples = midQuantas * 22
+        samples = midQuantas * SAMPLES_PER_QUANTA
         while (count < samples):
             data += chr(128) + chr(128)
             count += 1
 
     return data
-        
-            
