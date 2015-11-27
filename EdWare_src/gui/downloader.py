@@ -50,6 +50,7 @@ import time
 import wave
 
 import subprocess
+import tempfile
 
 PORTAUDIO_PRESENT = False
 PYGAME_PRESENT = False
@@ -450,7 +451,8 @@ class audio_downloader(wx.Dialog):
         if USE_WAVER:
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-            logfile = open("waver.log", "w")
+            logfile_path = os.path.join(tempfile.gettempdir(), "waver.log")
+            logfile = open(logfile_path, "w")
             waver_path = os.path.join(paths.get_run_dir(), "waver", "waver.exe")
             process = subprocess.Popen([waver_path, WAV_FILE], startupinfo=startupinfo, stdout=logfile)
             self.gauge.SetLabel("")
@@ -626,7 +628,8 @@ class audio_firmware_downloader(wx.Dialog):
         if USE_WAVER:
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-            logfile = open("waver.log", "w")
+            logfile_path = os.path.join(tempfile.gettempdir(), "waver.log")
+            logfile = open(logfile_path, "w")
             waver_path = os.path.join(paths.get_run_dir(), "waver", "waver.exe")
             process = subprocess.Popen([waver_path, "firmware.wav"], startupinfo=startupinfo, stdout=logfile)
             self.gauge.SetLabel("")
