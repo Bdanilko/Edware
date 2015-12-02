@@ -71,11 +71,20 @@ FIRMWARE_VERSION_BYTE = 0x20
 DOWNLOAD_BYTES_BETWEEN_PAUSES = 1536
 DOWNLOAD_PAUSE_MSECS = 2000
 
-WAVE_SAMPLE_RATE_HZ = 48000
+WAVE_SAMPLE_RATE_HZ = 44100
 
 # A quanta is a 1/2 a microsecond. As the sample rate is in
 # Hz, we have to divide it by 2000 to get samples per 0.5ms.
 SAMPLES_PER_QUANTA = WAVE_SAMPLE_RATE_HZ / 2000
+
+# A ramping function between two different samples - the
+# values are the percent of the change to apply in each sample.
+# Difference between each value is:
+# 2, 3, 5, 10, 15, 15, 15, 15, 10, 5, 3, 2
+#RAMP = (2, 5, 10, 20, 35, 50, 65, 80, 90, 95, 98)
+
+# a ramp gentler at the ends but more extreme in the middle
+RAMP = (1, 3, 6, 11, 31, 69, 89, 94, 97, 99)
 
 try:
     import pyaudio
@@ -95,7 +104,7 @@ except:
 if (not (PORTAUDIO_PRESENT or PYGAME_PRESENT)) and (paths.get_platform() != "win"):
     print "ERROR - No Audio package (pygame or pyaudio) installed!"
     sys.exit(1)
-            
+
 AUDIO_CHUNK = 1024
 AUDIO_STRING = ""
 def set_audio_output(choice):
@@ -103,11 +112,11 @@ def set_audio_output(choice):
     global USE_PYGAME
     global USE_WINSOUND
     global AUDIO_STRING
-    
+
     choice = choice.lower()
     installed = "unknown"
     using = "unknown"
-    
+
 
     if (PORTAUDIO_PRESENT and PYGAME_PRESENT):
         installed = "portaudio, pygame"
@@ -119,7 +128,7 @@ def set_audio_output(choice):
         installed = "no extra audio backends"
 
     AUDIO_STRING = "(Audio installed: %s" % (installed)
-    
+
     if (choice == "any"):
         if (PORTAUDIO_PRESENT):
             USE_PORTAUDIO = True
@@ -155,7 +164,7 @@ def set_audio_output(choice):
         else:
             USE_WINSOUND = True
             using = "built-in winsound"
-            
+
     else:
         print "\nERROR - selected audio '%s' is unknown!" % (choice)
         sys.exit(2)
@@ -164,8 +173,8 @@ def set_audio_output(choice):
 
     #print AUDIO_STRING
     return AUDIO_STRING
-            
-    
+
+
 import token_assembler
 import token_downloader
 import tokens
@@ -177,15 +186,15 @@ def write_code(file_name):
 
     if (not file_name):
         file_name = os.path.join(paths.get_store_dir(), "last_compile")
-        
+
     parts = os.path.splitext(file_name)
     file_name = parts[0]+".mbc"
-    
+
     file_handle = file(file_name, 'w')
 
     win_data.get_all_code(file_handle)
     file_handle.close()
-    
+
     return file_name
 
 def assemble(f_name):
@@ -193,25 +202,25 @@ def assemble(f_name):
     err = logging_utils.Error_reporter()
     err.set_exit_on_error(True)
     err.set_throw_on_error(False)
-        
+
     err.set_context(1, "Reading tokens from file: %s" % (f_name))
 
     # clear global memory
     hl_parser.reset_devices_and_locations()
     token_assembler.reset_tokens()
-    
+
     # setup the token stream
     token_stream = tokens.Token_stream(err)
     token_stream.clear()
-    
+
     file_read = token_assembler.assem_file(f_name, [], token_stream, err)
 
     if (not file_read):
         sys.exit(1)
-        
+
     # analysis the token stream
     err.set_context(1, "Analysing tokens from file: %s" % (f_name))
-    
+
     #token_stream.dump_tokens()
     #logging_utils.dump_object(token_stream, "Token_stream")
 
@@ -229,7 +238,7 @@ def assemble(f_name):
     for t in header:
         download_bytes.append(t)
         download_str += chr(t)
-    
+
     for t in token_stream.token_stream:
         bytes = t.get_token_bits()
         download_bytes.extend(bytes)
@@ -272,10 +281,10 @@ class usb_downloader(wx.Dialog):
         #     else:
         #         usb_device = ""
         usb_device = ""
-        
+
         self.usb_ctrl = wx.ComboBox(self, -1, value=usb_device, choices=self.ports, size=(150,-1))
 
-        
+
         self.grid = wx.GridBagSizer(5,5)
         self.usb_prompt = wx.StaticText(self, -1, "USB Device:")
         self.progress_prompt = wx.StaticText(self, -1, "Download progress:")
@@ -283,7 +292,7 @@ class usb_downloader(wx.Dialog):
         self.start = wx.Button(self, -1, "Start Download")
         self.cancel = wx.Button(self, -1, "Cancel Download")
         self.help_text = wx.StaticText(self, -1, "")
-        
+
         self.grid.Add(self.usb_prompt, (1,1),
                  flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTRE_VERTICAL)
         self.grid.Add(self.usb_ctrl, (1,2), flag=wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL)
@@ -291,7 +300,7 @@ class usb_downloader(wx.Dialog):
 
         self.grid.Add(self.progress_prompt, (3,1), span=(1,2), flag=wx.EXPAND)
         self.grid.Add(self.gauge, (4,1), span=(1,3), flag=wx.EXPAND)
-        
+
         self.grid.Add(self.help_text, (6,1), span=(2,2), flag=wx.EXPAND)
 
         self.grid.AddGrowableRow(7)
@@ -327,7 +336,7 @@ class usb_downloader(wx.Dialog):
 ##        if (not os.path.exists(device) or not os.access(device, os.R_OK|os.W_OK)):
 ##            self.help_text.SetLabel("ERROR - device %s doesn't exist or isn't readable and writable." % (device))
 ##            return
-        
+
         # can't start twice so disable this button
         self.start.Disable()
         self.help_text.SetLabel("Starting download of %d bytes." % (self.byte_count,))
@@ -345,7 +354,7 @@ class usb_downloader(wx.Dialog):
             self.start.Enable()
 
         self.Refresh()
-        
+
 
         # --------------- AUDIO dialog ----------------------------------
 
@@ -365,11 +374,11 @@ class audio_downloader(wx.Dialog):
         else:
             self.gauge = wx.Gauge(self, -1, range=100)
             self.gauge.SetMinSize((500, -1))
-            
+
         self.start = wx.Button(self, -1, "Start Download")
         self.cancel = wx.Button(self, -1, "Cancel Download")
         self.help_text = wx.StaticText(self, -1, "")
-        
+
         grid = wx.FlexGridSizer(3 ,1, 5, 5)
         grid.Add(self.progress_prompt)
         grid.Add(self.gauge, flag=wx.EXPAND)
@@ -393,22 +402,22 @@ class audio_downloader(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.on_cancel, self.cancel)
 
         self.download_bytes, self.dtype, self.version = get_bytes(file_name)
-        
+
         self.byte_count = len(self.download_bytes)
-        
+
         if (USE_WINSOUND):
             self.gauge.SetLabel("")
         else:
             self.gauge.SetRange(self.byte_count)
             self.gauge.SetValue(0)
-        
+
         self.help_text.SetLabel("Download size is %d bytes" % (self.byte_count,))
 
         # convert to wav file
         WAV_FILE = os.path.join(paths.get_store_dir(), "program.wav")
         convertWithPause(self.download_bytes, WAV_FILE,
                          DOWNLOAD_PAUSE_MSECS, DOWNLOAD_BYTES_BETWEEN_PAUSES);
-        
+
     def on_cancel(self, event):
         self.EndModal(wx.ID_CANCEL)
 
@@ -424,7 +433,7 @@ class audio_downloader(wx.Dialog):
         else:
             self.gauge.SetValue(0)
             self.gauge.Update()
-            
+
         self.Update()
 
         time.sleep(1)
@@ -465,12 +474,12 @@ class audio_downloader(wx.Dialog):
             stream.close()
             p.terminate()
 
-        
+
         elif USE_PYGAME:
             if (pygame.mixer.get_init() == None):
                 pygame.mixer.init(frequency=WAVE_SAMPLE_RATE_HZ, size=8, channels=2, buffer=4096)
                 pygame.mixer.init()
-            
+
             s = pygame.mixer.Sound(WAV_FILE)
             seconds = s.get_length()
             #print "Sounds seconds:", seconds
@@ -489,22 +498,22 @@ class audio_downloader(wx.Dialog):
 
             self.gauge.SetValue(seconds * 5)
             self.Update()
-            
+
         elif USE_WINSOUND:
             s1 = wx.Sound(WAV_FILE)
             s1.Play(wx.SOUND_SYNC)
 
             self.gauge.SetLabel("")
-            
-        
+
+
         self.help_text.SetLabel("Finished downloading")
         self.start.Enable()
         self.cancel.Enable()
 
         self.Refresh()
-        
+
         # --------------- AUDIO FIRMWARE dialog ----------------------------------
-        
+
 class audio_firmware_downloader(wx.Dialog):
     def __init__(self, file_name, title="Set Title!"):
         wx.Dialog.__init__(self, None, -1, title)
@@ -552,7 +561,7 @@ class audio_firmware_downloader(wx.Dialog):
 
     def on_cancel(self, event):
         self.EndModal(wx.ID_CANCEL)
-        
+
     def on_start(self, event):
         filename = self.file_browse.GetValue()
         if (not os.path.exists(filename)):
@@ -561,26 +570,26 @@ class audio_firmware_downloader(wx.Dialog):
 
         # Assuming that the file is the binary firmware file with all header bytes
         # already added. Just have to convert to audio and play.
-        
+
         file_handle = file(filename, 'rb')
         firmware_string = file_handle.read()
         file_handle.close()
         self.download_bytes = bytearray(firmware_string)
         self.byte_count = len(self.download_bytes)
-        
+
         if (USE_WINSOUND):
             self.gauge.SetLabel("")
         else:
             self.gauge.SetRange(self.byte_count)
             self.gauge.SetValue(0)
-            
+
         self.help_text.SetLabel("Creating audio file.")
         self.Update()
-        
+
         # convert to wav file
         convertWithPause(self.download_bytes, "firmware.wav",
                          DOWNLOAD_PAUSE_MSECS, DOWNLOAD_BYTES_BETWEEN_PAUSES);
-        
+
         # can't start twice so disable this button
         self.start.Disable()
         self.cancel.Disable()
@@ -591,11 +600,11 @@ class audio_firmware_downloader(wx.Dialog):
         else:
             self.gauge.SetValue(0)
             self.gauge.Update()
-            
+
         self.Update()
 
         time.sleep(1)
-        
+
         if USE_PORTAUDIO:
             wf = wave.open("firmware.wav", 'rb')
             p = pyaudio.PyAudio()
@@ -618,7 +627,7 @@ class audio_firmware_downloader(wx.Dialog):
                 stream.write(data)
                 self.gauge.SetValue(framesRead)
                 self.Update()
-                
+
                 data = wf.readframes(AUDIO_CHUNK)
                 framesRead += AUDIO_CHUNK
                 if (framesRead > totalFrames):
@@ -626,7 +635,7 @@ class audio_firmware_downloader(wx.Dialog):
 
             self.gauge.SetValue(totalFrames)
             self.Update()
-            
+
             stream.stop_stream()
             stream.close()
 
@@ -636,7 +645,7 @@ class audio_firmware_downloader(wx.Dialog):
             if (pygame.mixer.get_init() == None):
                 pygame.mixer.init(frequency=WAVE_SAMPLE_RATE_HZ, size=8, channels=2, buffer=4096)
                 pygame.mixer.init()
-            
+
             s = pygame.mixer.Sound("firmware.wav")
             seconds = s.get_length()
             #print "Sounds seconds:", seconds
@@ -655,7 +664,7 @@ class audio_firmware_downloader(wx.Dialog):
 
             self.gauge.SetValue(seconds * 5)
             self.Update()
-            
+
 
         elif USE_WINSOUND:
             s1 = wx.Sound("firmware.wav")
@@ -669,7 +678,7 @@ class audio_firmware_downloader(wx.Dialog):
 
         self.Refresh()
 
-        
+
 # --------------- Screen dialog ----------------------------------
 
 class screen_downloader(wx.Dialog):
@@ -677,7 +686,7 @@ class screen_downloader(wx.Dialog):
         wx.Dialog.__init__(self, None, -1, title, size=size)
 
         self.SetBackgroundColour("light grey")
-        
+
         self.grid = wx.GridBagSizer(5,5)
 
         self.scr_prompt = wx.StaticText(self, -1, "Flash Box:")
@@ -685,7 +694,7 @@ class screen_downloader(wx.Dialog):
 
         self.canvas = wx.Window(self, -1, size=(300, 300), style=wx.SIMPLE_BORDER)
         self.canvas.SetBackgroundColour("white")
-        
+
         self.gauge = wx.Gauge(self, -1, range=100)
         self.start = wx.Button(self, -1, "Start Download")
         self.cancel = wx.Button(self, -1, "Cancel Download")
@@ -699,9 +708,9 @@ class screen_downloader(wx.Dialog):
 
         self.grid.Add(self.progress_prompt, (4,2), span=(1,3), flag=wx.EXPAND)
         self.grid.Add(self.gauge, (5,2), span=(1,3), flag=wx.EXPAND)
-        
+
         self.grid.Add(self.help_text, (6,2), span=(1,3), flag=wx.EXPAND)
-        
+
         self.grid.AddGrowableRow(7)
         self.grid.Add(self.cancel, (8,3), flag=wx.ALIGN_RIGHT | wx.BOTTOM)
         self.grid.Add(self.start, (8,4), flag=wx.ALIGN_LEFT | wx.BOTTOM)
@@ -715,13 +724,13 @@ class screen_downloader(wx.Dialog):
         self.last_brush = None
 
         self.download_bytes, self.dtype, self.version = get_bytes(file_name)
-        
+
         self.total_bytes = [0xff, 0xa1, 0x00]+self.download_bytes
         self.total_bytes[2] = (((self.version[0] & 0x0f) << 4) | (self.version[1] & 0x0f))
 
         self.byte_count = len(self.total_bytes)
 
-        
+
         self.gauge.SetRange(self.byte_count)
         self.gauge.SetValue(0)
 
@@ -741,27 +750,27 @@ class screen_downloader(wx.Dialog):
         # 16 baud is every 62.5 milliseconds
 
         dc = wx.ClientDC(self.canvas)
-        
+
         # get the bit to send
         if (self.bit_index == 8):
             # start bit
             brush = self.black_brush
             self.bit_index -= 1
-            
+
         elif (self.bit_index < 0):
             # stop bit
             brush = self.white_brush
             self.byte_index += 1
             self.bit_index = 8
 
-            
+
         else:
             if ((1 << self.bit_index) & self.total_bytes[self.byte_index]):
                 brush = self.black_brush
             else:
                 brush = self.white_brush
             self.bit_index -= 1
-            
+
         # wait until precisely the time
         wait_cycles = 0
         while (datetime.datetime.today() < self.next_bit_time):
@@ -779,18 +788,18 @@ class screen_downloader(wx.Dialog):
             self.gauge.SetValue(self.byte_index)
             self.help_text.SetLabel("Finished Downloading!")
             self.start.Enable()
-            
+
         elif (self.bit_index == 8):
             # add a bit of extra time between bytes
             self.next_bit_time += datetime.timedelta(microseconds=62500+20000)
             self.timer.Start(70, oneShot=True)
-            
+
             self.gauge.SetValue(self.byte_index)
-        
+
         else:
             self.next_bit_time += datetime.timedelta(microseconds=62500)
             self.timer.Start(50, oneShot=True)
-            
+
 
     def on_start(self, event):
         self.timer = wx.Timer(self)
@@ -799,11 +808,11 @@ class screen_downloader(wx.Dialog):
         self.byte_index = 0
         self.bit_index = 8
         self.last_brush = None
-        
+
         # can't start twice so disable this button
         self.start.Disable()
         self.help_text.SetLabel("Downloading %d bytes." % (self.byte_count,))
-        
+
 
 
 # --------------- USB - firmware - dialog ----------------------------------
@@ -821,7 +830,7 @@ class firmware_downloader(wx.Dialog):
         #     else:
         #         usb_device = ""
         usb_device = ""
-                
+
         self.usb_ctrl = wx.ComboBox(self, -1, value=usb_device, choices=self.ports, size=(150,-1))
 
         self.grid = wx.GridBagSizer(5,5)
@@ -846,9 +855,9 @@ class firmware_downloader(wx.Dialog):
 
         self.grid.Add(self.progress_prompt, (4,1), span=(1,2), flag=wx.EXPAND)
         self.grid.Add(self.gauge, (5,1), span=(1,3), flag=wx.EXPAND)
-        
+
         self.grid.Add(self.help_text, (6,1), span=(2,2), flag=wx.EXPAND)
-        
+
         self.grid.AddGrowableRow(7)
         self.grid.Add(self.cancel, (8,2), flag=wx.ALIGN_RIGHT | wx.BOTTOM)
         self.grid.Add(self.start, (8,3), flag=wx.ALIGN_LEFT | wx.BOTTOM)
@@ -878,7 +887,7 @@ class firmware_downloader(wx.Dialog):
         if (not os.path.exists(filename)):
             self.help_text.SetLabel("Error - couldn't read file: %s" % (filename,))
             return
-        
+
         file_handle = file(filename, 'rb')
         firmware_string = file_handle.read()
         file_handle.close()
@@ -888,12 +897,12 @@ class firmware_downloader(wx.Dialog):
 
         while (firmware_string.startswith(token_downloader.PRE_WAKEUP_ONE)):
                firmware_string = firmware_string[len(token_downloader.PRE_WAKEUP_ONE):]
-               
+
         if ((len(firmware_string) < prefix_len) or
             (not firmware_string.startswith(prefix))):
             self.help_text.SetLabel("Error - file doesn't seem to be firmware.")
             return
-        
+
         version = ((ord(firmware_string[prefix_len])&0xf0)>>4,
                    ord(firmware_string[prefix_len])&0x0f)
 
@@ -902,7 +911,7 @@ class firmware_downloader(wx.Dialog):
             firmware_bytes.append(ord(firmware_string[i]))
         self.byte_count = len(firmware_string)
         self.gauge.SetRange(self.byte_count)
-        
+
         # can't start twice so disable this button
         self.start.Disable()
         self.help_text.SetLabel("Starting download of %d bytes." % (self.byte_count,))
@@ -933,7 +942,7 @@ def just_hex_digits(in_string):
             #print "Invalid character (%02x) for an intel hex file!" % (ord(char),)
             return False
     return True
-    
+
 def hex_to_bin(file_handle):
     """Convert an intel-hex file into a binary string.
     This code only handles type 00 data records but does handle gaps and
@@ -943,7 +952,7 @@ def hex_to_bin(file_handle):
     error = ""
     data = []
     addresses = []
-    
+
     for line in file_handle:
         #print line
         if ((len(line) < 11) or (line[0] != ':') or
@@ -953,7 +962,7 @@ def hex_to_bin(file_handle):
         else:
             data_len = int(line[1:3], 16)
             address = int(line[3:7], 16)
-            
+
             line_type = int(line[7:9], 16)
             check_sum = int(line[1:3], 16) + int(line[3:5], 16) + \
                         int(line[5:7], 16) + int(line[7:9], 16)
@@ -1004,7 +1013,7 @@ def hex_to_bin(file_handle):
 
     #print "Bytes:", bytes
     #print "Length:", len(bytes)
-    return (error, bytes) 
+    return (error, bytes)
 
 class hex_downloader(wx.Dialog):
     def __init__(self, usb_device, file_name, title="Set Title!", size=(200, 200)):
@@ -1018,7 +1027,7 @@ class hex_downloader(wx.Dialog):
         #     else:
         #         usb_device = ""
         usb_device = ""
-                
+
         self.usb_ctrl = wx.ComboBox(self, -1, value=usb_device, choices=self.ports, size=(150,-1))
 
         self.grid = wx.GridBagSizer(5,5)
@@ -1044,9 +1053,9 @@ class hex_downloader(wx.Dialog):
 
         self.grid.Add(self.progress_prompt, (4,1), span=(1,2), flag=wx.EXPAND)
         self.grid.Add(self.gauge, (5,1), span=(1,3), flag=wx.EXPAND)
-        
+
         self.grid.Add(self.help_text, (6,1), span=(2,2), flag=wx.EXPAND)
-        
+
         self.grid.AddGrowableRow(7)
         self.grid.Add(self.cancel, (8,2), flag=wx.ALIGN_RIGHT | wx.BOTTOM)
         self.grid.Add(self.start, (8,3), flag=wx.ALIGN_LEFT | wx.BOTTOM)
@@ -1076,7 +1085,7 @@ class hex_downloader(wx.Dialog):
         if (not os.path.exists(filename)):
             self.help_text.SetLabel("Error - couldn't read file: %s" % (filename,))
             return
-        
+
         file_handle = file(filename, 'rb')
         read_error, data_bytes = hex_to_bin(file_handle)
         file_handle.close()
@@ -1084,16 +1093,16 @@ class hex_downloader(wx.Dialog):
         if (read_error):
             self.help_text.SetLabel("Error on reading intel hex file: " + read_error)
             return
-            
+
         version = (0, 0)
         download_bytes = [0, 0, 0, 0]
         download_bytes[0], download_bytes[1] = tokens.word_to_bytes(len(data_bytes))
         download_bytes[2], download_bytes[3] = tokens.word_to_bytes(tokens.calculate_crc(data_bytes))
         download_bytes.extend(data_bytes)
-        
+
         self.byte_count = len(download_bytes)
         self.gauge.SetRange(self.byte_count)
-        
+
         # can't start twice so disable this button
         self.start.Disable()
         self.help_text.SetLabel("Starting download of %d bytes." % (self.byte_count,))
@@ -1129,83 +1138,10 @@ def convert(binString, outFilePath):
     while (preamble < 20):
         waveWriter.writeframes(createAudio(0))
         preamble += 1
-        
+
     while (index < len(binString)):
         data = binString[index]
         #print "..debug: coding value", data
-        # add start
-        waveWriter.writeframes(createAudio(6))
-        
-        # now the actual data -- big endian or little endian
-        mask = 1
-        ones = 0
-        while (mask <= 0x80):
-            if (data & mask):
-                waveWriter.writeframes(createAudio(2))
-                ones += 1
-            else:
-                waveWriter.writeframes(createAudio(0))
-            mask <<= 1
-
-        # add parity
-        # if (ones % 2 == 1):
-        #     # odd so need to add a one
-        #     waveWriter.writeframes(createAudio(2))
-        # else:
-        #     # even so add a zero
-        #     waveWriter.writeframes(createAudio(0))
-
-        # add stop - BBB Changed to 8 - differs from start 
-        waveWriter.writeframes(createAudio(8))
-
-        index += 1
-
-    #added to end as well - to ensure entrie data is played. - ## BBB
-    preamble = 0    
-    while (preamble < 20):
-        waveWriter.writeframes(createAudio(0))
-        preamble += 1
-
-def waveFileLenInSeconds(waveFilePath):
-    waveReader = wave.open(waveFilePath, 'rb')
-    rate = waveReader.getframerate()
-    frames = waveReader.getnframes()
-    seconds = (frames / rate) + 1
-    waveReader.close()
-    #print "waveFileLenInSeconds - rate:%d, frames:%d, seconds:%d" % (rate, frames, seconds)
-    return seconds
-
-
-def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
-    # print "Debug: in convert() with binString of length", len(binString)
-    waveWriter = wave.open(outFilePath, 'wb')
-    waveWriter.setnchannels(2)
-    waveWriter.setsampwidth(1)
-    waveWriter.setframerate(WAVE_SAMPLE_RATE_HZ)
-    waveWriter.setcomptype("NONE", "")
-
-    # now generate the file
-    index = 0
-    preamble = 0
-    pauseCount = 0
-
-    preamble = 0
-    while (preamble < SAMPLES_PER_QUANTA):
-        waveWriter.writeframes(createAudio(0))
-        preamble += 1
-
-    while (index < len(binString)):
-        if (pauseCount == bytesBetweenPauses):
-            # insert more preamble -- one preamble is 1ms
-            # print "Debug -- pausing for", pauseMsecs, "msecs, after", index, "bytes"
-            preamble = 0
-            while (preamble < pauseMsecs):
-                waveWriter.writeframes(createAudio(0))
-                preamble += 1
-            pauseCount = 0
-
-        data = binString[index]
-        # print "..debug: coding value", data
         # add start
         waveWriter.writeframes(createAudio(6))
 
@@ -1232,15 +1168,138 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
         waveWriter.writeframes(createAudio(8))
 
         index += 1
+
+    #added to end as well - to ensure entrie data is played. - ## BBB
+    preamble = 0
+    while (preamble < 20):
+        waveWriter.writeframes(createAudio(0))
+        preamble += 1
+
+def waveFileLenInSeconds(waveFilePath):
+    waveReader = wave.open(waveFilePath, 'rb')
+    rate = waveReader.getframerate()
+    frames = waveReader.getnframes()
+    seconds = (frames / rate) + 1
+    waveReader.close()
+    #print "waveFileLenInSeconds - rate:%d, frames:%d, seconds:%d" % (rate, frames, seconds)
+    return seconds
+
+
+def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
+    # print "Debug: in convert() with binString of length", len(binString)
+    audioFunction = createAudioRamping
+    waveWriter = wave.open(outFilePath, 'wb')
+    waveWriter.setnchannels(2)
+    waveWriter.setsampwidth(1)
+    waveWriter.setframerate(WAVE_SAMPLE_RATE_HZ)
+    waveWriter.setcomptype("NONE", "")
+
+    # now generate the file
+    index = 0
+    preamble = 0
+    pauseCount = 0
+
+    preamble = 0
+    while (preamble < SAMPLES_PER_QUANTA):
+        waveWriter.writeframes(audioFunction(0))
+        preamble += 1
+
+    while (index < len(binString)):
+        if (pauseCount == bytesBetweenPauses):
+            # insert more preamble -- one preamble is 1ms
+            # print "Debug -- pausing for", pauseMsecs, "msecs, after", index, "bytes"
+            preamble = 0
+            while (preamble < pauseMsecs):
+                waveWriter.writeframes(audioFunction(0))
+                preamble += 1
+            pauseCount = 0
+
+        data = binString[index]
+        # print "..debug: coding value", data
+        # add start
+        waveWriter.writeframes(audioFunction(6))
+
+        # now the actual data -- big endian or little endian
+        mask = 1
+        ones = 0
+        while (mask <= 0x80):
+            if (data & mask):
+                waveWriter.writeframes(audioFunction(2))
+                ones += 1
+            else:
+                waveWriter.writeframes(audioFunction(0))
+            mask <<= 1
+
+        # add parity
+        # if (ones % 2 == 1):
+        #     # odd so need to add a one
+        #     waveWriter.writeframes(audioFunction(2))
+        # else:
+        #     # even so add a zero
+        #     waveWriter.writeframes(audioFunction(0))
+
+        # add stop - BBB Changed to 8 - differs from start
+        waveWriter.writeframes(audioFunction(8))
+
+        index += 1
         pauseCount += 1
 
     # added to end as well - to ensure entire data is played. - ## BBB
     preamble = 0
     while (preamble < SAMPLES_PER_QUANTA):
-        waveWriter.writeframes(createAudio(0))
+        waveWriter.writeframes(audioFunction(0))
         preamble += 1
 
     waveWriter.close()
+
+
+lastLeft = 128
+lastRight = 128
+
+
+def Ramp(newLeft, newRight, samples):
+    data = ""
+    global lastLeft, lastRight
+
+    if (samples < len(RAMP)):
+        print "ERROR - audio transition is smaller then the ramp size"
+        sys.exit(1)
+
+    diffLeft = newLeft - lastLeft
+    diffRight = newRight - lastRight
+    count = 0
+
+    while (count < len(RAMP)):
+        left = int(lastLeft + (diffLeft * RAMP[count] / 100))
+        right = int(lastRight + (diffRight * RAMP[count] / 100))
+        # print "Ramp %d/%d" % (left, right)
+        data += chr(left) + chr(right)
+
+        count += 1
+
+    while (count < samples):
+        # print "Stable %d/%d" % (newLeft, newRight)
+        data += chr(newLeft) + chr(newRight)
+        count += 1
+
+    lastLeft = newLeft
+    lastRight = newRight
+    return data
+
+
+def createAudioRamping(midQuantas):
+    data = ""
+
+    # write fars
+    data += Ramp(255, 0, SAMPLES_PER_QUANTA)
+
+    # write nears
+    data += Ramp(0, 255, SAMPLES_PER_QUANTA)
+
+    if (midQuantas > 0):
+        data += Ramp(128, 128, midQuantas * SAMPLES_PER_QUANTA)
+
+    return data
 
 
 def createAudio(midQuantas):
