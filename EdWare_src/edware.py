@@ -294,7 +294,7 @@ class Bricworks_frame(wx.Frame):
         if (not os.path.isfile(session_path)):
             # if store_dir isn't valid, then try locally
             session_path = SESSION_FILE_NAME
-        
+
         if (os.path.isfile(session_path)):
             try:
                 # assume that we can read, if not then ignore reading the session data
@@ -306,7 +306,7 @@ class Bricworks_frame(wx.Frame):
                     sdata = test
                 elif (test.sdata_version == 3):
                     sdata.convert_from_3(test)
-                
+
             except Exception, e:
                 pass
 
@@ -390,7 +390,7 @@ class Bricworks_frame(wx.Frame):
             # Try two locations to write the file. Try to do it in a platform
             # agnostic way.
             goodFileObj = False
-            
+
             # First in the session directory
             session_path = os.path.join(gui.paths.get_store_dir(), SESSION_FILE_NAME)
             try:
@@ -912,7 +912,7 @@ class BricworksApp(wx.App):
         self.frame.Show(True)
         self.frame.Update()
         return True
-    
+
     def load(self, file_path):
         #print "Loading", file_path
         self.frame.load_existing_path(file_path)
@@ -922,11 +922,11 @@ class BricworksApp(wx.App):
     # the window to the top
     def MacReopenApp(self):
         self.GetTopWindow().Raise()
-        
+
 def main2(file_path=None, selected_audio="any"):
     audioToBeUsed = gui.downloader.set_audio_output(selected_audio)
     #print audioToBeUsed
-    
+
     app = BricworksApp(False)
     if (file_path):
         app.load(file_path)
@@ -939,14 +939,14 @@ def main2(file_path=None, selected_audio="any"):
     app.MainLoop()
 
 if __name__ == '__main__':
-    
+
     parser = argparse.ArgumentParser(description='EdWare Edison progamming environment')
     parser.add_argument('filename', metavar='FILE', nargs='?', default="",
                         help='An optional edware file to load')
     parser.add_argument('-a', '--audio', dest='selected_audio',
                         default='any', choices=("any", "portaudio", "pygame", "winsound"),
                         help="Select a specific audio output if it's installed")
-    parser.add_argument('-v', '--version', action='version', version='1.0.3')
+    parser.add_argument('-v', '--version', action='version', version='1.0.4b')
 
     args = parser.parse_args()
     #print args

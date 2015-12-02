@@ -1199,6 +1199,8 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
     preamble = 0
     pauseCount = 0
 
+    waveWriter.writeframes(createSilenceRamping(1000))  # 500 milliseconds (1000 midQuantas) of silence at the beginning
+
     preamble = 0
     while (preamble < SAMPLES_PER_QUANTA):
         waveWriter.writeframes(audioFunction(0))
@@ -1250,6 +1252,8 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
         waveWriter.writeframes(audioFunction(0))
         preamble += 1
 
+    waveWriter.writeframes(createSilenceRamping(1000))  # 500 milliseconds (1000 midQuantas) of silence at the end
+
     waveWriter.close()
 
 
@@ -1257,7 +1261,7 @@ lastLeft = 128
 lastRight = 128
 
 
-def Ramp(newLeft, newRight, samples):
+def ramp(newLeft, newRight, samples):
     data = ""
     global lastLeft, lastRight
 
@@ -1291,15 +1295,19 @@ def createAudioRamping(midQuantas):
     data = ""
 
     # write fars
-    data += Ramp(255, 0, SAMPLES_PER_QUANTA)
+    data += ramp(255, 0, SAMPLES_PER_QUANTA)
 
     # write nears
-    data += Ramp(0, 255, SAMPLES_PER_QUANTA)
+    data += ramp(0, 255, SAMPLES_PER_QUANTA)
 
     if (midQuantas > 0):
-        data += Ramp(128, 128, midQuantas * SAMPLES_PER_QUANTA)
+        data += ramp(128, 128, midQuantas * SAMPLES_PER_QUANTA)
 
     return data
+
+
+def createSilenceRamping(midQuantas):
+    return ramp(128, 128, midQuantas * SAMPLES_PER_QUANTA)
 
 
 def createAudio(midQuantas):
