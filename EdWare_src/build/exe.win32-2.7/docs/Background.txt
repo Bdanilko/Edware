@@ -1,0 +1,54 @@
+* Background of EdWare
+
+EdWare is a multi-OS program used to create programs for the
+Edison robot from MicroBric Pty. Ltd.. 
+
+** Features
+EdWare was created to allow creating programs in a graphical format,
+so that non-programmers of all ages could write programs for their
+robots. 
+
+To that end, EdWare was created using a cross-platform language - python. It allows
+for one program to be used on multiple OSs -- specifically Linux, Macs, and Windows.
+For the graphics, a cross platform library called wxWidgets was used. It has bindings
+for python, is freely available, runs on the three OSs, and had all of the graphical
+widgets that were needed.
+
+Edison is programmed with 'tokens' that the firmware in Edison knows how to interpret.
+These tokens are described in the tokens1.html file in this directory. These tokens
+allow for setting/reading variables, setting/reading registers to control the robot,
+general control constructs, etc. 
+
+Tokens, though, are too low level for the typical user/programmer, so EdWare presents
+the user with 'Brics', to control the robot. When the user is done arranging the
+Brics, then EdWare, outputs an 'assembler' program, which is then assembled to the
+tokens to be dowloaded to Edison. The format for the assembler source is documented
+in the token_assembler.txt file in this directory. The guts of the assembler is within
+the gui program, but a standalone python program, tass.py, also exists which can
+assemble an EdWare program into a binary representation of the tokens.
+
+As the binary representation of the tokens is transmitted over an audio channel, there
+is an internal python routine which creates a wav file. Like the tass.py standalone 
+program, another standalone python program will be created to create wav files
+from binaries.
+
+** Origins - 
+EdWare was originally called BricWorks and was written in 2006 for the BricWorks
+Ai2 robot. That robot allowed for different modules to be connected in different 
+locations to make a custom robot. This flexibility (which is not in Edison) made
+BricWorks much more complex then is needed for Edison. 
+
+As EdWare grew out of BricWorks, some code that isn't needed now is still in
+place. The goal was to minimise changes instead of doing unnecessary rewriting.
+This allowed us to get a programming environment for Edison very quickly.    
+
+
+
+
+
+
+
+
+;; Local Variables:
+;; mode: org
+;; End:
