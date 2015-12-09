@@ -35,7 +35,7 @@ class AboutBox(wx.Dialog):
         <body>
         <center>
         <h1>Edison EdWare</h1>
-        <h2>Version 1.0.4b</h2>
+        <h2>Version 1.0.4c</h2>
         Programming your Edison Robot<br>
         http://www.microbric.com/
         </center>

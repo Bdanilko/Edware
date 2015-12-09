@@ -946,7 +946,7 @@ if __name__ == '__main__':
     parser.add_argument('-a', '--audio', dest='selected_audio',
                         default='any', choices=("any", "portaudio", "pygame", "winsound"),
                         help="Select a specific audio output if it's installed")
-    parser.add_argument('-v', '--version', action='version', version='1.0.4b')
+    parser.add_argument('-v', '--version', action='version', version='1.0.4c')
 
     args = parser.parse_args()
     #print args
