@@ -81,10 +81,11 @@ SAMPLES_PER_QUANTA = WAVE_SAMPLE_RATE_HZ / 2000
 # values are the percent of the change to apply in each sample.
 # Difference between each value is:
 # 2, 3, 5, 10, 15, 15, 15, 15, 10, 5, 3, 2
-#RAMP = (2, 5, 10, 20, 35, 50, 65, 80, 90, 95, 98)
+# DEFAULT_RAMP = (2, 5, 10, 20, 35, 50, 65, 80, 90, 95, 98)
 
 # a ramp gentler at the ends but more extreme in the middle
-RAMP = (1, 3, 6, 11, 31, 69, 89, 94, 97, 99)
+DEFAULT_RAMP = (1, 3, 6, 11, 31, 69, 89, 94, 97, 99)
+RAMP = []
 
 try:
     import pyaudio
@@ -1194,6 +1195,9 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
     waveWriter.setframerate(WAVE_SAMPLE_RATE_HZ)
     waveWriter.setcomptype("NONE", "")
 
+    # load a new ramp if it's available
+    loadRamp()
+
     # now generate the file
     index = 0
     preamble = 0
@@ -1257,9 +1261,48 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
     waveWriter.close()
 
 
+def loadRamp():
+    """See if there is a ramp file to be loaded to replace the default RAMP"""
+    global RAMP
+    RAMP = DEFAULT_RAMP
+
+    # print "INFO - attempting to load new ramp data"
+    lines = None
+    ramp_path = os.path.join(paths.get_store_dir(), "ramp_override.txt")
+    if (os.path.isfile(ramp_path)):
+        try:
+            fh = file(ramp_path, 'r')
+            lines = fh.readlines()
+            fh.close()
+        except Exception:
+            lines = None
+
+        try:
+            if (lines is not None):
+                last_value = 0
+                new_ramp_data = []
+                for l in lines:
+                    number = l.strip(" \t\r\n")
+                    if (number.isdigit()):
+                        data = int(number)
+                        if (data < last_value) or (data > 100):
+                            print "WARN - Ramp value makes no sense! - using defaults"
+                            new_ramp_data = []
+                            break
+                        else:
+                            new_ramp_data.append(data)
+                            last_value = data
+                    else:
+                        pass  # skip the non-number
+                if (len(new_ramp_data) > 0):
+                    # print "INFO - New ramp data:", new_ramp_data
+                    RAMP = new_ramp_data
+
+        except Exception:
+            print "WARN - Error reading ramp_override.txt - using defaults!"
+
 lastLeft = 128
 lastRight = 128
-
 
 def ramp(newLeft, newRight, samples):
     data = ""
