@@ -378,11 +378,7 @@ class audio_downloader(wx.Dialog):
         #print self.GetBackgroundColour()
 
         self.progress_prompt = wx.StaticText(self, -1, "Download progress:")
-        if (USE_WINSOUND):
-            self.gauge = wx.StaticText(self, -1, "")
-        else:
-            self.gauge = wx.Gauge(self, -1, range=100)
-            self.gauge.SetMinSize((500, -1))
+        self.gauge = wx.StaticText(self, -1, "")
             
         self.start = wx.Button(self, -1, "Start Download")
         self.cancel = wx.Button(self, -1, "Cancel Download")
@@ -414,11 +410,7 @@ class audio_downloader(wx.Dialog):
         
         self.byte_count = len(self.download_bytes)
         
-        if (USE_WINSOUND):
-            self.gauge.SetLabel("")
-        else:
-            self.gauge.SetRange(self.byte_count)
-            self.gauge.SetValue(0)
+        self.gauge.SetLabel("")
         
         self.help_text.SetLabel("Download size is %d bytes" % (self.byte_count,))
 
@@ -437,11 +429,7 @@ class audio_downloader(wx.Dialog):
         self.cancel.Disable()
         self.help_text.SetLabel("Downloading %d bytes." % (self.byte_count,))
 
-        if (USE_WINSOUND):
-            self.gauge.SetLabel("...DOWNLOADING...")
-        else:
-            self.gauge.SetValue(0)
-            self.gauge.Update()
+        self.gauge.SetLabel("...DOWNLOADING...")
             
         self.Update()
 
@@ -452,10 +440,10 @@ class audio_downloader(wx.Dialog):
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             logfile_path = os.path.join(tempfile.gettempdir(), "waver.log")
-            logfile = open(logfile_path, "w")
+            logfile = open(logfile_path, "a+")
+            logfile.seek(0, os.SEEK_END)
             waver_path = os.path.join(paths.get_run_dir(), "waver", "waver.exe")
             process = subprocess.Popen([waver_path, WAV_FILE], startupinfo=startupinfo, stdout=logfile)
-            self.gauge.SetLabel("")
             process.wait()
             logfile.close()
 
@@ -520,13 +508,8 @@ class audio_downloader(wx.Dialog):
             self.gauge.SetValue(seconds * 5)
             self.Update()
             
-        elif USE_WINSOUND:
-            s1 = wx.Sound(WAV_FILE)
-            s1.Play(wx.SOUND_SYNC)
-
-            self.gauge.SetLabel("")
+        self.gauge.SetLabel("")
             
-        
         self.help_text.SetLabel("Finished downloading")
         self.start.Enable()
         self.cancel.Enable()
@@ -542,11 +525,7 @@ class audio_firmware_downloader(wx.Dialog):
             self.SetBackgroundColour("light grey")
 
         self.progress_prompt = wx.StaticText(self, -1, "Download progress:")
-        if (USE_WINSOUND):
-            self.gauge = wx.StaticText(self, -1, "")
-        else:
-            self.gauge = wx.Gauge(self, -1, range=100)
-            self.gauge.SetMinSize((500, -1))
+        self.gauge = wx.StaticText(self, -1, "")
 
         self.start = wx.Button(self, -1, "Start Download")
         self.cancel = wx.Button(self, -1, "Cancel Download")
@@ -598,17 +577,13 @@ class audio_firmware_downloader(wx.Dialog):
         self.download_bytes = bytearray(firmware_string)
         self.byte_count = len(self.download_bytes)
         
-        if (USE_WINSOUND):
-            self.gauge.SetLabel("")
-        else:
-            self.gauge.SetRange(self.byte_count)
-            self.gauge.SetValue(0)
+        self.gauge.SetLabel("")
             
         self.help_text.SetLabel("Creating audio file.")
         self.Update()
-        
+        FIRMWARE_WAV = os.path.join(paths.get_store_dir(), "firmware.wav")
         # convert to wav file
-        convertWithPause(self.download_bytes, "firmware.wav",
+        convertWithPause(self.download_bytes, FIRMWARE_WAV,
                          DOWNLOAD_PAUSE_MSECS, DOWNLOAD_BYTES_BETWEEN_PAUSES);
         
         # can't start twice so disable this button
@@ -616,11 +591,7 @@ class audio_firmware_downloader(wx.Dialog):
         self.cancel.Disable()
         self.help_text.SetLabel("Downloading %d bytes." % (self.byte_count,))
 
-        if (USE_WINSOUND):
-            self.gauge.SetLabel("...DOWNLOADING...")
-        else:
-            self.gauge.SetValue(0)
-            self.gauge.Update()
+        self.gauge.SetLabel("...DOWNLOADING...")
             
         self.Update()
 
@@ -629,15 +600,15 @@ class audio_firmware_downloader(wx.Dialog):
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             logfile_path = os.path.join(tempfile.gettempdir(), "waver.log")
-            logfile = open(logfile_path, "w")
+            logfile = open(logfile_path, "a+")
+            logfile.seek(0, os.SEEK_END)
             waver_path = os.path.join(paths.get_run_dir(), "waver", "waver.exe")
-            process = subprocess.Popen([waver_path, "firmware.wav"], startupinfo=startupinfo, stdout=logfile)
-            self.gauge.SetLabel("")
+            process = subprocess.Popen([waver_path, FIRMWARE_WAV], startupinfo=startupinfo, stdout=logfile)
             process.wait()
             logfile.close()
 
         elif USE_PORTAUDIO:
-            wf = wave.open("firmware.wav", 'rb')
+            wf = wave.open(FIRMWARE_WAV, 'rb')
             p = pyaudio.PyAudio()
 
             totalFrames = wf.getnframes()
@@ -678,7 +649,7 @@ class audio_firmware_downloader(wx.Dialog):
                 pygame.mixer.init(frequency=44100, size=8, channels=2, buffer=4096)
                 pygame.mixer.init()
             
-            s = pygame.mixer.Sound("firmware.wav")
+            s = pygame.mixer.Sound(FIRMWARE_WAV)
             seconds = s.get_length()
             #print "Sounds seconds:", seconds
             if (seconds < 1):
@@ -697,12 +668,7 @@ class audio_firmware_downloader(wx.Dialog):
             self.gauge.SetValue(seconds * 5)
             self.Update()
             
-
-        elif USE_WINSOUND:
-            s1 = wx.Sound("firmware.wav")
-            s1.Play(wx.SOUND_SYNC)
-
-            self.gauge.SetLabel("")
+        self.gauge.SetLabel("")
 
         self.help_text.SetLabel("Finished downloading")
         self.start.Enable()
@@ -1224,6 +1190,16 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
     waveWriter.setsampwidth(1)
     p = pyaudio.PyAudio()
     sample_rate = int(p.get_default_output_device_info()['defaultSampleRate'])
+    logfile_path = os.path.join(tempfile.gettempdir(), "waver.log")
+    with open(logfile_path, "a") as logfile:
+        logfile.writelines("{}\r\n".format(datetime.datetime.now()))
+        import unicodedata
+        for k, v in p.get_default_output_device_info().items():
+            try:
+                logfile.writelines("{}: {}\r\n".format(k, v))
+            except UnicodeError:
+                v = unicodedata.normalize('NFKD', v).encode('ascii','ignore')
+                logfile.writelines("{}: {}\r\n".format(k, v))
     p.terminate()
     waveWriter.setframerate(sample_rate)
     waveWriter.setcomptype("NONE", "")
