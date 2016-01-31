@@ -1,0 +1,270 @@
+# * **************************************************************** **
+#
+# File: token_assembler.py
+# Desc: Documentation for the token assembler
+# Note: Version 1.0 (27/07/06)
+#
+# Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
+#
+# Copyright 2006, Microbric Pty Ltd.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License (in the docs/licenses directory)
+# for more details.
+#
+# Svn: $Id: token_assembler.txt 51 2006-12-02 01:14:52Z briand $
+# * **************************************************************** */
+
+
+Parsing:
+--------
+
+Lines are chopped into WORDS at whitespace that is not inside a string.
+
+WORDS are:
+- Operators which are specific words, at the beginning of a line
+- Comments start with '#'
+- Constants start with '$' and have a NUMBER or CHAR
+- Mod/Regs start with '%' and have two hex digits or
+  a device_name|loc:reg_name
+  Examples:
+     - %f0, 
+     - %cpu:acc, 
+     - %devices:sertx, 
+     - %right_motor:control (with 'DEVICE motora, 2, right_motor' in affect)
+
+- Labels start with ':'
+- Variable names start with '@'
+- Numbers which are variables, offsets or data depending on context
+- Names which are used to 
+
+CHARs are a single ascii character surrounded by single quotes
+
+NUMBERs look like ddddd[/bb] where:
+-   ddddd are digits in the base
+-   bb is a base in ('2', '10', '16')
+-   Default is base 10   
+
+Lines can start with:
+- a comment or empty (the line is discarded)
+- a label
+- an operator
+
+
+Strings are characters with single or double quotes around them
+Quotes can be escaped with '\'
+
+
+Operators
+---------
+
+MOVE
+----
+
+* Generally move data about
+mov[bw] CONST dest              # Move constant to dest
+# Note - there is a special short form for moving constants beween 0 and 7  
+
+mov[bw] MOD/REG dest            # Move from a MOD/REG to dest
+mov[bw] VAR dest                # Move from a variable to dest
+- dest can be one of: MOD/REG, VAR
+
+* Move byte data into LCD space
+mova src lcdVAR                 # Move constant or variable to lcdVAR
+- src can be one of: byteCONST, byteVAR
+
+* Checkpoint the system time into 8-bit space
+movtime wordCONST byteVAR       # Move system time + constant to byteVAR
+movtime wordVAR byteVAR         # Move system time + value of wordVAR to byteVAR
+
+* Stack operations
+push[bw] CONST|VAR|MOD/REG      # push the const, variable or MOD/REG onto the stack
+pop[bw] VAR|MOD/REG             # pop the stack into the variable or MOD/REG
+# Note - there are special short forms for 'push[bw] %acc' and 'pop[bw] %acc'
+
+MATH
+----
+
+* Unary operators
+not[bw] %acc|VAR                # not the accumulator or the value of VAR
+dec[bw] %acc|VAR                # decrement the accumulator or the value of VAR
+inc[bw] %acc|VAR                # increment the accumulator or the value of VAR
+
+* Accumulator conversions
+conv                            # Convert the accumulator from 8-bit to 16-bit
+convl                           # Convert the lsb of the 16-bit value to 8-bit
+convm                           # Convert the msb of the 16-bit value to 8-bit
+
+* Comparisons (result of compare sets flags for equal, less and greater)
+cmptime byteVAR                 # Compare the current system time with the one stored at byteVAR
+cmp[bw] CONST|VAR               # Compare the accumulator with the const or variable
+
+* Basic math
+add[bw] CONST|VAR               # Add the const or variable to the accumulator
+sub[bw] CONST|VAR               # Subtract the const or variable from the accumulator
+mul[bw] CONST|VAR               # Multiply the const or variable with the accumulator
+
+div[bw] byteCONST|byteVAR       # Divide the accumulator by the const or variable and leave
+                                # the integer portion of the result in the accumulator
+mod[bw] byteCONST|byteVAR       # Divide the accumulator by the const or variable and leave
+                                # the remainder portion of the result in the accumulator
+
+* Shifts and Logical
+shl[bw] byteCONST|byteVAR       # Shift left the accumulator by the const or variable
+shr[bw] byteCONST|byteVAR       # Shift right the accumulator by the const or variable
+and     byteCONST|byteVAR       # And the const or variable with the accumulator
+or      byteCONST|byteVAR       # Or the const or variable with the accumulator
+xor     byteCONST|byteVAR       # Xor the const or variable with the accumulator
+
+* Bit set/clr
+bitset bit MOD/REG              # Sets bit in MOD/REG without changing other bits
+bitclr bit MOD/REG              # Clears bin in MOD/REG without changing other bits
+
+BRANCHES and SUBROUTINES
+------------------------
+
+* Branches (PC has offset added to it - if label then offset is computed)
+bra OFFSET|LABEL                # Branch always to LABEL or PC+OFFSET
+bre OFFSET|LABEL                # Branch if equal flag set to LABEL or PC+OFFSET
+brne OFFSET|LABEL               # Branch if equal flag clear to LABEL or PC+OFFSET
+brgr OFFSET|LABEL               # Branch if greater flag set to LABEL or PC+OFFSET
+brge OFFSET|LABEL               # Branch if greater or equal flag set to LABEL or PC+OFFSET
+brl OFFSET|LABEL                # Branch if lesser flag set to LABEL or PC+OFFSET
+brle OFFSET|LABEL               # Branch if lesser or equal flag set to LABEL or PC+OFFSET
+
+brz OFFSET|LABEL                # Same as bre
+brnz OFFSET|LABEL               # Same as brne
+
+* Call subroutines (PC is saved, then offset is added to it)
+suba OFFSET|LABEL               # Call always to LABEL or PC+OFFSET
+sube OFFSET|LABEL               # Call if equal flag set to LABEL or PC+OFFSET
+subne OFFSET|LABEL              # Call if equal flag clear to LABEL or PC+OFFSET
+subgr OFFSET|LABEL              # Call if greater flag set to LABEL or PC+OFFSET
+subge OFFSET|LABEL              # Call if greater or equal flag set to LABEL or PC+OFFSET
+subl OFFSET|LABEL               # Call if lesser flag set to LABEL or PC+OFFSET
+suble OFFSET|LABEL              # Call if lesser or equal flag set to LABEL or PC+OFFSET
+
+sube OFFSET|LABEL               # Same as sube
+subne OFFSET|LABEL              # Same as subne
+
+* Misc
+ret                             # Return from a subroutine by popping off a stack frame 
+dbnz OFFSET|LABEL               # Decrement the counter in the CPU module and branch if not zero
+dsnz OFFSET|LABEL               # Decrement the counter in the CPU module and call if not zero
+
+SPECIALS
+--------
+
+* Mask/Unmask event handling interrupts
+enable                          # Allow event handling interrupts
+disable                         # Disallow event handling interrupts
+
+* Stop - finished a program stream
+stop                            # stop processing tokens for this area (main or each event)
+
+* Provides limits for the data spaces and token space
+LIMITS   byte_limit, word_limit, lcd_limit, event_handlers, token_byte_limit
+
+- Limits is only allowed before any other BEGIN/END section
+
+* Describes what devices are connected where 
+DEVICE   type, loc [,name]
+
+- Device is only allowed before any other BEGIN/END section
+Types are one of:
+- Motor-a, Motor-b
+- digin
+- digout
+- analogin
+- tracker
+- irtx
+- irrx
+- beeper
+
+Name is optional
+Location is a number from 1 to 12
+
+
+VERSION major, minor            # major and minor are between 0 and 15
+
+FINISH                          # finishes a token stream
+
+- Finish is only allowed outside of any BEGIN/END section
+
+
+BEGIN type [,arg1, ..., argn]
+END   type
+
+Types (and args) are one of: 
+- MAIN, 
+- EVENT (args = MOD/REG, MASK, VALUE)
+- FIRMWARE 
+
+* Reserves areas of the data space for system use
+RESERV[ABW] start, length
+
+* Names variables in data space and/or puts values there
+DAT[BW]  name, loc [,len [,val1, ...., valn]]
+
+* DATA puts values directly onto the LCD
+DATA row, col, len, val1 [, ..., valn]
+ 
+Notes on DAT:
+- vals are optional
+- vals can be numbers (plus or minus) for DATW, numbers (plus only), chars or strings
+  for DATA, DATB
+- name can be '*', which means there is no name
+- loc can be '*', which allows the assembler to place it in the space
+- len is optional if vals are not present, then it defaults to 1
+- len can be '*', which means to count the values following 
+- name and loc can not both be '*'
+
+* Add binary values into a firmware download
+BINB val1, ...., valn
+
+- vals are between 0 and 255, or strings
+
+* Include other files
+INSERT type, filename           # Insert tokens/data at this location
+
+Types are one of:
+- tokens                        # File contains token mnemonics to be assembled
+- binary                        # Only valid in FIRMWARE section
+
+
+EXAMPLES
+--------
+
+* 1. a simple program
+
+LIMITS 20, 10, 64, 0, 100
+START CONFIG 0, 0
+
+START PROGRAM
+
+mova 'H', 0          # Put 'Hi' onto the screen
+mova 'i', 1          #
+
+END PROGRAM
+
+endcomms
+
+* 2. a variant of 1
+
+LIMITS 20, 10, 64, 0, 100
+START CONFIG 0, 0
+
+START PROGRAM
+
+DATA *, 0, *, "Hello World!"
+
+END PROGRAM
+
+endcomms

@@ -6,7 +6,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, 2014 Microbric Pty Ltd.
+# Copyright 2006-2015, 2014 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -49,12 +49,16 @@ import time
 import time
 import wave
 
+import subprocess
+import tempfile
+
 PORTAUDIO_PRESENT = False
 PYGAME_PRESENT = False
+WAVER_PRESENT = False
 USE_PYGAME = False
 USE_PORTAUDIO = False
 USE_WINSOUND = False
-
+USE_WAVER = False
 
 TOKEN_VERSION_STR = "\x20"
 TOKEN_VERSION_BYTE = 0x20
@@ -108,10 +112,12 @@ if (not (PORTAUDIO_PRESENT or PYGAME_PRESENT)) and (paths.get_platform() != "win
 
 AUDIO_CHUNK = 1024
 AUDIO_STRING = ""
+
 def set_audio_output(choice):
     global USE_PORTAUDIO
     global USE_PYGAME
     global USE_WINSOUND
+    global USE_WAVER
     global AUDIO_STRING
 
     choice = choice.lower()
@@ -119,19 +125,34 @@ def set_audio_output(choice):
     using = "unknown"
 
 
-    if (PORTAUDIO_PRESENT and PYGAME_PRESENT):
-        installed = "portaudio, pygame"
-    elif (PORTAUDIO_PRESENT):
-        installed = "portaudio"
-    elif (PYGAME_PRESENT):
-        installed = "pygame"
+    waver_path = os.path.join(paths.get_run_dir(), "waver", "waver.exe")
+    if os.path.isfile(waver_path):
+        WAVER_PRESENT = True
+    else:
+        WAVER_PRESENT = False
+
+    installedList = []
+    if (PORTAUDIO_PRESENT):
+        installedList.append("portaudio")
+    if (PYGAME_PRESENT):
+        installedList.append("pygame")
+    if (WAVER_PRESENT):
+        installedList.append("waver")
+
+    if (len(installedList) > 0):
+        for i in range(len(installedList)-1):
+            installed += installedList[i] + ", "
+        installed += installedList[-1]
     else:
         installed = "no extra audio backends"
 
     AUDIO_STRING = "(Audio installed: %s" % (installed)
 
     if (choice == "any"):
-        if (PORTAUDIO_PRESENT):
+        if WAVER_PRESENT:
+            USE_WAVER = True
+            using = "waver"
+        elif (PORTAUDIO_PRESENT):
             USE_PORTAUDIO = True
             using = "portaudio"
         elif (PYGAME_PRESENT):
@@ -141,6 +162,14 @@ def set_audio_output(choice):
             USE_WINSOUND = True
             # must be windows built-in
             using = "built-in winsound"
+
+    elif (choice == "waver"):
+        if (not WAVER_PRESENT):
+            print "\nERROR - selected audio 'waver' is not installed!"
+            sys.exit(1)
+        else:
+            USE_WAVER = True
+            using = choice
 
     elif (choice == "portaudio"):
         if (not PORTAUDIO_PRESENT):
@@ -440,7 +469,18 @@ class audio_downloader(wx.Dialog):
         time.sleep(1)
         WAV_FILE = os.path.join(paths.get_store_dir(), "program.wav")
 
-        if USE_PORTAUDIO:
+        if USE_WAVER:
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            logfile_path = os.path.join(tempfile.gettempdir(), "waver.log")
+            logfile = open(logfile_path, "a+")
+            logfile.seek(0, os.SEEK_END)
+            waver_path = os.path.join(paths.get_run_dir(), "waver", "waver.exe")
+            process = subprocess.Popen([waver_path, WAV_FILE], startupinfo=startupinfo, stdout=logfile)
+            process.wait()
+            logfile.close()
+
+        elif USE_PORTAUDIO:
             wf = wave.open(WAV_FILE, 'rb')
             p = pyaudio.PyAudio()
 
@@ -452,11 +492,11 @@ class audio_downloader(wx.Dialog):
                             channels=wf.getnchannels(),
                             rate=wf.getframerate(),
                             output=True)
-
-            data = wf.readframes(AUDIO_CHUNK)
-            framesRead += AUDIO_CHUNK
+            data = wf.readframes(47)
+            framesRead += 47
             if (framesRead > totalFrames):
                 framesRead = totalFrames
+            stream.write(data)
 
             while data != '':
                 stream.write(data)
@@ -470,7 +510,8 @@ class audio_downloader(wx.Dialog):
 
             self.gauge.SetValue(totalFrames)
             self.Update()
-
+            correction = float(stream.get_write_available() - 32)/sample_rate
+            time.sleep(stream.get_output_latency() - correction)
             stream.stop_stream()
             stream.close()
             p.terminate()
@@ -522,11 +563,7 @@ class audio_firmware_downloader(wx.Dialog):
             self.SetBackgroundColour("light grey")
 
         self.progress_prompt = wx.StaticText(self, -1, "Download progress:")
-        if (USE_WINSOUND):
-            self.gauge = wx.StaticText(self, -1, "")
-        else:
-            self.gauge = wx.Gauge(self, -1, range=100)
-            self.gauge.SetMinSize((500, -1))
+        self.gauge = wx.StaticText(self, -1, "")
 
         self.start = wx.Button(self, -1, "Start Download")
         self.cancel = wx.Button(self, -1, "Cancel Download")
@@ -588,7 +625,7 @@ class audio_firmware_downloader(wx.Dialog):
         self.Update()
 
         # convert to wav file
-        convertWithPause(self.download_bytes, "firmware.wav",
+        convertWithPause(self.download_bytes, FIRMWARE_WAV,
                          DOWNLOAD_PAUSE_MSECS, DOWNLOAD_BYTES_BETWEEN_PAUSES);
 
         # can't start twice so disable this button
@@ -608,6 +645,19 @@ class audio_firmware_downloader(wx.Dialog):
 
         if USE_PORTAUDIO:
             wf = wave.open("firmware.wav", 'rb')
+        elif USE_WAVER:
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            logfile_path = os.path.join(tempfile.gettempdir(), "waver.log")
+            logfile = open(logfile_path, "a+")
+            logfile.seek(0, os.SEEK_END)
+            waver_path = os.path.join(paths.get_run_dir(), "waver", "waver.exe")
+            process = subprocess.Popen([waver_path, FIRMWARE_WAV], startupinfo=startupinfo, stdout=logfile)
+            process.wait()
+            logfile.close()
+
+        elif USE_PORTAUDIO:
+            wf = wave.open(FIRMWARE_WAV, 'rb')
             p = pyaudio.PyAudio()
 
             totalFrames = wf.getnframes()
@@ -618,11 +668,11 @@ class audio_firmware_downloader(wx.Dialog):
                             channels=wf.getnchannels(),
                             rate=wf.getframerate(),
                             output=True)
-
-            data = wf.readframes(AUDIO_CHUNK)
-            framesRead += AUDIO_CHUNK
+            data = wf.readframes(47)
+            framesRead += 47
             if (framesRead > totalFrames):
                 framesRead = totalFrames
+            stream.write(data)
 
             while data != '':
                 stream.write(data)
@@ -636,7 +686,8 @@ class audio_firmware_downloader(wx.Dialog):
 
             self.gauge.SetValue(totalFrames)
             self.Update()
-
+            correction = float(stream.get_write_available() - 32) / sample_rate
+            time.sleep(stream.get_output_latency() - correction)
             stream.stop_stream()
             stream.close()
 
@@ -647,9 +698,9 @@ class audio_firmware_downloader(wx.Dialog):
                 pygame.mixer.init(frequency=WAVE_SAMPLE_RATE_HZ, size=8, channels=2, buffer=4096)
                 pygame.mixer.init()
 
-            s = pygame.mixer.Sound("firmware.wav")
+            s = pygame.mixer.Sound(FIRMWARE_WAV)
             seconds = s.get_length()
-            #print "Sounds seconds:", seconds
+            # print "Sounds seconds:", seconds
             if (seconds < 1):
                 seconds = 1
             self.gauge.SetRange(seconds * 5)
@@ -666,9 +717,8 @@ class audio_firmware_downloader(wx.Dialog):
             self.gauge.SetValue(seconds * 5)
             self.Update()
 
-
         elif USE_WINSOUND:
-            s1 = wx.Sound("firmware.wav")
+            s1 = wx.Sound(FIRMWARE_WAVE)
             s1.Play(wx.SOUND_SYNC)
 
             self.gauge.SetLabel("")
@@ -1170,11 +1220,12 @@ def convert(binString, outFilePath):
 
         index += 1
 
-    #added to end as well - to ensure entrie data is played. - ## BBB
+    # added to end as well - to ensure entrie data is played. - ## BBB
     preamble = 0
     while (preamble < 20):
         waveWriter.writeframes(createAudio(0))
         preamble += 1
+
 
 def waveFileLenInSeconds(waveFilePath):
     waveReader = wave.open(waveFilePath, 'rb')
@@ -1182,7 +1233,7 @@ def waveFileLenInSeconds(waveFilePath):
     frames = waveReader.getnframes()
     seconds = (frames / rate) + 1
     waveReader.close()
-    #print "waveFileLenInSeconds - rate:%d, frames:%d, seconds:%d" % (rate, frames, seconds)
+    # print "waveFileLenInSeconds - rate:%d, frames:%d, seconds:%d" % (rate, frames, seconds)
     return seconds
 
 
@@ -1192,7 +1243,14 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
     waveWriter = wave.open(outFilePath, 'wb')
     waveWriter.setnchannels(2)
     waveWriter.setsampwidth(1)
-    waveWriter.setframerate(WAVE_SAMPLE_RATE_HZ)
+
+    sample_rate = WAVE_SAMPLE_RATE_HZ
+    if (PYAUDIO_PRESENT):
+        p = pyaudio.PyAudio()
+        sample_rate = int(p.get_default_output_device_info()['defaultSampleRate'])
+        p.terminate()
+
+    waveWriter.setframerate(sample_rate)
     waveWriter.setcomptype("NONE", "")
 
     # load a new ramp if it's available
@@ -1203,11 +1261,12 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
     preamble = 0
     pauseCount = 0
 
-    waveWriter.writeframes(createSilenceRamping(1000))  # 500 milliseconds (1000 midQuantas) of silence at the beginning
+    # 500 milliseconds (1000 midQuantas) of silence at the end
+    waveWriter.writeframes(createSilenceRamping(1000, sample_rate))
 
     preamble = 0
-    while (preamble < SAMPLES_PER_QUANTA):
-        waveWriter.writeframes(audioFunction(0))
+    while (preamble < sample_rate):
+        waveWriter.writeframes(audioFunction(0, sample_rate))
         preamble += 1
 
     while (index < len(binString)):
@@ -1216,24 +1275,24 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
             # print "Debug -- pausing for", pauseMsecs, "msecs, after", index, "bytes"
             preamble = 0
             while (preamble < pauseMsecs):
-                waveWriter.writeframes(audioFunction(0))
+                waveWriter.writeframes(createAudio(0, sample_rate))
                 preamble += 1
             pauseCount = 0
 
         data = binString[index]
         # print "..debug: coding value", data
         # add start
-        waveWriter.writeframes(audioFunction(6))
+        waveWriter.writeframes(createAudio(6, sample_rate))
 
         # now the actual data -- big endian or little endian
         mask = 1
         ones = 0
         while (mask <= 0x80):
             if (data & mask):
-                waveWriter.writeframes(audioFunction(2))
+                waveWriter.writeframes(createAudio(2, sample_rate))
                 ones += 1
             else:
-                waveWriter.writeframes(audioFunction(0))
+                waveWriter.writeframes(createAudio(0, sample_rate))
             mask <<= 1
 
         # add parity
@@ -1245,18 +1304,19 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
         #     waveWriter.writeframes(audioFunction(0))
 
         # add stop - BBB Changed to 8 - differs from start
-        waveWriter.writeframes(audioFunction(8))
+        waveWriter.writeframes(createAudio(8, sample_rate))
 
         index += 1
         pauseCount += 1
 
     # added to end as well - to ensure entire data is played. - ## BBB
     preamble = 0
-    while (preamble < SAMPLES_PER_QUANTA):
-        waveWriter.writeframes(audioFunction(0))
+    while (preamble < sample_rate):
+        waveWriter.writeframes(audioFunction(0, sample_rate))
         preamble += 1
 
-    waveWriter.writeframes(createSilenceRamping(1000))  # 500 milliseconds (1000 midQuantas) of silence at the end
+    # 500 milliseconds (1000 midQuantas) of silence at the end
+    waveWriter.writeframes(createSilenceRamping(1000, sample_rate))
 
     waveWriter.close()
 
@@ -1304,6 +1364,7 @@ def loadRamp():
 lastLeft = 128
 lastRight = 128
 
+
 def ramp(newLeft, newRight, samples):
     data = ""
     global lastLeft, lastRight
@@ -1334,43 +1395,46 @@ def ramp(newLeft, newRight, samples):
     return data
 
 
-def createAudioRamping(midQuantas):
+def createAudioRamping(midQuantas, sample_rate):
     data = ""
+    samples_per_quanta = sample_rate / 2000
 
     # write fars
-    data += ramp(255, 0, SAMPLES_PER_QUANTA)
+    data += ramp(255, 0, samples_per_quanta)
 
     # write nears
-    data += ramp(0, 255, SAMPLES_PER_QUANTA)
+    data += ramp(0, 255, samples_per_quanta)
 
     if (midQuantas > 0):
-        data += ramp(128, 128, midQuantas * SAMPLES_PER_QUANTA)
+        data += ramp(128, 128, midQuantas * samples_per_quanta)
 
     return data
 
 
-def createSilenceRamping(midQuantas):
-    return ramp(128, 128, midQuantas * SAMPLES_PER_QUANTA)
+def createSilenceRamping(midQuantas, sample_rate):
+    samples_per_quanta = sample_rate / 2000
+    return ramp(128, 128, midQuantas * samples_per_quanta)
 
 
-def createAudio(midQuantas):
+def createAudio(midQuantas, sample_rate):
     data = ""
+    samples_per_quanta = sample_rate / 2000
 
     # write fars
     count = 0
-    while (count < SAMPLES_PER_QUANTA):
+    while (count < samples_per_quanta):
         data += chr(255) + chr(0)
         count += 1
 
     # write nears
     count = 0
-    while (count < SAMPLES_PER_QUANTA):
+    while (count < samples_per_quanta):
         data += chr(0) + chr(255)
         count += 1
 
     if (midQuantas > 0):
         count = 0
-        samples = midQuantas * SAMPLES_PER_QUANTA
+        samples = midQuantas * samples_per_quanta
         while (count < samples):
             data += chr(128) + chr(128)
             count += 1

@@ -1,0 +1,10 @@
+Main contributors to EdWare
+---------------------------
+
+
+Brenton O'Brien -- The power behind the whole project! Also directs the look and feel of EdWare.
+Brian Danilko   -- Created initial MicroBricWorks and adapted it for EdWare.
+Bill Hammond    -- Firmware programmer and has starting dabbling in the EdWare code.
+
+
+Hasso Tepper    -- Contributing GUI fixes and interested in translations.

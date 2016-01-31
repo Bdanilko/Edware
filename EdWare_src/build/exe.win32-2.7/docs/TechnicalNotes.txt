@@ -1,0 +1,292 @@
+Note -- this contains more detail notes about EdWare. BUT do not take this file
+as unchanging, complete, or minimal. In particular, some of this document may 
+describe brics that are NOT used in Edison! The required source documents need
+to be read alongside this document. And the don't forget that there is an 
+executable specification -- the existing python EdWare program.
+
+* Required source documents
+- Edison Product Specification
+- token_assembler.txt 
+- tokens1.html
+
+* Details of creating EdWare Assembler from individual Brics
+
+Most of the code for turning Brics into EdWare Assembler is in the
+detail_win.py file, which should be considered the ultimate source.
+Also you have an 'executable specification' -- the EdWare program when it
+compiles brics to token assembler leaves a file called 'last_compile.mbc'.
+This is the ultimate documentation for how any bric is turned into the token
+assembler statement!
+
+In detail_win.py, 
+the brics typically have a XXX_convert function, which takes various
+commands. The "code" command, takes the bric type, along with data entered
+into the bric to generate the token assembler code.
+
+It is important that the reader is conversant with the Assembler language -
+see token_assembler.txt, and the reader should be familiar with writing assembler
+code, or at least understand the fundamentals of it. Finally, the tokens1.html
+file is needed to understand what tokens and registers exist.
+
+Where mod_reg(x) is used in the following text, it means that a text
+string corresponding to the module that the bric is generating code for,
+along with the specific register for that module is being output.
+
+For example: with the Tones Bric, mode_reg(action) would generate:
+%beeper:action
+
+** Tones Bric
+*** If the choice entered into the bric is for a note:
+- datb @_tune_store * CODE 0 (where CODE encodes note and duration)
+- movb $0 mod_reg(tune)
+- bitset 0 mod_reg(action)
+
+*** If the choice entered into the bric is for a tune:
+- datb @_tune_store * CODE+ 0 (where CODE+ is multiple note/duration codes)
+- movb $0 mod_reg(tune)
+- bitset 0 mod_reg(action)
+
+** Beep Bric
+- bitset 2 mod_reg(action)
+
+** Digital Brics (LED, Obstacle detection on/off, line tracker on/off)
+*** LED/line-tracker - off
+- bitclr 0 mod_reg(output)
+*** LED/line-tracker - on
+- bitset 0 mod_reg(output)
+*** obstacle detection off
+- bitclr 1 mod_reg(action)
+*** obstacle detection on
+- bitset 1 mod_reg(action)
+
+*** LED/line-tracker/obstacle-detection with variables
+This gives an example of how the code handles reading on/off from
+a variable. Note that the actual register name and bit needs to be
+found above or in the documents mentioned at the top of this file.
+- movb @VARIABLE %_cpu:acc
+- and $MASK 
+- brz :setToZero
+- bitset BIT mod_reg(output/action)
+- bra :done
+- bitclr BIT mod_reg(output/action)
+
+** TxIR Bric
+*** Transmit a constant
+- movb $CHAR mod_reg(char)
+- bitset 0 mod_reg(action)
+*** Transmit from a variable
+- movb @VARIABLE mod_reg(char)
+- bitset 0 mod_reg(acti on)
+
+** Input BRICs
+*** Bumper/Digital status
+- movb mod_reg(status) %_cpu:acc
+- and $1
+- movb %_cpu:acc @VARIABLE
+*** Clap detect
+- movb mod_reg(status) %_cpu:acc
+- bitclr 2 mov_reg(status)
+- and $4
+- movb %_cpu:acc @VARIABLE
+*** obstacle detect
+- movb mod_reg(status) %_cpu:acc
+- bitclr $3 mov_reg(status)
+- bitclr $4 mov_reg(status)
+- bitclr $5 mov_reg(status)
+- bitclr $6 mov_reg(status)
+- and $78/16
+- movb %_cpu:acc @VARIABLE
+*** Line tracker detect
+- movb mod_reg(status) %_cpu:acc
+- and $1
+- movb %_cpu:acc @VARIABLE
+*** IR data in
+- movb mod_reg(char) @VARIABLE
+*** Remote
+- movb mod_reg(match) @VARIABLE
+*** Light level
+- movw mod_reg(lightlevel) @VARIABLE
+*** Motor distance
+- movw mod_reg(distance) @VARIABLE
+*** Read timer
+- movw %_timers:oneshot @VARIABLE
+*** Read button
+- movb %_devices:button @VARIABLE
+
+** Variable set Brics
+- movb/movw $CONSTANT @VARIABLE
+
+** Math Brics
+*** Inc
+- incb/incw @VARIABLE
+*** Dec
+- decb/decw @VARIABLE
+*** More math
+- just using the tokens for the actual operation, like in the inc/dec cases.
+ 
+** Motor Brics
+Rotations of the axle are computed using the fact that one rotation of the shaft
+equals 2.54mm, or 7.5 degrees. So for the other measurements, scaling is applied to
+produce a number of rotations (this is done in the compiler, not in Edison).
+
+Direction codes without distance - forward:0x80, backward:0x40, stop:0xc0
+Direction codes WITH distance - forward:0xa0, backward:0x60, stop:0xc0
+
+*** Single motors
+**** Unlimited distance
+- movb $DirectionCode/@DirVARIABLE %_cpu:acc
+- or   $Speed/@SpeedVARIABLE
+- movb %_cpu:acc mod_reg(control)
+
+**** With distance, D
+- movw $Rotations/@RotVARIABLE mod_reg(distance)
+- movb $DirectionCodeWithDistand/@DirVARIABLE %_cpu:acc
+- or   $Speed/@SpeedVARIABLE
+- movb %_cpu:acc mod_reg(control)
+
+*** Paired motors
+When the pairs are going forward, backward or stopping then treat like two single
+motors.
+
+With the other combinations, extra processing is needed, to determine the combinations
+of which motor goes forward/backword/idle or stopped:
+
+**** Right
+- Make the left motor go forward, leave the right alone
+**** Right 90%
+- Set the distance on the motor for 12 revolutions
+- Make the left motor go forward, leave the right alone, limited by distance.
+**** Slew right
+- Make the left motor go forward, the right backward
+**** Back right
+- Make the left motor go backward
+**** Left
+- Make the right motor go forward, leave the left alone
+**** Left 90%
+- Set the distance on the motor for 12 revolutions
+- Make the right motor go forward, leave the left alone, limited by distance.
+**** Slew left
+- Make the right motor go forward, the left backward
+**** Back left
+- Make the right motor go backward
+** Event Brics
+- BEGIN EVENT mod_reg(status), MASK, VALUE  (where MASK and VALUE corresponds to 
+                                             the event we are interested in)
+- bitclr $BIT mod_reg(status)
+- the code for the brics to be executed on the event follow this
+ 
+** Wait Brics
+*** In the main code
+- movtime $CONSTANT/@VARIABLE @_main_time_buffer
+- :WAIT_LABEL
+- cmptime @_main_time_buffer
+- brle WAIT_LABEL
+ 
+*** In an event
+- movtime $CONSTANT/@VARIABLE @_event_time_buffer
+- :WAIT_LABEL
+- cmptime @_event_time_buffer
+- brle WAIT_LABEL
+
+** If Brics
+*** no test
+- bra %LABEL
+*** compare constant to variable
+- movb/movw $CONSTANT %_cpu:acc
+- cmpb/cmpw @VARIABLE
+- brX %YES_LABEL  (where brX is the branch depending on the test)
+- bra %NO_LABEL
+*** branch based on event
+- movb mod_reg(status) %_cpu:acc
+- and $MASK       (where MASK removes all other bits except for the event bit)
+- cmpb $VALUE     (where VALUE is the event bit we are interested in)
+- brne %NO_LABEL
+- may have to clear the status for some events -- see tokens1.html
+- bra  %YES_LABEL
+
+** Loop Brics
+Place labels TEST_LABEL and END_LABEL at the ends of the loop code
+*** no test
+- bra END_LABEL
+*** compare constant to variable
+- movb/movw $CONSTANT %_cpu:acc
+- cmpb/cmpw @VARIABLE
+- brX %END_LABEL  (where brX is the branch depending on the test)
+- code for the tokens in the loop go here
+- bra %TEST_LABEL
+*** branch based on event
+- movb mod_reg(status) %_cpu:acc
+- and $MASK       (where MASK removes all other bits except for the event bit)
+- cmpb $VALUE     (where VALUE is the event bit we are interested in)
+- brne %END_LABEL
+- may have to clear the status for some events -- see tokens1.html
+- code for the tokens in the loop go here
+- bra  %TEST_LABEL
+
+;; Local Variables:
+;; mode: org
+;; End:
+
+* Download format
+At the end of tokens1.html, there is a section on Download format. This details
+the header, and how the output of the assembled tokens are arranged for download.
+
+NOTE -- this will change slightly as the download is expanded to handle new 
+firmware downloads. 
+
+Currently the download is as documented for USB cable downloads (tokens1.html),
+but without the ENTER DOWNLOAD MODE and FIRMWARE MARKER | PROGRAM MARKER sequences.
+
+So, we have basically (see tokens1.html for details!):
+
+0: 0x20 (1 byte)  // EDISON_VERSION_BYTE   
+
+1: databytes (2 bytes, LE)
+3: crc       (2 bytes, LE)
+5: 0x00      (1 byte) // module table NOT used
+6: event table offset (1 byte) 
+7: main prog   offset (2 bytes, LE)
+9: event tokens if used
+n: main program tokens
+
+
+* Creating the audio output file
+** Details of the audio file
+As you know from the product specification, data to be downloaded to Edison
+is encoded as audio files and played out the headphone jack. The current
+EdWare program conforms to that specification except that the parity bit
+is not sent (it was found that it wasn't needed). So each byte is encoded,
+with a start bit, 8 data bits (LSB first), then a stop bit.
+
+The output is encoded into a 'wav' file, with 2 channels, 8-bit data per channel,
+with a frame rate of 44100 Hz.
+
+The file 'Audio-to-Data-format.pdf' shows an example of how data is encoded.
+
+Basically the outputs on the 2 channels are in 1 of 3 states:
+- Far -- left channel is at max, right channel is at min,
+- Near -- left channel is at min, right channel is at max,
+- Mid  -- both channels are at 0.5 output
+
+Which leads to:
+- Start bit  : 1q-Far, 1q-Near, 6q-Mid
+- 0-data bit : 1q-Far, 1q-Near
+- 1-data bit : 1q-Far, 1q-Near, 2q-Mid
+- Stop bit   : 1q-Far, 1q-Near, 8q-Mid
+
+In a total audio file, a preamble and postscript of 20 0-data-bits are output. This allows
+for Edison to sync with the incoming data stream, and to make sure that the computer doesn't
+chop off some useful bits at the end of the transmission.
+
+** Code to create the audio file
+The code to create the audio file is driven by the convert() method
+in the downloader.py file. It uses the method createAudio(N) to output the '1q-Far, 1q-Near'
+sequence followed by either N=0 (for the 0-data bit), N=2 (for the 1-data bit) or N=6 (for the 
+start/stop Mid values). 
+
+Since 1q = 0.5ms, and we are playing the audio at 44.1 frames per 1ms, then 22 frames are recorded
+for each 1q time perioud. 1q isn't exactly 0.5ms (it's a bit fast), but this accuracy is acceptable
+to Edison.
+
+When EdWare downloads to Edison, it leaves behind the prepared audio file, called 'program.wav', so
+that it can be compared against other implmentations.
