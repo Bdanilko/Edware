@@ -132,6 +132,7 @@ def set_audio_output(choice):
         WAVER_PRESENT = False
 
     installedList = []
+    installed = ""
     if (PORTAUDIO_PRESENT):
         installedList.append("portaudio")
     if (PYGAME_PRESENT):
