@@ -51,7 +51,10 @@ if (new_path == path):
 else:
     STORE_DIR = new_path
 
-#print "Platform:", PLATFORM, ", Frozen:", FROZEN, ", Run_dir:", RUN_DIR, ", Store_dir:", STORE_DIR
+# override to use the edison directory instead of the user's directory.
+STORE_DIR = RUN_DIR
+
+# print "Platform:", PLATFORM, ", Frozen:", FROZEN, ", Run_dir:", RUN_DIR, ", Store_dir:", STORE_DIR
 
 def is_frozen():
     return FROZEN

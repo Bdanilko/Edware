@@ -77,24 +77,24 @@ DOWNLOAD_PAUSE_MSECS = 2000
 
 WAVE_SAMPLE_RATE_HZ = 44100
 
-# A quanta is a 1/2 a microsecond. As the sample rate is in
-# Hz, we have to divide it by 2000 to get samples per 0.5ms.
-SAMPLES_PER_QUANTA = WAVE_SAMPLE_RATE_HZ / 2000
-
 # A ramping function between two different samples - the
 # values are the percent of the change to apply in each sample.
 # Difference between each value is:
 # 2, 3, 5, 10, 15, 15, 15, 15, 10, 5, 3, 2
 # DEFAULT_RAMP = (2, 5, 10, 20, 35, 50, 65, 80, 90, 95, 98)
 
-# a ramp gentler at the ends but more extreme in the middle
-DEFAULT_RAMP = (1, 3, 6, 11, 31, 69, 89, 94, 97, 99)
+# values supplied by Brenton (24/Jan/16)
+DEFAULT_RAMP = (1, 3, 7, 16, 50, 84, 93, 97, 99)
 RAMP = []
 
 try:
     import pyaudio
     PORTAUDIO_PRESENT = True
-    #print "Pyaudio installed"
+    p = pyaudio.PyAudio()
+    WAVE_SAMPLE_RATE_HZ = int(p.get_default_output_device_info()['defaultSampleRate'])
+    p.terminate()
+
+    # print "Pyaudio installed, sample rate:", WAVE_SAMPLE_RATE_HZ
 except:
     pass
 
@@ -113,6 +113,11 @@ if (not (PORTAUDIO_PRESENT or PYGAME_PRESENT)) and (paths.get_platform() != "win
 AUDIO_CHUNK = 1024
 AUDIO_STRING = ""
 
+
+# A quanta is a 1/2 a microsecond. As the sample rate is in
+# Hz, we have to divide it by 2000 to get samples per 0.5ms.
+SAMPLES_PER_QUANTA = WAVE_SAMPLE_RATE_HZ / 2000
+
 def set_audio_output(choice):
     global USE_PORTAUDIO
     global USE_PYGAME
@@ -124,12 +129,11 @@ def set_audio_output(choice):
     installed = "unknown"
     using = "unknown"
 
-
-    waver_path = os.path.join(paths.get_run_dir(), "waver", "waver.exe")
-    if os.path.isfile(waver_path):
-        WAVER_PRESENT = True
-    else:
-        WAVER_PRESENT = False
+    WAVER_PRESENT = False
+    if sys.platform.startswith("win"):
+        waver_path = os.path.join(paths.get_run_dir(), "waver", "waver.exe")
+        if os.path.isfile(waver_path):
+            WAVER_PRESENT = True
 
     installedList = []
     installed = ""
@@ -202,7 +206,7 @@ def set_audio_output(choice):
 
     AUDIO_STRING +=" -  Audio to be used: %s)" % (using)
 
-    #print AUDIO_STRING
+    # print AUDIO_STRING
     return AUDIO_STRING
 
 
@@ -495,6 +499,7 @@ class audio_downloader(wx.Dialog):
                             output=True)
             data = wf.readframes(47)
             framesRead += 47
+            # print framesRead
             if (framesRead > totalFrames):
                 framesRead = totalFrames
             stream.write(data)
@@ -508,10 +513,12 @@ class audio_downloader(wx.Dialog):
                 framesRead += AUDIO_CHUNK
                 if (framesRead > totalFrames):
                     framesRead = totalFrames
+                #print framesRead
 
             self.gauge.SetValue(totalFrames)
             self.Update()
-            correction = float(stream.get_write_available() - 32)/sample_rate
+            correction = float(stream.get_write_available() - 32)/WAVE_SAMPLE_RATE_HZ
+            #print correction
             time.sleep(stream.get_output_latency() - correction)
             stream.stop_stream()
             stream.close()
@@ -687,7 +694,7 @@ class audio_firmware_downloader(wx.Dialog):
 
             self.gauge.SetValue(totalFrames)
             self.Update()
-            correction = float(stream.get_write_available() - 32) / sample_rate
+            correction = float(stream.get_write_available() - 32) / WAVE_SAMPLE_RATE_HZ
             time.sleep(stream.get_output_latency() - correction)
             stream.stop_stream()
             stream.close()
@@ -1246,11 +1253,8 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
     waveWriter.setsampwidth(1)
 
     sample_rate = WAVE_SAMPLE_RATE_HZ
-    if (PYAUDIO_PRESENT):
-        p = pyaudio.PyAudio()
-        sample_rate = int(p.get_default_output_device_info()['defaultSampleRate'])
-        p.terminate()
 
+    # print "sample_rate:", sample_rate
     waveWriter.setframerate(sample_rate)
     waveWriter.setcomptype("NONE", "")
 
@@ -1266,7 +1270,7 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
     waveWriter.writeframes(createSilenceRamping(1000, sample_rate))
 
     preamble = 0
-    while (preamble < sample_rate):
+    while (preamble < (sample_rate/2000)):
         waveWriter.writeframes(audioFunction(0, sample_rate))
         preamble += 1
 
@@ -1312,7 +1316,7 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
 
     # added to end as well - to ensure entire data is played. - ## BBB
     preamble = 0
-    while (preamble < sample_rate):
+    while (preamble < (sample_rate/2000)):
         waveWriter.writeframes(audioFunction(0, sample_rate))
         preamble += 1
 
@@ -1356,7 +1360,7 @@ def loadRamp():
                     else:
                         pass  # skip the non-number
                 if (len(new_ramp_data) > 0):
-                    # print "INFO - New ramp data:", new_ramp_data
+                    print "INFO - New ramp data:", new_ramp_data
                     RAMP = new_ramp_data
 
         except Exception:
@@ -1367,6 +1371,7 @@ lastRight = 128
 
 
 def ramp(newLeft, newRight, samples):
+    # print "ramp", samples
     data = ""
     global lastLeft, lastRight
 
