@@ -15,13 +15,13 @@ if __name__ == '__main__':
     print "Creating version", newVersion
     newProgram = "edware_" + newVersion
     newInstaller = "edware-installer_" + newVersion
-    
+
     # create the directory
     dirName = os.path.join("..", newProgram)
     os.mkdir(dirName)
     instName = os.path.join('..', newInstaller)
     #os.mkdir(instName)
-    
+
     # copy everything over
     shutil.copy('edware.py', dirName)
     shutil.copy('edware.ico', dirName)
@@ -31,10 +31,11 @@ if __name__ == '__main__':
 
     shutil.copytree("gui", os.path.join(dirName, "gui"), ignore=shutil.ignore_patterns('*.pyc', 'old_brics', '#*', '~*'))
     shutil.copytree("docs", os.path.join(dirName, "docs"))
+    shutil.copytree("waver", os.path.join(dirName, "waver"))
     shutil.copytree('My Programs', os.path.join(dirName, 'My Programs'), ignore=shutil.ignore_patterns('*.pyc'))
-    
+
     shutil.copytree("installer", instName)
-    
+
     # TODO -- fix up the version name
     print "Fix up gui/about.py"
     print "Fix up installer versions"
