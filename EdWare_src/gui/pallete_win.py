@@ -8,7 +8,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, 2014 Microbric Pty Ltd.
+# Copyright 2006, 2014, 2015, 2016 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,12 +45,12 @@ class Pallete_win(wx.ScrolledWindow):
         self.drag_bmap = None
         self.drag_start_pos = (0, 0)
         self.frame_rect = (0,0,0,0)
-        
+
         self.Bind(wx.EVT_LEFT_DOWN, self.on_left_down)
         self.Bind(wx.EVT_LEFT_DCLICK, self.on_left_dclick)
         self.Bind(wx.EVT_MOTION, self.on_mouse_motion)
 
-        #Do this in the child 
+        #Do this in the child
         #self.Bind(wx.EVT_LEFT_UP, self.on_left_up)
 
 
@@ -60,7 +60,7 @@ class Pallete_win(wx.ScrolledWindow):
 
         # and the refresh event
         self.Bind(wx.EVT_PAINT, self.on_paint)
-        
+
         self.Bind(wx.EVT_ENTER_WINDOW, self.on_enter)
 
     def on_enter(self, event):
@@ -70,7 +70,7 @@ class Pallete_win(wx.ScrolledWindow):
         self.frame_rect = rect
 
     def enable_updates(self, flag=True):
-        self.enable_updates = flag 
+        self.enable_updates = flag
 
     def add_group(self, group_name, exp_bmap, col_bmap):
         self.groups.append(group_name)
@@ -85,7 +85,7 @@ class Pallete_win(wx.ScrolledWindow):
         if (group_name not in self.groups):
             print "Error - group name (%s) not found" % (group_name)
             return
-        
+
         if (group_name not in self.items):
             self.items[group_name] = []
 
@@ -94,7 +94,7 @@ class Pallete_win(wx.ScrolledWindow):
 
         if (not dis_bmap):
             dis_bmap = bmap
-            
+
         self.items[group_name].append((name, id, bmap, sel_bmap, dis_bmap, placement))
 
 ##    def add_item(self, group_name, name, image_fn, sel_image_fn=None, id=-1, placement=0):
@@ -102,7 +102,7 @@ class Pallete_win(wx.ScrolledWindow):
 ##        if (group_name not in self.groups):
 ##            print "Error - group name (%s) not found" % (group_name)
 ##            return
-        
+
 ##        if (group_name not in self.items):
 ##            self.items[group_name] = []
 
@@ -112,7 +112,7 @@ class Pallete_win(wx.ScrolledWindow):
 ##            sel_bmap = wx.Bitmap(sel_image_fn, wx.BITMAP_TYPE_ANY)
 ##        else:
 ##            sel_bmap = bmap
-        
+
 ##        self.items[group_name].append((name, id, bmap, sel_bmap, placement))
 
 
@@ -120,11 +120,11 @@ class Pallete_win(wx.ScrolledWindow):
         for rect,name,sel_bmap in self.locations:
             if (rect.InsideXY(pt.x, pt.y)):
                 return (name, sel_bmap)
-            
+
         return (None, None)
-    
-        
-        
+
+
+
     # --------------- Event handlers --------------------------------
 
     def on_left_dclick(self, event):
@@ -137,10 +137,10 @@ class Pallete_win(wx.ScrolledWindow):
                     self.group_expanded[group] = False
                 else:
                     self.group_expanded[group] = True
-                    
+
                 self.Refresh(True)
                 break
-    
+
     def parent_on_left_down(self, event):
         # Make sure that we have the focus
         #self.SetFocus()
@@ -168,15 +168,15 @@ class Pallete_win(wx.ScrolledWindow):
             self.drag_image.EndDrag()
             self.drag_image = None
             self.drag_bmap = None
-            
+
             self.SetCursor(wx.NullCursor)
 
             #print "Dropped at", screen_pt, "loc:", loc, "name:", self.drag_name
 
         # used by the child to do special processing
         return (loc, self.drag_name, extra)
-            
-    
+
+
     def on_mouse_motion(self, event):
         if (not self.drag_bmap or not event.Dragging() or not event.LeftIsDown()):
             return
@@ -184,7 +184,7 @@ class Pallete_win(wx.ScrolledWindow):
         raw_pt = event.GetPosition()
         screen_pt = self.ClientToScreen(raw_pt)
         check_pt = self.CalcUnscrolledPosition(raw_pt)
-        
+
         if (self.drag_bmap and not self.drag_image):
             tolerance = 4
             dx = abs(check_pt.x - self.drag_start_pos.x)
@@ -216,27 +216,27 @@ class Pallete_win(wx.ScrolledWindow):
             if (update):
                 self.drag_image.Show()
             self.drag_image.Move(raw_pt)
-                
-            
-    
+
+
+
     def on_size(self, event):
         #print "Size", event.GetSize()
         win_x, win_y = event.GetSize()
 
         if (win_x < 100):
             event.Skip(False)
-        
+
         x_step = 20
         y_step = 20
         x_units = self.max_size[0]/x_step + 1
         y_units = self.max_size[1]/y_step + 1
-        
+
         self.SetScrollbars(0, y_step, 0, y_units)
-    
+
     def on_idle(self, event):
         #print "Idle"
         pass
-    
+
     def on_paint(self, event):
         #print "Paint"
         dc = wx.PaintDC(self)
@@ -246,7 +246,7 @@ class Pallete_win(wx.ScrolledWindow):
         y = 5
         self.locations = []
         self.group_locations = []
-        
+
         for i in range(len(self.groups)):
             if (self.group_expanded[i]):
 
@@ -254,9 +254,9 @@ class Pallete_win(wx.ScrolledWindow):
                 dc.DrawBitmap(b, x, y, True)
                 rect = wx.Rect(x,y,b.GetWidth(), b.GetHeight())
                 self.group_locations.append((rect, i))
-            
+
                 y += self.group_bmaps[i][0].GetSize()[1] * 1.5
-            
+
                 for n,i,b,sb,db, p in self.items[self.groups[i]]:
                     if (not win_data.enabled_on_pallete(self.name, n)):
                         dc.DrawBitmap(db, x, y, True)
@@ -277,10 +277,10 @@ class Pallete_win(wx.ScrolledWindow):
                 dc.DrawBitmap(b, x, y, True)
                 rect = wx.Rect(x,y,b.GetWidth(), b.GetHeight())
                 self.group_locations.append((rect, i))
-            
+
                 y += self.group_bmaps[i][1].GetSize()[1] * 1.5
-            
-                
+
+
 
         y += 24
 
@@ -288,8 +288,8 @@ class Pallete_win(wx.ScrolledWindow):
 
         self.SetVirtualSize((120, y))
 
-    
-        
+
+
 ##class DragShape:
 ##    def __init__(self, bmp, fullscreen=False):
 ##        self.bmp = bmp
@@ -318,5 +318,3 @@ class Pallete_win(wx.ScrolledWindow):
 ##            return True
 ##        else:
 ##            return False
-
-

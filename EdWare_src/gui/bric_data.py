@@ -6,7 +6,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, 2014 Microbric Pty Ltd.
+# Copyright 2006, 2014, 2015, 2016 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -85,7 +85,7 @@ class Bric(Detail_parser):
 
             if (not sbmp):
                 sbmp = "sel_"+bmp
-                
+
             self.bmp = wx.Bitmap(os.path.join(BRICS, bmp), wx.BITMAP_TYPE_ANY)
             self.sbmp = wx.Bitmap(os.path.join(BRICS, sbmp), wx.BITMAP_TYPE_ANY)
 
@@ -106,7 +106,7 @@ class Bric(Detail_parser):
                 self.enable = []
 
             self.valid = True
-            
+
         except StandardError:
             raise
             self.valid = False
@@ -119,15 +119,15 @@ class Bric(Detail_parser):
         self.cached = []
 
     def is_enabled(self, estr):
-        
+
         if (self.enable[0] == 'D'):
             # check devices exist
             devices = self.enable[1:].split(';')
 
-        
+
         result = eval(self.enable)
         return result
-    
+
     def get_name_and_group(self):
         return (self.name, self.group)
 
@@ -146,7 +146,7 @@ class Bric(Detail_parser):
 
     def get_prop_title(self):
         return self.prop_title
-    
+
     def get_prop_extra_text(self):
         return self.prop_extra_text
 
@@ -170,7 +170,7 @@ def load_brics(big = True):
     global data
 
     base = BRICS
-        
+
     cp = ConfigParser.RawConfigParser()
     cp.read(BRIC_CONTROL)
 
@@ -181,7 +181,7 @@ def load_brics(big = True):
 
     # get the top bric number
     topBricNumber = cp.getint('control', 'highbric')
-    
+
     # get the arrows
     larrow = cp.get('arrow', 'left')
     rarrow = cp.get('arrow', 'right')
@@ -190,7 +190,7 @@ def load_brics(big = True):
 
     if (not srarrow):
         srarrow = 'sel_'+rarrow
-        
+
     if (not slarrow):
         slarrow = 'sel_'+larrow
 
@@ -207,7 +207,7 @@ def load_brics(big = True):
 
     data.end_bmaps = (wx.Bitmap(os.path.join(base, end_name), wx.BITMAP_TYPE_ANY),
                        wx.Bitmap(os.path.join(base, end_sel), wx.BITMAP_TYPE_ANY))
-    
+
     b_name = 'new'
     bmp = cp.get(b_name, 'bmap')
     sbmp = cp.get(b_name, 'selbmap')
@@ -217,18 +217,18 @@ def load_brics(big = True):
     data.new = (wx.Bitmap(os.path.join(base, bmp), wx.BITMAP_TYPE_ANY),
                 wx.Bitmap(os.path.join(base, sbmp), wx.BITMAP_TYPE_ANY))
 
-        
+
     group = 1
     while True:
         g_name = 'group%d' % (group)
         if (cp.has_section(g_name)):
             expname = cp.get(g_name, 'expbmap')
             colname = cp.get(g_name, 'colbmap')
-            
+
             g_tuple = (cp.get(g_name, 'name'),
                        wx.Bitmap(os.path.join(base, expname), wx.BITMAP_TYPE_ANY),
                        wx.Bitmap(os.path.join(base, colname), wx.BITMAP_TYPE_ANY),)
-            
+
             data.groups.append(g_tuple)
         else:
             break
@@ -239,7 +239,7 @@ def load_brics(big = True):
         b_name = 'bric%d' % (bric)
         if (cp.has_section(b_name)):
             new_bric = Bric(b_name, cp)
-            
+
             if (new_bric.is_valid()):
                 name_and_group = new_bric.get_name_and_group()
                 data.brics.append(name_and_group)
@@ -276,13 +276,13 @@ def get_if_variant(cp, name):
 def get_if_bmap(name, selected=False):
     if (name not in data.if_variants):
         name = 'var'
-        
+
     if (selected):
         return data.if_variants[name][1]
     else:
         return data.if_variants[name][0]
-        
-    
+
+
 def get_groups():
     return data.groups
 
@@ -323,7 +323,7 @@ def get_arrow_bmap(right=True, sel=False):
         which = 1
     else:
         which = 0
-        
+
     if (right):
         return data.right_arrow[which]
     else:
@@ -334,12 +334,12 @@ def get_end_bmap(sel=False):
         which = 1
     else:
         which = 0
-        
+
     if (right):
         return data.end_bmaps[which]
     else:
         return data.end_bmaps[which]
-    
+
 
 # ---------------------------------------------------------
 
@@ -360,7 +360,7 @@ def enable_and_control_parser(str):
             args = []
             for a in str[i+1:end].split(';'):
                 args.append(arg_condition(a))
-            
+
             i = end + 1
         pieces.append((etype, args))
 
@@ -429,4 +429,3 @@ if (__name__ == '__main__'):
 ##    print data.groups
 ##    print data.brics
 ##    print data.bric_dict
-    

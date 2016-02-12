@@ -6,7 +6,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, 2014 Microbric Pty Ltd.
+# Copyright 2006, 2014, 2015, 2016 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,10 +32,10 @@ class Config_pallete(pallete_win.Pallete_win):
     def __init__(self, parent):
         pallete_win.Pallete_win.__init__(self, parent, -1)
         self.name = 'cpallete'
-        
+
         self.init_pallete()
         self.Bind(wx.EVT_LEFT_UP, self.on_left_up)
-        
+
     def init_pallete(self):
         groups = device_data.get_groups()
         for name, expbmap, colbmap in groups:
@@ -46,7 +46,7 @@ class Config_pallete(pallete_win.Pallete_win):
             bmap = device_data.get_device_bmap(name)
             sel_bmap = device_data.get_device_bmap(name, True)
             self.add_item_bmap(group, name, bmap, sel_bmap)
-        
+
 
     def on_left_down(self, event):
         # do main processing
@@ -56,7 +56,7 @@ class Config_pallete(pallete_win.Pallete_win):
         if (not win_data.get_adv_mode()):
             self.drag_name = None
             self.drag_bmap = None
-        
+
 
     def on_left_up(self, event):
         # do parent processing

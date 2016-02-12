@@ -8,7 +8,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, 2014 Microbric Pty Ltd.
+# Copyright 2006, 2014, 2015, 2016 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -65,14 +65,14 @@ class Config_work(work_win.Work_win):
     def __init__(self, parent, frame):
         work_win.Work_win.__init__(self, parent)
 
-        
+
         self.locations_empty = []
         self.locations_full = []
-        
+
         self.size = None
         self.zoom = 1.0
         self.setup_zones_and_locations()
-        
+
         self.Bind(wx.EVT_SIZE, self.on_size)
         self.Bind(wx.EVT_MOVE, self.on_move)
         self.Bind(wx.EVT_PAINT, self.on_paint)
@@ -81,11 +81,11 @@ class Config_work(work_win.Work_win):
         self.drag_image = None
         self.drag_start = (-1, None)    # Remember in case we need to put it back
         self.drag_start_pos = None
-        
+
         self.zone_hit = -1
         self.zone_good = -1
         self.zone_rect = None
-        
+
         self.Bind(wx.EVT_LEFT_DOWN, self.on_left_down)
         self.Bind(wx.EVT_MOTION, self.on_mouse_motion)
         self.Bind(wx.EVT_LEFT_UP, self.on_left_up)
@@ -96,7 +96,7 @@ class Config_work(work_win.Work_win):
 ##        if (self.zoom != 1.0):
 ##            mb_x *= self.zoom
 ##            mb_y *= self.zoom
-        
+
         dev_x,dev_y = (mb_x/3,mb_y/3)
         mb_l = mb_x
         mb_r = mb_x * 2
@@ -125,7 +125,7 @@ class Config_work(work_win.Work_win):
 
     def on_move(self, event):
         self.on_size(event)
-        
+
     def on_size(self, event):
         # send the new size to the program pallete
         self.size = self.GetClientSize()
@@ -141,7 +141,7 @@ class Config_work(work_win.Work_win):
         if (zoom != self.zoom):
             self.zoom = zoom
             self.Refresh(True)
-            
+
     def adjust_zoom(self, dir):
         if (dir == 0):
             self.zoom = 1.0
@@ -162,14 +162,14 @@ class Config_work(work_win.Work_win):
         dc.SetBackground(wx.Brush("white", wx.SOLID))
         dc.SetUserScale(self.zoom, self.zoom)
         dc.Clear()
-        
+
         # paint mb first
         mb = device_data.get_mb_bmap()
         dc.DrawBitmap(mb, self.mb_origin[0], self.mb_origin[1], True)
 
         self.locations_full = []
         self.locations_empty = []
-        
+
         overlay = None
         # now the current configuration
         cfg = win_data.config_get_all()
@@ -177,7 +177,7 @@ class Config_work(work_win.Work_win):
             if (cfg.has_key(i)):
                 dtype = cfg[i][0]
                 orient = 0
-                
+
                 if (i in [1, 4, 7, 10] and (dtype == "Motor A" or dtype == "Motor B")):
                     orient = win_data.config_orient_from_loc(i)
                     if (orient == 1):
@@ -187,7 +187,7 @@ class Config_work(work_win.Work_win):
                 else:
                     image_index_base = 0
 
-                    
+
                 if (win_data.selection_check('cwork', None, i)):
                     overlay = device_data.get_overlay_bmap(i)
                     image = device_data.get_fullsize_image(dtype, image_index_base + 1)
@@ -199,8 +199,8 @@ class Config_work(work_win.Work_win):
                 image = None
                 offset = (0, 0)
                 size = self.hit_size
-                
-                    
+
+
             x,y = self.centres[i]
             if (i in [5, 6, 7]):
                 if (image):
@@ -222,7 +222,7 @@ class Config_work(work_win.Work_win):
                             y = y -size[1]+offset[1]+90
                         else:
                             y = y - size[1] + offset[1]
-                    
+
                 elif (dtype == 'Motor B'):
                     if (i == 7  and orient < 0):
                         b = wx.BitmapFromImage(image.Rotate90(clockwise=True))
@@ -236,7 +236,7 @@ class Config_work(work_win.Work_win):
                             y = y -size[1]+offset[1]+90
                         else:
                             y = y - size[1] + offset[1]
-                    
+
                 else:
                     x = x - (size[0]/2) + offset[0]
                     y = y - (size[1]) + offset[1]
@@ -262,7 +262,7 @@ class Config_work(work_win.Work_win):
                             x = x -size[0]+offset[0]+90
                         else:
                             x = x - size[0]+offset[0]
-                        
+
                 elif (dtype == 'Motor B'):
                     if (i == 4  and orient < 0):
                         b = wx.BitmapFromImage(image)
@@ -276,7 +276,7 @@ class Config_work(work_win.Work_win):
                             x = x -size[0]+offset[0]+90
                         else:
                             x = x - size[0]+offset[0]
-                    
+
                 else:
                     x = x - (size[0]) + offset[0]
                     y = y - (size[1]/2) + offset[1]
@@ -287,7 +287,7 @@ class Config_work(work_win.Work_win):
                     b = wx.BitmapFromImage(image.Rotate90(clockwise=True))
                     size = b.GetSize()
                     offset = (-10, 0)
-                
+
 
                 if (dtype == 'Motor A'):
                     if (i == 10  and orient < 0):
@@ -303,7 +303,7 @@ class Config_work(work_win.Work_win):
                             x = x +offset[0]-90
                         else:
                             x = x +offset[0]
-                        
+
                 elif (dtype == 'Motor B'):
                     if (i == 10  and orient < 0):
                         b = wx.BitmapFromImage(image.Rotate90().Rotate90())
@@ -317,18 +317,18 @@ class Config_work(work_win.Work_win):
                             x = x +offset[0]-90
                         else:
                             x = x +offset[0]
-                    
+
                 else:
                     x = x + offset[0]
                     y = y - (size[1]/2) + offset[1]
-                
+
             else:
                 if (image):
                     # 180 rotation needed
                     b = wx.BitmapFromImage(image.Rotate90().Rotate90())
                     size = b.GetSize()
                     offset = (0, -10)
-                
+
 
                 if (dtype == 'Motor A'):
                     if (i == 1  and orient < 0):
@@ -344,21 +344,21 @@ class Config_work(work_win.Work_win):
                             y = y +offset[1]-90
                         else:
                             y = y + offset[1]
-                        
+
                 elif (dtype == 'Motor B'):
                     if (i == 1  and orient < 0):
                         b = wx.BitmapFromImage(image.Rotate90(clockwise=False))
                         size = b.GetSize()
                         x,y = self.centres[2]
                         x = x - size[0] + self.hit_size[0]
-                        y = y - 90 + + self.hit_size[1]*0.5 + offset[1] 
+                        y = y - 90 + + self.hit_size[1]*0.5 + offset[1]
                     else:
                         x = x - size[0] + self.hit_size[0]*1
                         if (i == 1):
                             y = y +offset[1]-90
                         else:
                             y = y + offset[1]
-                    
+
                 else:
                     x = x - (size[0]/2) + offset[0]
                     y = y + offset[1]
@@ -368,10 +368,10 @@ class Config_work(work_win.Work_win):
                 self.locations_full.append((i, cfg[i][0], wx.Rect(x, y, size[0], size[1])))
             else:
                 self.locations_empty.append((i, wx.Rect(x, y, size[0], size[1])))
-                                 
+
         if (not overlay):
             overlay = device_data.get_overlay_bmap()
-        
+
         dc.DrawBitmap(overlay, self.mb_origin[0], self.mb_origin[1], True)
 
         self.SetVirtualSize(self.window_size)
@@ -384,7 +384,7 @@ class Config_work(work_win.Work_win):
 ##        if (self.zoom != 1.0):
 ##            centre_pt.Set(centre_pt.x/self.zoom, centre_pt.y/self.zoom)
         return self.local_move_centre_pt(centre_pt, name, drag_image)
-    
+
     def local_move_centre_pt(self, centre_pt, name, drag_image):
         # check in zones to speed things up
         location = -1
@@ -392,7 +392,7 @@ class Config_work(work_win.Work_win):
         detail_index = -1
         centre_pt = self.CalcUnscrolledPosition(centre_pt)
         which_id = 0
-        
+
         # BED zooming support
         if (self.zoom != 1.0):
             centre_pt.Set(centre_pt.x/self.zoom, centre_pt.y/self.zoom)
@@ -406,7 +406,7 @@ class Config_work(work_win.Work_win):
             good = win_data.config_check(location, name)
             dc = None
             origin = self.mb_origin[:]
-            
+
             if (good):
                 # put the overlay on
                 overlay = device_data.get_overlay_bmap(location)
@@ -422,14 +422,14 @@ class Config_work(work_win.Work_win):
                 overlay = image.ConvertToBitmap()
                 origin[0] *= self.zoom
                 origin[1] *= self.zoom
-                
+
 
             dc = wx.ClientDC(self)
             self.DoPrepareDC(dc)
             drag_image.Hide()
             update = True
             dc.DrawBitmap(overlay, origin[0], origin[1], True)
-                
+
             self.zone_hit = location
 
         return location, update, None
@@ -450,7 +450,7 @@ class Config_work(work_win.Work_win):
 
         return (-1, None)
 
-    
+
     def on_left_down(self, event):
         # Make sure that we have the focus
         #self.SetFocus()
@@ -466,13 +466,13 @@ class Config_work(work_win.Work_win):
             self.drag_start_pos = pt
             # also set the selection and update the help window
             win_data.selection_take('cwork', self.drag_name, self.drag_loc)
-            
+
         # Don't allow movements in basic mode
         if (not win_data.get_adv_mode()):
             self.drag_loc = -1
             self.drag_name = None
             self.drag_start_pos = None
-            
+
 
 
     def on_left_up(self, event):
@@ -480,7 +480,7 @@ class Config_work(work_win.Work_win):
         if (self.drag_image):
             pt = event.GetPosition()
             loc,update,dummy = self.local_move_centre_pt(pt, self.drag_name, self.drag_image)
-            
+
             self.drag_bmp = None
             self.drag_image.Hide()
             self.drag_image.EndDrag()
@@ -497,29 +497,29 @@ class Config_work(work_win.Work_win):
                         error_message="Can not delete the device as it is used in the program.\n" +\
                                        "Delete it from the program before deleting it here."
                         wx.MessageBox(error_message, caption="Can't delete device.", style=wx.OK | wx.ICON_ERROR)
-                                   
+
                         win_data.config_move_abort()
                 else:
                     win_data.config_move_abort()
-                
+
         # force the work area to redraw
         self.SetCursor(wx.NullCursor)
         self.Refresh()
         win_data.force_redraw('config')
-            
-    
+
+
     def on_mouse_motion(self, event):
         if (self.drag_loc < 0 or not event.Dragging() or not event.LeftIsDown()):
             return
 
         pt = event.GetPosition()
-        
+
         if (not self.drag_image):
             # BED zooming support
             check_pt = wx.Point(pt.x/self.zoom, pt.y/self.zoom)
 
             tolerance = 4
-            
+
             dx = abs(check_pt.x - self.drag_start_pos.x)
             dy = abs(check_pt.y - self.drag_start_pos.y)
             if (dx <= tolerance and dy <= tolerance):
@@ -541,7 +541,7 @@ class Config_work(work_win.Work_win):
                 h = image.GetHeight() * self.zoom
                 image.Rescale(w, h)
                 bmp = image.ConvertToBitmap()
-            
+
             self.drag_image = wx.DragImage(bmp, wx.StockCursor(wx.CURSOR_HAND))
             #dev_x,dev_y = device_data.get_device_size()
             dev_x,dev_y = bmp.GetSize()
@@ -557,14 +557,14 @@ class Config_work(work_win.Work_win):
             self.drag_image.Move(pt)
             if (update):
                 self.drag_image.Show()
-                
+
 ##            else:
 ##                # if we are out of the window then scroll in this direction
 ##                size = self.GetClientSize()
 ##                start = self.GetViewStart()
 ##                total = self.GetVirtualSize()
 ##                scroll_pixels = self.GetScrollPixelsPerUnit()
-                
+
 ##                if (pt.x < start[0] and (start[0] > 0)):
 ##                    print "Scroll left"
 ##                elif (pt.x > (start[0] + size[0]) and (pt.x < total[0])):

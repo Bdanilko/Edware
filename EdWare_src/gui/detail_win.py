@@ -8,7 +8,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, 2014 Microbric Pty Ltd.
+# Copyright 2006, 2014, 2015, 2016 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -510,14 +510,14 @@ class Detail_win(wx.ScrolledWindow):
             if (not converted):
                 newModuleList.append()
         return newModuleList
-        
+
     def module_remove_alias(self, alias, aliasList):
         for l, r in aliasList:
             if (r == alias):
                 #print "Removing alias", r, "->", l
                 return l
         return alias
-    
+
 
 # =======================================================================================
 # ---------------------------- bric details ---------------------------------------------
@@ -540,7 +540,7 @@ class Detail_win(wx.ScrolledWindow):
 
         grid = wx.GridBagSizer(5, 5)
         grid_line = 0
-        
+
         rbs = self.make_radio_buttons(["Musical note", "Tune string"])
         modules = win_data.config_device_names('Sounder')
         mod_choice = self.make_combo(modules)
@@ -718,7 +718,7 @@ class Detail_win(wx.ScrolledWindow):
         self.cons_tc = None
         self.cons_cb = (mod_choice,)
         self.rbs = None
-        
+
         if (len(modules) < 2):
             mod_choice.Hide()
         else:
@@ -729,7 +729,7 @@ class Detail_win(wx.ScrolledWindow):
             # create a multi-line text box
             grid.Add(wx.StaticText(self, -1, self.prop_extra_text), (grid_line, 0),
                      span=(2,2), flag=wx.ALIGN_LEFT | wx.ALIGN_CENTRE_VERTICAL)
-            
+
         self.bind_event_handlers()
 
         if (data):
@@ -793,7 +793,7 @@ class Detail_win(wx.ScrolledWindow):
 
         grid = wx.GridBagSizer(5, 5)
         grid_line = 0
-        
+
         if (self.name == 'LED'):
             mod_type = 'LED'
             levels = ['On', 'Off']
@@ -810,7 +810,7 @@ class Detail_win(wx.ScrolledWindow):
 
         modules = win_data.config_device_names(mod_type)
         mod_choice = self.make_combo(modules)
-        
+
         choices = win_data.vars_names(U_NAME)
         ctrl = (self.make_combo(levels),
                  self.make_combo(choices, add_const=True))
@@ -830,7 +830,7 @@ class Detail_win(wx.ScrolledWindow):
 
         self.make_headings(grid, (grid_line,1))
         grid_line += 1
-        
+
         self.add_with_prompt(grid, (grid_line,0), prompt, ctrl)
 
         self.bind_event_handlers()
@@ -919,7 +919,7 @@ class Detail_win(wx.ScrolledWindow):
                 code_lines.append("bitclr $4 %s" % (win_data.make_mod_reg("IR_RECEIVER1", 'status'),))
                 code_lines.append("bitclr $5 %s" % (win_data.make_mod_reg("IR_RECEIVER1", 'status'),))
                 code_lines.append("bitclr $6 %s" % (win_data.make_mod_reg("IR_RECEIVER1", 'status'),))
-            
+
             return code_lines
 
         else:
@@ -1025,7 +1025,7 @@ class Detail_win(wx.ScrolledWindow):
 
         grid = wx.GridBagSizer(5, 5)
         grid_line = 0
-        
+
         mod_type = 'IR Transmitter'
         prompt = "Character to send:"
 
@@ -1230,7 +1230,7 @@ class Detail_win(wx.ScrolledWindow):
 
         grid = wx.GridBagSizer(5, 5)
         grid_line = 0
-        
+
         if (self.name == 'Digital In'):
             mod_type = 'Digital In'
             v_type = U_NAME
@@ -1435,7 +1435,7 @@ class Detail_win(wx.ScrolledWindow):
 
         # convert to use aliases
         modules = self.module_apply_aliases(modules, self.module_aliases)
-        
+
         mod_choice = self.make_combo(modules)
 
         choices = win_data.vars_names(S_NAME)
@@ -1507,7 +1507,7 @@ class Detail_win(wx.ScrolledWindow):
 
 # -------------- Read Motor distance details  --------------------
 
-            
+
     def readdist_details(self, bric_id, data):
         #print "readdist_details", bric_id, data
         self.conv_func = self.readdist_convert
@@ -1515,7 +1515,7 @@ class Detail_win(wx.ScrolledWindow):
         self.name = win_data.program().get_bric_name(bric_id)
         self.prop_title = bric_data.get_bric_prop_title(self.name)
         self.module_aliases = [("Left_Motor", "Left drive"), ("Right_Motor", "Right drive")]
-                                  
+
         values = None
         if (self.prop_title):
             self.title.SetLabel(self.prop_title)
@@ -2555,7 +2555,7 @@ class Detail_win(wx.ScrolledWindow):
         self.make_headings(grid, (grid_line,1))
         self.add_with_prompt(grid, (grid_line+1,0), "Direction:", dirs)
         self.add_with_prompt(grid, (grid_line+2,0), "Speed:", speed)
-        
+
         if (MOTOR_DISTANCE_ENABLED):
             self.add_with_prompt(grid, (grid_line+3,0), "Distance:", dist_units, ctrl_span=(1,2))
             self.add_with_prompt(grid, (grid_line+4,0), "Distance:", dist_value)
@@ -3359,7 +3359,7 @@ class Detail_win(wx.ScrolledWindow):
         clear_status = True
 
         #print "create_event_code - mod_alias:", mod_alias, " event:", event
-        
+
         module = self.module_remove_alias(mod_alias, EVENT_ALIASES)
         events = self.get_event_choices(mod_alias)
 
@@ -3476,7 +3476,7 @@ class Detail_win(wx.ScrolledWindow):
 
         raise SyntaxError, "bad event: " + event
 
-        
+
     def get_unused_event_choices(self, selected_bric_id = None):
         stream = 1                       # start at the first event
         used_choices = []
@@ -3521,11 +3521,11 @@ class Detail_win(wx.ScrolledWindow):
                         else:
                             unused_events[m] = [uc]
                         break
-                    
+
         #print "Unused events:", unused_events
         return unused_events
-        
-    
+
+
     def event_details(self, bric_id, data):
         #print "event_details:", data
         self.conv_func = self.event_convert
@@ -3535,7 +3535,7 @@ class Detail_win(wx.ScrolledWindow):
 
         self.good_choices = self.get_unused_events(bric_id)
         #print "good_choices:", self.good_choices
-        
+
         self.prop_title = bric_data.get_bric_prop_title(self.name)
         values = None
         if (self.prop_title):
@@ -3580,10 +3580,10 @@ class Detail_win(wx.ScrolledWindow):
             self.old_data = self.save_initial()
 
         win_data.set_unused_events(self.get_unused_events())
-        
+
         # refresh the programming pallete
         win_data.force_redraw("ppallete")
-        
+
         return grid
 
 
@@ -3594,7 +3594,7 @@ class Detail_win(wx.ScrolledWindow):
             # get module alias from event
             mod_alias = self.find_alias_from_event(input[1])
             module = self.module_remove_alias(mod_alias, EVENT_ALIASES)
-            
+
             output = [module, input[1]]
             return output
 
@@ -3605,7 +3605,7 @@ class Detail_win(wx.ScrolledWindow):
                 if (not ctrl):
                     continue
                 output.append(ctrl.GetValue())
-            
+
             # Validate values - change notes to codes
             # ??????
             #print output
@@ -3614,7 +3614,7 @@ class Detail_win(wx.ScrolledWindow):
             output[0] = self.module_remove_alias(output[0], EVENT_ALIASES)
 
             #print output
-            
+
             if (output[0] == MOTHERBOARD):
                 output[0] = None
             else:

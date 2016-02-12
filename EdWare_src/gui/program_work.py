@@ -8,7 +8,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, 2014 Microbric Pty Ltd.
+# Copyright 2006, 2014, 2015, 2016 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,10 +45,10 @@ class Program_work(work_win.Work_win):
         self.big_x = -1
 
         self.zoom = 1.0
-        
+
         self.adj = None
         self.connections = {}
-        
+
         self.Bind(wx.EVT_SIZE, self.on_size)
         self.Bind(wx.EVT_MOVE, self.on_move)
         self.Bind(wx.EVT_PAINT, self.on_paint)
@@ -69,7 +69,7 @@ class Program_work(work_win.Work_win):
 
         self.normal_h = 90
         self.normal_w = 90
-        
+
 ##        self.scroll_timer = wx.Timer(self)
 ##        self.scroll_timer.Start(300, oneShot=False)
 
@@ -80,11 +80,11 @@ class Program_work(work_win.Work_win):
         self.Bind(wx.EVT_MOTION, self.on_mouse_motion)
         self.Bind(wx.EVT_LEFT_UP, self.on_left_up)
 ##        self.Bind(wx.EVT_TIMER, self.on_scroll_timeout)
-        
+
 
     def on_move(self, event):
         self.on_size(event)
-        
+
     def on_size(self, event):
         # send the new size to the program pallete
         size = self.GetClientSize()
@@ -103,7 +103,7 @@ class Program_work(work_win.Work_win):
         if (zoom != self.zoom):
             self.zoom = zoom
             self.Refresh(True)
-            
+
     def adjust_zoom(self, dir):
         if (dir == 0):
             self.zoom = 1.0
@@ -142,12 +142,12 @@ class Program_work(work_win.Work_win):
 
         self.drop_locations = []
         self.pickup_locations = []
-        
+
         streams = win_data.program().get_stream_count()
         stream = 0
         x = 20
         biggest_x = 0
-        
+
         limits = []
         while (stream < streams):
             # is the stream being moved (ready for deletion)
@@ -171,7 +171,7 @@ class Program_work(work_win.Work_win):
             x_min = 0
             y_max = 0
             y_min = 0
-            
+
             for bric_id in compute_connections:
                 for point in compute_connections[bric_id]:
                     x, y = point
@@ -188,10 +188,10 @@ class Program_work(work_win.Work_win):
                             y_max = y
                         if (y < y_min):
                             y_min = y
-                
+
             #print "x_max", x_max, "y_max", y_max, "x_min", x_min, "y_min", y_min
             limits.append((x_min, x_max, y_min, y_max))
-            
+
             stream += 1
 
         #print "Limits", limits
@@ -199,7 +199,7 @@ class Program_work(work_win.Work_win):
         visible_stream = 0
         stream = 0
         x = 20
-            
+
         while (stream < streams):
 
             # is the stream being moved (ready for deletion)
@@ -208,14 +208,14 @@ class Program_work(work_win.Work_win):
                 continue
 
             win_data.program().zero_connections(self.connections)
-            
+
             tree_data, adj, min_min_up = win_data.program().get_tree_data(stream)
 ##            print "tree_data", tree_data
 ##            print "Adj", adj, "min_min_up", min_min_up
 ##            if (min_min_up < 0):
 ##                centre_line += (min_min_up * -1 * 100)
 ##                print "Centre_line dropped:", min_min_up * -100
-            
+
             self.adj = adj
 
             y_offset = limits[visible_stream][2] - 100
@@ -239,7 +239,7 @@ class Program_work(work_win.Work_win):
 
             stream += 1
             visible_stream += 1
-                       
+
 
         # now need the point for adding new streams
         x = left
@@ -268,7 +268,7 @@ class Program_work(work_win.Work_win):
         i = 1
         end = len(flow)-1
         while (i < end):
-            
+
             if (flow[i] == -2):
                 (big_x_1, new_cl_1) = self.compute_placement(x, new_cl[0], flow[i+1], 0, connections)
                 (big_x_2, new_cl_2) = self.compute_placement(x, new_cl[1], flow[i+2], 1, connections)
@@ -276,13 +276,13 @@ class Program_work(work_win.Work_win):
 
                 # Next one will be the End so can connect up unequal branches then
                 x = max(big_x_1, big_x_2)
-                
+
             else:
                 bric_id = flow[i]
 
                 if (bric_id not in connections):
                     connections[bric_id] = [None, None, None]
-                
+
                 name = win_data.program().get_bric_name(bric_id)
                 prev_0 = win_data.program().get_prev_id(bric_id, 0)
                 if (prev_0 > 0):
@@ -292,7 +292,7 @@ class Program_work(work_win.Work_win):
                     # draw the bric, then the arrow
                     connections[bric_id][0] = (x,cl)
                     connections[bric_id][1] = (x,cl)
-                    
+
                     x = self.compute_bmap(name, x, bric_id)
                     # allow for an arrow
                     x += self.arrow_w
@@ -302,29 +302,29 @@ class Program_work(work_win.Work_win):
                     # draw the bric, then the arrow
                     connections[bric_id][0] = (x, cl-cl_adjust)
                     connections[bric_id][1] = (x, cl+cl_adjust)
-                    
+
                     x = self.compute_bmap(name, x, bric_id)
-                    
+
                     # allow for an arrow
                     x += self.arrow_w
                     connections[bric_id][2] = (x,cl)
 
                 elif (name == "Loop"):
-                    
+
                     connections[bric_id][0] = (x, cl)
 
                     x = self.compute_bmap(name, x, bric_id)
-                    
+
                     # allow for an arrow
                     x += self.arrow_w
-                    
+
                     connections[bric_id][1] = (x, cl-cl_adjust)
                     connections[bric_id][2] = (x, cl+cl_adjust)
-                    
+
 
                     # Create two streams and be intelligent about the hit points
                     top, bot = self.adj[bric_id]
-                    
+
                     new_cl = (cl - cl_adjust + top*cl_skip, cl + cl_adjust + bot*cl_skip)
 
 
@@ -344,7 +344,7 @@ class Program_work(work_win.Work_win):
                     top, bot = self.adj[bric_id]
 
                     new_cl = (cl - cl_adjust + top*cl_skip, cl + cl_adjust + bot*cl_skip)
-                    
+
 
                 i += 1
 
@@ -361,7 +361,7 @@ class Program_work(work_win.Work_win):
                 bmap = bric_data.get_if_bmap(if_var, True)
             else:
                 bmap = bric_data.get_if_bmap(if_var, False)
-            
+
         else:
             if (win_data.selection_check('pwork', None, bric_id)):
                 bmap = bric_data.get_bric_bmap(name, bric_data.BRIC_SELECTED)
@@ -370,12 +370,12 @@ class Program_work(work_win.Work_win):
 
         x += bmap.GetWidth()
         return x
-        
 
-        
+
+
     def paint_flow(self, dc, x, cl_base, flow, branch, stream):
         #print "paint_flow() x:", x, "cl_base:", cl_base, "flow:", flow
-        
+
         # flow starts with cl adjustment then nodes
         cl_adjust = 90
         cl_skip = 90+10
@@ -390,7 +390,7 @@ class Program_work(work_win.Work_win):
         i = 1
         end = len(flow)-1
         while (i < end):
-            
+
             if (flow[i] == -2):
                 (big_x_1, new_cl_1) = self.paint_flow(dc, x, new_cl[0], flow[i+1], 0, stream)
                 (big_x_2, new_cl_2) = self.paint_flow(dc, x, new_cl[1], flow[i+2], 1, stream)
@@ -401,13 +401,13 @@ class Program_work(work_win.Work_win):
                 x = max(big_x_1, big_x_2)
                 if (new_cl_1 > cl_max):
                     cl_max = new_cl_1
-                
+
                 if (new_cl_2 > cl_max):
                     cl_max = new_cl_2
-                
+
             else:
                 bric_id = flow[i]
-                
+
                 name = win_data.program().get_bric_name(bric_id)
                 prev_0 = win_data.program().get_prev_id(bric_id, 0)
                 if (prev_0 > 0):
@@ -435,7 +435,7 @@ class Program_work(work_win.Work_win):
                     # draw the bric, then the arrow
                     self.connections[bric_id][0] = (x, cl-cl_adjust)
                     self.connections[bric_id][1] = (x, cl+cl_adjust)
-                    
+
                     x = self.draw_bmap_and_add_location(dc, name, x, cl, bric_id, branch)
                     # draw an arrow
                     self.draw_arrow_and_add_location(dc, 0, x, cl, bric_id, branch)
@@ -451,7 +451,7 @@ class Program_work(work_win.Work_win):
                         if (prev_0 != bric_id - 1):
                             self.connect(dc, self.connections[bric_id][0],
                                          self.connections[prev_0][2])
-                            
+
                         self.connect(dc, self.connections[bric_id][1],
                                      self.connections[bric_id-1][2])
 
@@ -473,19 +473,19 @@ class Program_work(work_win.Work_win):
                         else:
                             self.connect(dc, self.connections[bric_id][1],
                                          self.connections[prev_1][2])
-                        
+
                 elif (name == "Loop"):
-                    
+
                     self.connections[bric_id][0] = (x, cl)
                     # draw the bric, then the arrow
                     x = self.draw_bmap_and_add_location(dc, name, x, cl, bric_id, branch)
-                    
+
                     arrow_y = self.draw_arrow(dc, 1, x, cl+cl_adjust)
                     self.draw_arrow_and_add_location(dc, 0, x, cl-cl_adjust, bric_id, branch)
                     x += self.arrow_w
                     self.connections[bric_id][1] = (x, cl-cl_adjust)
                     self.connections[bric_id][2] = (x, cl+cl_adjust)
-                    
+
 ##                    #BED try connecting everything
 ##                    prev_0 = win_data.program().get_prev_id(bric_id, 0)
 ##                    print "loop"
@@ -493,15 +493,15 @@ class Program_work(work_win.Work_win):
 
                     # Create two streams and be intelligent about the hit points
                     top, bot = self.adj[bric_id]
-                    
+
                     new_cl = (cl - cl_adjust + top*cl_skip, cl + cl_adjust + bot*cl_skip)
 
                     if ((top < 0) and win_data.program().get_next_id(bric_id, 0) != (bric_id+1)):
                         self.connect(dc, self.connections[bric_id][1], (x,new_cl[0]))
-                        
+
 ##                    if (bot > 0):
 ##                        self.connect(dc, self.connections[bric_id][2], (x,new_cl[1]))
-                                     
+
 
                     if (new_cl[1] > cl_max):
                         cl_max = new_cl[1]
@@ -512,7 +512,7 @@ class Program_work(work_win.Work_win):
                     # draw the bric, then the arrow
                     x = self.draw_bmap_and_add_location(dc, name, x, cl, bric_id, branch)
                     # draw two arrows
-                    
+
                     self.draw_arrow_and_add_location(dc, 0, x, cl-cl_adjust, bric_id, 0)
                     self.draw_arrow_and_add_location(dc, 0, x, cl+cl_adjust, bric_id, 1)
                     x += self.arrow_w
@@ -528,13 +528,13 @@ class Program_work(work_win.Work_win):
                     top, bot = self.adj[bric_id]
 
                     new_cl = (cl - cl_adjust + top*cl_skip, cl + cl_adjust + bot*cl_skip)
-                    
+
                     if ((top < 0) and win_data.program().get_next_id(bric_id, 0) != (bric_id+1)):
                         self.connect(dc, self.connections[bric_id][1], (x,new_cl[0]))
-                                     
+
                     if ((bot > 0) and win_data.program().get_next_id(bric_id, 1) != (bric_id+1)):
                         self.connect(dc, self.connections[bric_id][2], (x,new_cl[1]))
-                                     
+
                     if (new_cl[1] > cl_max):
                         cl_max = new_cl[1]
 
@@ -549,8 +549,8 @@ class Program_work(work_win.Work_win):
                 new_x, bmap_size = self.draw_bmap(dc, "Last", x, cl, 0)
             else:
                 new_x, bmap_size = self.draw_bmap(dc, "EndEvent", x, cl, 0)
-                
-        
+
+
         self.in_paint = False
 
         return (x,cl_max)
@@ -561,21 +561,21 @@ class Program_work(work_win.Work_win):
     def draw_arrow(self, dc, atype, x, cl):
         arrow_y = cl-self.arrow_h/2
         dc.DrawBitmap(self.arrows[atype][0], x, arrow_y, True)
-            
+
         return arrow_y
-        
+
     def draw_arrow_and_add_location(self, dc, atype, x, cl, bric_id, which_id):
         arrow_y = self.draw_arrow(dc, atype, x, cl)
-        
+
         # add the location
         self.drop_locations.append((bric_id, atype, (x, arrow_y), which_id,
                                wx.Rect(x, cl-self.normal_h/2, self.normal_w+self.arrow_w, self.normal_h)))
-        return arrow_y    
+        return arrow_y
 
     def draw_bmap(self, dc, name, x, cl, bric_id):
         # **BED** scale bitmap if needed
         #print "Drawing:", name, "x:",x, "cl:", cl, "bric_id:", bric_id
-        
+
         if (name == "new_event"):
             bmap = bric_data.get_new_bmap(False)
         elif (name == 'If'):
@@ -584,7 +584,7 @@ class Program_work(work_win.Work_win):
                 bmap = bric_data.get_if_bmap(if_var, True)
             else:
                 bmap = bric_data.get_if_bmap(if_var, False)
-            
+
         else:
             if (win_data.selection_check('pwork', None, bric_id)):
                 bmap = bric_data.get_bric_bmap(name, bric_data.BRIC_SELECTED)
@@ -592,11 +592,11 @@ class Program_work(work_win.Work_win):
                 bmap = bric_data.get_bric_bmap(name, bric_data.BRIC_NORMAL)
 
         y = cl - bmap.GetHeight()/2
-            
+
         dc.DrawBitmap(bmap, x, y, True)
         x += bmap.GetWidth()
         return (x, bmap.GetSize())
-        
+
     def draw_bmap_and_add_location(self, dc, bric_name, x, cl, bric_id, which_id):
         new_x, bmap_size = self.draw_bmap(dc, bric_name, x, cl, bric_id)
 
@@ -604,7 +604,7 @@ class Program_work(work_win.Work_win):
         if ((bric_id > 1) and (not bric_name.startswith("End")) and (bric_name != "Last")):
             self.pickup_locations.append((bric_id, bric_name, which_id,
                                           wx.Rect(x, cl-bmap_size[1]/2, bmap_size[0], bmap_size[1])))
-        
+
 ##        # add the location but skip "Start Main" and "End" and event tokens with children
 ##        if ((bric_id > 1 and (bric_name != "End")) and
 ##            ((bric_name != "Event" or win_data.program().get_next_id(bric_id, 0) == -1))):
@@ -618,11 +618,11 @@ class Program_work(work_win.Work_win):
             dc.DrawLine(point1[0], point1[1], point2[0], point2[1])
 
     # --------------- Hit testing from pallete --------------------------------------
-    
+
     def update_move_centre_pt(self, screen_centre_pt, name, drag_image):
         centre_pt = self.ScreenToClient(screen_centre_pt)
         return self.local_move_centre_pt(centre_pt, name, drag_image)
-    
+
     def local_move_centre_pt(self, centre_pt, name, drag_image):
         location = -1
         arrow_type = 0
@@ -643,14 +643,14 @@ class Program_work(work_win.Work_win):
                         location = 0
                     else:
                         location = -1
-                        
+
                 # Events can only go in 1 spot
                 elif (name in ["Event", "Subroutine"]):
                     location = -1
-                    
+
                 else:
                     location = bric_id
-                    
+
                 arrow_type = atype
                 # Can't hit two rectangles at the same time
                 break
@@ -711,18 +711,18 @@ class Program_work(work_win.Work_win):
 
     def hit_test(self, centre_pt):
         """Is the point on a bric?"""
-        
+
         for bric_id, name, which_id, rect in self.pickup_locations:
             if (rect.InsideXY(centre_pt.x, centre_pt.y)):
                 return (bric_id, name, which_id)
-        
+
         return (-1, None, -1)
 
-    
+
     def on_left_down(self, event):
         # Make sure that we have the focus
         #self.SetFocus()
-        
+
         pt = self.CalcUnscrolledPosition(event.GetPosition())
 
         # BED zooming support
@@ -730,18 +730,18 @@ class Program_work(work_win.Work_win):
             pt.Set(pt.x/self.zoom, pt.y/self.zoom)
 
         #print "Left-down:", pt
-        
+
         self.drag_id, self.drag_name, self.drag_which = self.hit_test(pt)
         if (self.drag_id >= 0):
             self.drag_start_pos = pt
             # also set the selection and update the help window
             win_data.selection_take('pwork', self.drag_name, self.drag_id)
-            
+
 
     def on_left_up(self, event):
         loc = -1
         self.scroll_x, self.scroll_y = 0,0
-        
+
         if (self.drag_image):
             pt = event.GetPosition()
             loc,update,which_id = self.local_move_centre_pt(pt, self.drag_name, self.drag_image)
@@ -763,12 +763,12 @@ class Program_work(work_win.Work_win):
             else:
                 win_data.program().end_move(loc, which_id)
                 win_data.click_sound()
-                
+
         # force the work area to redraw
         self.SetCursor(wx.NullCursor)
         self.Refresh()
-            
-    
+
+
     def on_mouse_motion(self, event):
         if (self.drag_id < 0 or not event.Dragging() or not event.LeftIsDown()):
             return
@@ -780,14 +780,14 @@ class Program_work(work_win.Work_win):
         raw_pt = event.GetPosition()
         check_pt = self.CalcUnscrolledPosition(raw_pt)
 
-        
+
         if (not self.drag_image):
             # BED zooming support
             check_pt = wx.Point(check_pt.x/self.zoom, check_pt.y/self.zoom)
             #print "Move, raw:", raw_pt, "check:", check_pt
 
             tolerance = 4
-            
+
             dx = abs(check_pt.x - self.drag_start_pos.x)
             dy = abs(check_pt.y - self.drag_start_pos.y)
             if (dx <= tolerance and dy <= tolerance):
@@ -803,29 +803,28 @@ class Program_work(work_win.Work_win):
 
             # get the selected variant since we had to click to get here
             bmp = bric_data.get_bric_bmap(self.drag_name, bric_data.BRIC_SELECTED)
-            
+
             if (self.zoom != 1.0):
                 image = bmp.ConvertToImage()
                 w = image.GetWidth() * self.zoom
                 h = image.GetHeight() * self.zoom
                 image.Rescale(w, h)
                 bmp = image.ConvertToBitmap()
-            
+
             self.drag_image = wx.DragImage(bmp, wx.StockCursor(wx.CURSOR_HAND))
             dev_x,dev_y = bmp.GetSize()
             hotspot = (dev_x/2, dev_y/2)
-            
+
 
             self.drag_image.BeginDrag(hotspot, self, False, self.GetClientRect())
             loc, update,which_id = self.local_move_centre_pt(raw_pt, self.drag_name, self.drag_image)
             self.drag_image.Move(raw_pt)
             self.drag_image.Show()
-            
+
         else:
-            
+
             loc, update,which_id = self.local_move_centre_pt(raw_pt, self.drag_name, self.drag_image)
             self.drag_image.Move(raw_pt)
-            
+
             if (update):
                 self.drag_image.Show()
-                

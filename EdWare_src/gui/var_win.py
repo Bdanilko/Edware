@@ -8,7 +8,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, 2014 Microbric Pty Ltd.
+# Copyright 2006, 2014, 2015, 2016 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ class Var_list(wx.ListCtrl):
     def headers(self):
         for i in range(self.columns):
             self.InsertColumn(i, self.column_headers[i])
-            
+
         for i in range(self.columns):
             self.SetColumnWidth(i, -2)
 
@@ -56,7 +56,7 @@ class Var_list(wx.ListCtrl):
         self.min_widths = []
         for i in range(self.columns):
             self.min_widths.append(self.GetColumnWidth(i))
-            
+
     def resize_columns(self):
         items = self.GetItemCount()
         if (items==0):
@@ -69,12 +69,12 @@ class Var_list(wx.ListCtrl):
             self.SetColumnWidth(2, -1)
 
             #self.Refresh()
-            
+
             # check to make sure none are too narrow
             for i in range(3):
                 if (self.GetColumnWidth(i) < self.min_widths[i]):
                     self.SetColumnWidth(i, -2)
-                    
+
 
 
 class Var_win(wx.Panel):
@@ -83,7 +83,7 @@ class Var_win(wx.Panel):
         #self.SetBackgroundColour("red")
         self.list = Var_list(self)
         self.update_list()
-        
+
         box = wx.StaticBox(self, -1, 'Variables')
         sboxsizer = wx.StaticBoxSizer(box, wx.VERTICAL)
         sboxsizer.Add(self.list, 1, wx.EXPAND)
@@ -91,8 +91,8 @@ class Var_win(wx.Panel):
         self.SetSizer(sboxsizer)
 
         self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.on_activate)
-        
-       
+
+
     def update_list(self):
         self.list.DeleteAllItems()
 
@@ -108,7 +108,7 @@ class Var_win(wx.Panel):
                 self.list.SetStringItem(index, 1, data[0])
                 self.list.SetStringItem(index, 2, data[2])
                 #self.list.SetStringItem(index, 3, data[2])
-            
+
         # add a marker to allow for new variables
         index = self.list.InsertStringItem(sys.maxint, "<NEW>")
         self.list.SetStringItem(index, 1, "")
@@ -116,7 +116,7 @@ class Var_win(wx.Panel):
         item = self.list.GetItem(index)
         item.SetBackgroundColour("light blue")
         self.list.SetItem(item)
-                               
+
         self.list.resize_columns()
 
 
@@ -130,10 +130,10 @@ class Var_win(wx.Panel):
     def add_variable(self, index = None):
         # close a bric properties box so this change can be reflected in the box
         win_data.selection_drop_all()
-        
+
         key = None
         old_len = 0
-        
+
         if (index != None):
             title = "Edit variable"
             key = self.list.GetItemText(index)
@@ -173,14 +173,14 @@ class Var_win(wx.Panel):
                            else:
                                name2 += new_data[0][i]
                        new_data[0] = name2
-                               
+
                        # verify that the new name is not already used
                        if (win_data.vars_exists(new_data[0])):
                            error_message = "Variable name '"+new_data[0]+"' is already used."
 
                    else:
                        error_message = "Variable names must start with a character and are at most 16 characters long"
-                   
+
                if (new_data[1] not in VALID_RANGES):
                    # verify that range is valid
                    error_message = "Variable range must be one of: %s, %s" % \
@@ -190,7 +190,7 @@ class Var_win(wx.Panel):
                if (not self.check_length_and_initial(new_data[1], new_data[2], new_data[3])):
                    error_message = "Variable length (%s) or initial value (%s) is not in the valid range." %\
                                    (new_data[2], new_data[3])
-                   
+
                # and verify that there is size left
                if (win_data.vars_no_room_left(new_data[1], int(new_data[2]) - old_len)):
                    error_message = "Not enough room for %s more variable(s) of type %s." %\
@@ -205,7 +205,7 @@ class Var_win(wx.Panel):
                        #print "Key", key, data[1], new_data[1]
                        if (win_data.vars_used_in_program(key) and
                            (new_data[1] != data[1])):
-                           
+
                            error_message="Error - Can not change the range of a variable that is " +\
                                          "being used in the program."
                            wx.MessageBox(error_message, caption="Can't change the range.", style=wx.OK | wx.ICON_ERROR)
@@ -213,8 +213,8 @@ class Var_win(wx.Panel):
                        else:
                            win_data.vars_change(key, new_data[0], new_data[1], new_data[2], new_data[3])
                            self.update_list()
-                           
-    
+
+
                    else:
                        if (not win_data.vars_remove(key)):
                            error_message="Can not delete the variable as it is used in the program.\n" +\
@@ -222,7 +222,7 @@ class Var_win(wx.Panel):
                            wx.MessageBox(error_message, caption="Can't delete variable.", style=wx.OK | wx.ICON_ERROR)
                        else:
                            self.update_list()
-                                   
+
 
                else:
                    if (len(new_data[0]) > 0):
@@ -230,12 +230,12 @@ class Var_win(wx.Panel):
                        self.update_list()
 
                #self.Refresh()
-               
+
 
         else:
             dialog.Destroy()
 
-        
+
     def check_length_and_initial(self, range, len_str, initial):
         if (not len_str):
             return False
@@ -244,12 +244,12 @@ class Var_win(wx.Panel):
             return False
 
         length = int(len_str)
-        
+
         if (not initial):
             return True
 
         splits = win_data.vars_split_initial(initial)
-        
+
         if (len(splits) > length):
             return False
 
@@ -261,7 +261,7 @@ class Var_win(wx.Panel):
         for s in splits:
             if (not s):
                 continue
-            
+
             if ((s[0] in "+-" and s[1:].isdigit()) or
                 s.isdigit()):
 
@@ -275,10 +275,10 @@ class Var_win(wx.Panel):
 
             else:
                 return False
-            
+
         return True
 
-    
+
 
 class Var_dialog(wx.Dialog):
     def __init__(self, parent, title, data=("", "", "1", "")):
@@ -301,7 +301,7 @@ class Var_dialog(wx.Dialog):
         for i in range(3):
             grid.Add(labels[i], flag=wx.ALIGN_RIGHT | wx.ALIGN_CENTRE_VERTICAL)
             grid.Add(self.fields[i])
-        
+
         del_button = wx.Button(self, wx.ID_DELETE)
         if (data[0] == ""):
             del_button.Enable(False)
@@ -311,7 +311,7 @@ class Var_dialog(wx.Dialog):
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(grid, 1, flag=wx.ALL, border=10)
-        
+
         buttons = wx.BoxSizer(wx.HORIZONTAL)
         buttons.Add(del_button)
         buttons.AddStretchSpacer()
@@ -331,13 +331,12 @@ class Var_dialog(wx.Dialog):
 
     def clr_data(self):
         data = NEW_DATA
-        
+
         self.fields[0].SetValue(data[0])
         self.fields[1].SetValue(data[1])
         self.fields[2].SetValue(data[3])
-        
+
 
     def get_data(self):
         return [self.fields[0].GetValue(), self.fields[1].GetValue(),
                 "1", self.fields[2].GetValue()]
-

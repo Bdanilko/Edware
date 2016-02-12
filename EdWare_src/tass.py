@@ -8,7 +8,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, 2014 Microbric Pty Ltd.
+# Copyright 2006, 2014, 2015, 2016 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ def assemble(options, f_name):
     err.set_exit_on_error(True)
     if (not options.throw):
         err.set_throw_on_error(False)
-        
+
     err.set_context(1, "Reading tokens from master file: %s" % (f_name))
 
     # setup the token stream
@@ -55,10 +55,10 @@ def assemble(options, f_name):
 
     if (not file_read):
         sys.exit(1)
-        
+
     # analysis the token stream
     err.set_context(1, "Analysing tokens from master file: %s" % (f_name))
-    
+
     #token_stream.dump_tokens()
     #gui.logging_utils.dump_object(token_stream, "Token_stream")
 
@@ -68,7 +68,7 @@ def assemble(options, f_name):
     if (options.debug):
         gui.hl_parser.dump_devices()
         token_analysis.dump_variable_map()
-        
+
     token_analysis.fixup_jumps()
 
     if (options.debug):
@@ -77,7 +77,7 @@ def assemble(options, f_name):
 
     download_type, version, header = token_analysis.create_header()
     print download_type, version, header
-    
+
     #gui.logging_utils.dump_object(token_analysis, "Token_analyser")
 
     # get the token bytes
@@ -86,7 +86,7 @@ def assemble(options, f_name):
     for t in header:
         download_bytes.append(t)
         download_str += chr(t)
-    
+
     for t in token_stream.token_stream:
         bytes = t.get_token_bits()
         download_bytes.extend(bytes)
@@ -97,7 +97,7 @@ def assemble(options, f_name):
     print "Assembly completed of file: %s -- created %d bytes of tokens and header" % (f_name, len(download_str))
 
     err.set_context(1, "Writing assembled bytes.")
-    
+
     # now output to a file and/or a comms channel
     if (options.filename):
         #download_str = gui.downloader.TOKEN_DOWNLOAD_STR + \
@@ -116,15 +116,15 @@ def assemble(options, f_name):
 def main(args):
     usage = "usage: %prog [options] input_token_filename"
     version="%prog 1.1 (for token_spec 3.6)"
-    
+
     # clear global memory
     gui.hl_parser.reset_devices_and_locations()
     gui.token_assembler.reset_tokens()
-    
+
     parser = optparse.OptionParser(usage=usage, version=version)
     parser.add_option("-r", "--reghelp", action="store_true", dest="reghelp",
                       help="Output all of the device types, locations and registers")
-    
+
     parser.add_option("-f", "--file", dest="filename",
                       help="A file to store the output into")
     parser.add_option("-c", "--comms", dest="device",
@@ -135,7 +135,7 @@ def main(args):
                       help="Output source info with debug info.")
     parser.add_option("-t", "--throw", action="store_true", dest="throw",
                       help="Throw an exception (so lots of info) on a parsing error.")
-    
+
     parser.set_defaults(debug = False, source=False, throw = False, reghelp=False, strip=False)
     parser.set_defaults(filename=None, device=None)
 
@@ -155,7 +155,7 @@ def main(args):
         sys.exit(1)
 
     f_name = arguments[0]
-    
+
     # check files
     if (not os.path.isfile(f_name) or not os.access(f_name, os.R_OK)):
         print "ERROR - input file %s doesn't exist or isn't readable" % (f_name)
@@ -165,12 +165,12 @@ def main(args):
         if (not os.path.exists(options.device) or not os.access(options.device, os.R_OK|os.W_OK)):
             print "ERROR - device %s doesn't exist or isn't readable and writable." % (options.device)
             sys.exit(1)
-            
+
     if (options.filename):
         if (os.path.exists(options.filename) and not os.access(options.filename, os.W_OK)):
             print "ERROR - output file %s exists but isn't writable." % (options.filename)
             sys.exit(1)
-            
+
 
     # setup logging
     warnings.filterwarnings("ignore", "tempnam is a potential security risk to your program")
@@ -182,7 +182,7 @@ def main(args):
     else:
         console_level = logging.WARNING
         file_level = logging.INFO
-        
+
     log_fname = os.path.join(tmp_dir, "tass.log")
     gui.logging_utils.setup_root(fname = log_fname, console_level=console_level, file_level=file_level)
 
@@ -193,4 +193,3 @@ def main(args):
 #####################################
 if __name__ == "__main__":
     main(sys.argv[1:])
-    

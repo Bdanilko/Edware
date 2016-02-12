@@ -8,7 +8,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, 2014 Microbric Pty Ltd.
+# Copyright 2006, 2014, 2015, 2016 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@ class Token_stream(object):
     def __init__(self, err_reporter):
         self.clear()
         self.err = err_reporter
-        
+
     def clear(self):
         self.token_stream = []          # list of tokens in order
         self.sector_size = -1           # Whether to ack/nak and when
@@ -89,7 +89,7 @@ class Token_stream(object):
                 (self.current_sections[-1] not in ["main", "event"])):
                 self.err.report_error("DATA must be in a 'main' or 'event' section.")
                 return
-        
+
         elif (spec_type == "binary"):
             if ((len(self.current_sections) == 0) or
                 (self.current_sections[-1] not in ["firmware"])):
@@ -129,7 +129,7 @@ class Token_stream(object):
             (self.current_sections[-1] not in ["main", "event"])):
             self.err.report_error("Labels must be in a 'main' or 'event' section.")
             return
-        
+
         # Make the labels local to the section unless they start with '::'
         # (one ':' has been stripped off)
         if (name.startswith(':')):
@@ -142,7 +142,7 @@ class Token_stream(object):
             return
 
         self.labels[new_name] = self.stream_marker()
-        
+
     def stream_marker(self):
         return len(self.token_stream)
 
@@ -175,8 +175,8 @@ class Token_stream(object):
         """Absolute last token"""
         #self.err.report_error("IMPLEMENT THIS FUNCTION.")
 
-        
-        
+
+
     # reserve space in the variable name spaces
     # ARGS: space 0-2, start & length are numbers
     def reserve_name_space(self, space, start, length):
@@ -197,7 +197,7 @@ class Token_stream(object):
     def add_variable(self, space, name, start, length = 0):
         logging.debug("Add_variable space:%s, name:%s, start:%d, length:%d" %\
                       (space_names[space], name, start, length))
-        
+
         if (name == '*'):
             name = ""
 
@@ -208,7 +208,7 @@ class Token_stream(object):
         self.name_space[space].append(("data", name, start, length))
 
     # Add a device, location and optional name
-    # ARGS_CHECKED: type is 0 to 15, location is 0 to 11, size is a byte 
+    # ARGS_CHECKED: type is 0 to 15, location is 0 to 11, size is a byte
     def add_device(self, type, location, size):
         logging.debug("Add_device type:%d, loc:%d, size:%d" % (type, location, size))
 
@@ -226,7 +226,7 @@ class Token_stream(object):
             return
 
         self.version = (major, minor)
-        
+
 
     def add_begin(self, type, arg1=-1, arg2=-1, arg3=-1):
         """Start of a new section"""
@@ -237,7 +237,7 @@ class Token_stream(object):
             if (len(self.current_sections) > 0):
                 self.err.report_error("This section %s must be the first section" % (type))
                 return
-            
+
             if (self.download_type):
                 if (self.download_type[0] in ["main", "event"] and type in ["firmware"]):
                     self.err.report_error("Can't mix 'firmware' and 'main'/'event' sections")
@@ -252,13 +252,13 @@ class Token_stream(object):
                 self.download_type.append(type)
             else:
                 self.download_type = [type]
-                                         
+
         # add the section
         self.current_sections.append(type)
         self.section_breaks.append((type, self.stream_marker(), -1))
         self.section_args.append((arg1, arg2, arg3))
         self.section_count += 1
-        
+
     def add_end(self, type):
         logging.debug("Add_end type:%s" % (type))
 
@@ -288,7 +288,7 @@ class Token_stream(object):
             print "%3d: " % (i),
             t.print_token()
             i += 1
-             
+
 
 
 class Token_analyser(object):
@@ -307,7 +307,7 @@ class Token_analyser(object):
             self.map_variables_in_space(i, self.name_space_map[i])
 
         #self.dump_variable_map()
-        
+
         # They all fit, now fixup the tokens
         self.err.set_context(2, "Fixing up variable references")
         for t in self.token_stream.token_stream:
@@ -344,15 +344,15 @@ class Token_analyser(object):
             if (type == 'data' and start < 0):
                 # don't handle unfixed data here
                 continue
-            
+
             end = start + length
             copy_to_end = False
             v_free = fixed_v_free
             fixed_v_free = []
-            
+
             #print "v_free", v_free
             #print "v_map", v_map
-            
+
             for f_start, f_length, f_end in v_free:
                 if (copy_to_end):
                     fixed_v_free.append((f_start, f_length, f_end))
@@ -370,7 +370,7 @@ class Token_analyser(object):
                                     return {}
                             else:
                                 v_map[name] = (start, length)
-                                
+
                         if (start == f_start):
                             if (end == f_end):
                                 # just remove this entry from the free list
@@ -378,7 +378,7 @@ class Token_analyser(object):
                             else:
                                 # remove the front end of the free block
                                 fixed_v_free.append((end, f_length - length, f_end))
-                                
+
                         elif (end == f_end):
                             # remove the back end of the free block
                             fixed_v_free.append((f_start, f_length - length, start))
@@ -389,22 +389,22 @@ class Token_analyser(object):
 
                         # found the data, copy the rest to the end
                         copy_to_end = True
-                        
+
                     else:
                         if (type == "data"):
                             self.err.report_error("Fixed data variable %s at %d didn't fit!" % (name, start))
                         else:
                             self.err.report_error("No room for Reserved data space at %d" % (start))
                         return {}
-        
+
         # Now try to fit in the floating variables. Use a best-fit strategy where the smallest
         # hole is used for each request. Also the block sizes are tried largest to smallest
         floats = [(x[1], x[3]) for x in variables if x[0] == "data" if x[2] < 0]
         floats.sort(cmp=lambda x,y:cmp(x[1], y[1]), reverse=True)
         v_free = fixed_v_free
-        
+
         for name, length in floats:
-            
+
             # find the best fit!
             i = 0
             best_index = -1
@@ -415,7 +415,7 @@ class Token_analyser(object):
                         # perfect fit!
                         best_index = i
                         break
-                    
+
                     elif (best_index == -1):
                         best_index = i
                     else:
@@ -446,7 +446,7 @@ class Token_analyser(object):
 
             #print "v_free", v_free
             #print "v_map", v_map
-            
+
         return True
 
     def calc_cumulative_lengths(self, c_lengths):
@@ -458,16 +458,16 @@ class Token_analyser(object):
             cumulative_length += t.get_byte_len()
         c_lengths.append(cumulative_length)
         #print c_lengths
-        
+
     def fixup_jumps(self):
         # fixup the jumps
         self.err.set_context(2, "Fixing up jumps")
         #print self.token_stream.labels
-        
+
         # First get a cumulative byte length for each index
         c_lengths = []
         self.calc_cumulative_lengths(c_lengths)
-        
+
         # Verify that the labels exist
         for t in self.token_stream.token_stream:
             if (t.has_jump_label()):
@@ -475,7 +475,7 @@ class Token_analyser(object):
                 if (name not in self.token_stream.labels):
                     self.err.report_error("Reference to an unknown label:%s" % (name))
                     return
-                    
+
         # do multiple passes until all jumps can be satisfied (start with byte)
         while (1):
             c_lengths = []
@@ -525,14 +525,14 @@ class Token_analyser(object):
             return self.token_stream.devices[loc]
         else:
             return (0, 0)
-        
+
 
     def create_header(self):
         self.err.set_context(2, "Creating download header")
         if (not self.token_stream.version):
             self.err.report_error("Version wasn't set")
             return ("", None)
-        
+
         elif (self.token_stream.version[0] < 0 or self.token_stream.version[0] > 2):
             self.err.report_error("This assembler only handles major versions 0 to 2 (not %d)" % (self.version[0]))
             return ("", self.token_stream.version)
@@ -548,7 +548,7 @@ class Token_analyser(object):
             crc = calculate_crc(bytes)
             header_list[2], header_list[3] = word_to_bytes(crc)
             return ("firmware", self.token_stream.version, header_list)
-        
+
         else:
             bytes = []
             for t in self.token_stream.token_stream:
@@ -580,7 +580,7 @@ class Token_analyser(object):
             # need locations for event and program offsets
             c_lengths = []
             self.calc_cumulative_lengths(c_lengths)
-            
+
             # build the event list but first with offsets from start of code tokens
             for i in range(len(self.token_stream.section_breaks)):
                 stype, start_token, stop_token = self.token_stream.section_breaks[i]
@@ -594,12 +594,12 @@ class Token_analyser(object):
                 header_list[5] = len(header_list)
             else:
                 header_list[5] = 0
-                    
+
             final_header_bytes = len(header_list) + len(event_list) * 5
 
             # fixup main offset
             header_list[6], header_list[7] = word_to_bytes(main_offset+final_header_bytes)
-            
+
             # append the event list to the current header
             for (offset, modreg, mask, value) in event_list:
                 work = [0, 0, modreg, mask, value]
@@ -613,7 +613,7 @@ class Token_analyser(object):
             header_list[2], header_list[3] = word_to_bytes(crc)
 
             return ("program", self.token_stream.version, header_list)
-        
+
 
     def dump_extras(self):
         print "Section breaks:", self.token_stream.section_breaks
@@ -630,7 +630,7 @@ class Token(object):
         self.type = type
         self.cached_bits = []
         self.binary_file = None
-        
+
         if (src and src.endswith('\n')):
             self.source_line = src[:-1]
         else:
@@ -644,7 +644,7 @@ class Token(object):
 
     def get_type(self):
         return self.type
-    
+
     def add_byte(self, index, value):
         if (value < MIN_BYTE or value > MAX_BYTE):
             self.err.report_error("Out of range for a byte: %d" % (value))
@@ -675,7 +675,7 @@ class Token(object):
             else:
                 del self.token_info[self.find_index(index)]
                 self.token_info.append((index, 0, 0xff, value))
-            
+
         else:
             if (value < 0 or value > MAX_UWORD):
                 self.mark_invalid()
@@ -685,9 +685,9 @@ class Token(object):
                 del self.token_info[self.find_index(index+1)]
                 self.token_info.append((index, 0, 0xff, (value >> 8) & 255))
                 self.token_info.append((index+1, 0, 0xff, value & 255))
-            
+
         self.invalidate_cache()
-        
+
     def fixup_var_byte(self, index, value):
         i = self.find_index(index)
         new_number = self.token_info[i][3] + value
@@ -695,10 +695,10 @@ class Token(object):
             self.err.report_error("Out of range for a byte: %d" % (new_number))
             self.mark_invalid()
             return
-        
+
         self.token_info[i] = (index, 0, 0xff, new_number)
         self.invalidate_cache()
-        
+
     def fixup_jump(self, big, offset):
         j_index, j_name, j_big = self.jump_label
         if (big != j_big):
@@ -728,7 +728,7 @@ class Token(object):
             self.token_info.append((j_index, 0, 0xff, offset))
 
         self.invalidate_cache()
-        
+
     def add_word(self, index, value):
         if (value < MIN_WORD or value > MAX_WORD):
             self.mark_invalid()
@@ -736,7 +736,7 @@ class Token(object):
         else:
             self.token_info.append((index, 0, 0xff, (value >> 8) & 255))
             self.token_info.append((index+1, 0, 0xff, value & 255))
-            
+
         self.invalidate_cache()
 
     def add_uword(self, index, value):
@@ -746,9 +746,9 @@ class Token(object):
         else:
             self.token_info.append((index, 0, 0xff, (value >> 8) & 255))
             self.token_info.append((index+1, 0, 0xff, value & 255))
-            
+
         self.invalidate_cache()
-            
+
     def add_bits(self, index, shift, mask, value):
         self.token_info.append((index, shift, mask, value))
         self.invalidate_cache()
@@ -775,7 +775,7 @@ class Token(object):
 
     def clear_jump_label(self):
         self.jump_label = None
-    
+
     def finish(self, token_stream, explicit_placement = -1):
         # add the token to the token stream for post-processing
         if (self.valid):
@@ -786,7 +786,7 @@ class Token(object):
     def get_byte_len(self):
         if (len(self.cached_bits) == 0):
             self.get_token_bits()
-            
+
         return len(self.cached_bits)
 
 
@@ -797,7 +797,7 @@ class Token(object):
                 tmp_ascii = fh.read()
                 for t in tmp_ascii:
                     self.cached_bits.append(ord(t))
-                
+
                 fh.close()
             else:
                 length = 1
@@ -811,20 +811,20 @@ class Token(object):
                     work = work & ~(mask << shift)
                     work = work | ((value & mask) << shift)
                     self.cached_bits[index] = work
-                
+
         return self.cached_bits
 
     def add_binary_file(self, f_name):
         # save the file_name and bring it out when we get length or bits
         self.binary_file = f_name
-        
+
     def print_token(self):
         length = self.get_byte_len()
         bits = self.get_token_bits()
 
         if (self.binary_file):
             print "Inserted %d binary bytes from %s:\n   [" % (length, self.binary_file),
-        
+
         for i in range(length):
             print "%02x " % (bits[i]),
             if (((i+1) % 20) == 0):
@@ -832,7 +832,7 @@ class Token(object):
 
         if (self.binary_file):
             print "]"
-            
+
         elif (self.var_info):
             print "(var_refs:",
             info = ""
@@ -841,11 +841,9 @@ class Token(object):
                     info += ", "
                 info += "%s/%d/%s" % (n, i, space_names[s])
             print "%s)" % (info)
-            
+
         elif (self.jump_label):
             print "(jump_ref to %s, i:%d, big? %d)" % (self.jump_label[1], self.jump_label[0], self.jump_label[2])
 
         else:
             print
-
-

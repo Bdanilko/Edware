@@ -8,7 +8,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, 2014 Microbric Pty Ltd.
+# Copyright 2006, 2014, 2015, 2016 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,13 +34,13 @@ class Help_win(wx.Panel):
 
         #self.SetVirtualSize((120, 100))
         #self.SetScrollRate(20, 20)
-        
+
         box = wx.StaticBox(self, -1, 'Help')
         sboxsizer = wx.StaticBoxSizer(box, wx.VERTICAL)
         sboxsizer.Add(self.help_text, 1, wx.EXPAND)
 
         self.SetSizer(sboxsizer)
-    
+
     def set_text(self, help_text):
         #print "Set help text:", help_text
         new_help = help_text

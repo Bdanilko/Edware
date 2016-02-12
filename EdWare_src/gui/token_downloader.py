@@ -7,7 +7,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, 2014 Microbric Pty Ltd.
+# Copyright 2006, 2014, 2015, 2016 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -71,7 +71,7 @@ TIMEOUT = -1
 #     else:
 #         wakeup += FIRMWARE_STR
 #     wakeup += chr(((version[0] & 0x0f) << 4) | (version[1] & 0x0f))
-    
+
 #     return wakeup
 
 # def use_serial(dtype, version, bytes, device, err, notify_func=None):
@@ -89,11 +89,11 @@ TIMEOUT = -1
 #         ser = serial.Serial(port=device, baudrate=SERIAL_BAUD, bytesize=SERIAL_BITS,
 #                             parity=SERIAL_PARITY, stopbits=SERIAL_STOP,
 #                             timeout=SERIAL_READ_TIMEOUT, writeTimeout=1)
-        
+
 #     except serial.serialutil.SerialException, e:
 #         err.report_error("ERROR opening device %s : %s" % (device, str(e)))
 #         return False
-    
+
 #     ser.flushOutput()
 #     ser.flushInput()
 
@@ -107,14 +107,14 @@ TIMEOUT = -1
 #     # give time for the hybrid to wakeup and initialise it's hardware
 #     time.sleep(2)
 
-#     # 
+#     #
 #     wakeup = serial_wakeup_bytes(dtype, version)
 #     try:
 #         ser.write(wakeup)
 #     except serial.serialutil.SerialException, e:
 #         err.report_error("ERROR writing to device %s : %s" % (device, str(e)))
 #         return False
-        
+
 #     which = get_ack_nack(ser)
 #     if (which != ACK):
 #         if (which == NACK):
@@ -132,7 +132,7 @@ TIMEOUT = -1
 #         except serial.serialutil.SerialException, e:
 #             err.report_error("ERROR writing to device %s : %s" % (device, str(e)))
 #             return False
-        
+
 #         if (block_size):
 #             block_count += 1
 #             if (block_count == block_size):
@@ -149,7 +149,7 @@ TIMEOUT = -1
 #                     elif (which == -1):
 #                         err.report_error("Timed-out waiting on robot at byte %d of %d." % \
 #                                          (index+1, len(bytes)))
-                        
+
 #                     else:
 #                         err.report_error("Bad response (%s) from robot at byte %d of %d." % (which, index+1, len(bytes)))
 #                     return False
@@ -157,29 +157,29 @@ TIMEOUT = -1
 #                 first_block = False
 
 #         index += 1
-        
+
 #         if (notify_func):
 #             notify_func(index)
-            
+
 #     # is a final ack needed?
 #     if (block_size and block_count):
 #         which = get_ack_nack(ser)
 #         if (which != ACK):
 #             if (which == NACK):
 #                 err.report_error("NACK received from robot at end of transfer (Bad CRC?)")
-                
+
 #             elif (which == -1):
 #                 err.report_error("Timed-out waiting on robot at end of transfer.")
 #             else:
 #                 err.report_error("Bad response (%x) from robot at end of transfer." % (which))
 #             return False
-    
+
 
 #     # close port even though it will close when it goes out of scope
 #     ser.close()
 
 #     return True
-    
+
 
 def use_flashing():
     pass
@@ -200,11 +200,11 @@ def gui_serial(dtype, version, bytes, device, msg_ctrl, gauge_ctrl):
     #     ser = serial.Serial(port=device, baudrate=SERIAL_BAUD, bytesize=SERIAL_BITS,
     #                         parity=SERIAL_PARITY, stopbits=SERIAL_STOP,
     #                         timeout=SERIAL_READ_TIMEOUT, writeTimeout=1)
-        
+
     # except serial.serialutil.SerialException, e:
     #     msg_ctrl.SetLabel("ERROR opening device %s : %s" % (device, str(e)))
     #     return False
-    
+
     # ser.flushOutput()
     # ser.flushInput()
 
@@ -225,7 +225,7 @@ def gui_serial(dtype, version, bytes, device, msg_ctrl, gauge_ctrl):
     # except serial.serialutil.SerialException, e:
     #     msg_ctrl.SetLabel("ERROR writing to device %s : %s" % (device, str(e)))
     #     return False
-        
+
     # which = get_ack_nack(ser)
     # if (which != ACK):
     #     if (which == NACK):
@@ -235,7 +235,7 @@ def gui_serial(dtype, version, bytes, device, msg_ctrl, gauge_ctrl):
     #     else:
     #         msg_ctrl.SetLabel("Bad response (%s) from robot after wakeup." % (which))
     #     return False
-    
+
     # first_block = True
     # while (index < len(bytes)):
     #     try:
@@ -243,7 +243,7 @@ def gui_serial(dtype, version, bytes, device, msg_ctrl, gauge_ctrl):
     #     except serial.serialutil.SerialException, e:
     #         msg_ctrl.SetLabel("ERROR writing to device %s : %s" % (device, str(e)))
     #         return False
-        
+
     #     if (block_size):
     #         block_count += 1
     #         if (block_count == block_size):
@@ -261,32 +261,32 @@ def gui_serial(dtype, version, bytes, device, msg_ctrl, gauge_ctrl):
     #                 elif (which == -1):
     #                     msg_ctrl.SetLabel("Timed-out waiting on robot at byte %d of %d." % \
     #                                      (index+1, len(bytes)))
-                        
+
     #                 else:
     #                     msg_ctrl.SetLabel("Bad response (%s) from robot at byte %d of %d." % (which, index+1, len(bytes)))
     #                 return False
-                
+
     #             block_count = 0
     #             first_block = False
 
     #     index += 1
-        
+
     #     gauge_ctrl.SetValue(index)
     #     gauge_ctrl.Update()
-        
+
     # # is a final ack needed?
     # if (block_size and block_count):
     #     which = get_ack_nack(ser)
     #     if (which != ACK):
     #         if (which == NACK):
     #             msg_ctrl.SetLabel("NACK received from robot at end of transfer (Bad CRC?)")
-                
+
     #         elif (which == -1):
     #             msg_ctrl.SetLabel("Timed-out waiting on robot at end of transfer.")
     #         else:
     #             msg_ctrl.SetLabel("Bad response (%x) from robot at end of transfer." % (which))
     #         return False
-    
+
 
     # # close port even though it will close when it goes out of scope
     # ser.close()
@@ -300,7 +300,7 @@ class Stub_err_reporter(object):
 
     def set_context(self, line, context):
         self.contexts[line] = context
-        
+
         # clear lower contexts
         for k in self.contexts:
             if (k > line):
@@ -314,16 +314,16 @@ class Stub_err_reporter(object):
             print "  Context:%d - %s" % (c, self.contexts[c])
         print
 
-    
+
 if __name__ == "__main__":
     print "Testing token_downloader module"
     err = Stub_err_reporter()
-    
+
     bytes = []
     for i in range(4):
         for j in range(256):
             bytes.append(j)
-            
+
     device = '/dev/ttyUSB0'
 
     send_bytes("program", (0, 0), bytes, device, err)

@@ -9,7 +9,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, 2014 Microbric Pty Ltd.
+# Copyright 2006, 2014, 2015, 2016 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -65,11 +65,11 @@ registers = {
                 'beeper' : {'status':(0,1), 'action' : (1,1), 'freq' : (2,2),
                             'duration' : (4,2), 'tune' : (6,1)},
                 'irtx' : {'action':(0,1), 'char':(1,1)},
-                
+
                 'irrx' : {'status' : (0,1), 'action':(1,1), 'check':(2,1), 'match':(3,1), 'char':(4,1)},
                 'motor-a' : {'status' :(0,1), 'control':(1,1), 'distance':(2,2)},
                 'motor-b' : {'status' :(0,1), 'control':(1,1), 'distance':(2,2)},
-                
+
                 'bumper' : {'status' : (0, 1)},
                 'led' : {'status' : (0,1), 'output':(1,1), 'lightlevel':(2,2)},
 
@@ -78,13 +78,13 @@ registers = {
                            '8b1window':(3,1), '8b2cursor':(4,1), '8b2step':(5,1),
                            '16b1cursor':(6,1), '16b1step':(7,1),
                            '16b1window':(8,2), '16b2cursor':(10,1), '16b2step':(11,1)},
-                
+
                 'devices' : {'status' : (0,1), 'action':(1,1), 'lcdaction':(2,1),
                              'serset1' : (3,1), 'serset2' : (4,1), 'serrx':(5,1),
                              'sertx':(6,1), 'lcdbyte':(7,1), 'lcdrp':(8,1),
                              'lcdcp':(9,1), 'lcdword':(10,2), 'random':(12,1),
                              'button':(13,1)},
-                
+
                 'timers' : {'status' : (0,1), 'action':(1,1), 'pause':(2,2),
                             'oneshot':(4,2), 'system':(6,4)},
                 'cpu' : {'acc':(0,2), 'flags':(2,1), 'counter':(3,1),
@@ -141,11 +141,11 @@ def dump_reg_help():
                 count = 0
             desc = "%s:(%s/%d)" % (name, string.hexdigits[offset], size),
             print "%-16s" % (desc),
-            
+
         print
         print
-        
-                
+
+
 err = None
 
 def set_err_reporter(err_):
@@ -155,7 +155,7 @@ def set_err_reporter(err_):
 def add_device(loc, dtype, name=None):
     global devices
     global locations
-    
+
     if (dtype not in device_types):
         err.report_error("Unknown device type: "+dtype)
         return False
@@ -172,14 +172,14 @@ def add_device(loc, dtype, name=None):
 
     if (name):
         name = name.lower()
-        
+
     if (name in special_names):
         err.report_error("DEVICE name can not be one of the built-in names "+str(special_names))
         return False
     elif (name in devices):
         err.report_error("DEVICE name already used: "+name)
         return False
-    
+
     # check the special ones - tracker and motors
     if (dtype == 'tracker' and loc != 0):
         err.report_error("A tracker device can only be located at 0, not location %d" % (loc))
@@ -225,7 +225,7 @@ def dump_devices():
                     print ", name:%s" % (d),
                     break
             print
-    
+
 
 class word(object):
     def __init__(self, type, value):
@@ -234,7 +234,7 @@ class word(object):
 
     def type(self):
         return self.type_
-    
+
     def val(self):
         return self.value_
 
@@ -245,7 +245,7 @@ class word(object):
         if (self.type_ not in ["arg", "const"]):
             err.report_error("Expected an argument or constant!")
             return 0
-        
+
         if (self.type_ == "const"):
             return self.value_
         else:
@@ -271,7 +271,7 @@ class word(object):
             return self.value_
         else:
             return parse_mod_reg(self.value_)
-                  
+
     def __str__(self):
         return "{Word: %s,%s}" % (self.type_, self.value_)
 
@@ -341,7 +341,7 @@ def parse_mod_reg(smodreg):
             else:
                 err.report_error("Didn't understand the register name/number: " + part[1])
                 return ""
-                
+
         else:
             err.report_error("Error - can't parse %s as a modreg" % (smodreg))
             return
@@ -356,18 +356,18 @@ def prechop_line(line):
     in_escape = False
     components = []
     comp = ""
-    
+
     for c in line:
         if (c == '\n'):
             break
-        
+
         if (in_escape):
             comp += c
             in_escape = False
-            
+
         elif (in_string and c == '\\'):
             in_escape = True
-        
+
         elif (c == '#' and not in_string):
             # comment from here to end of line - bail out now
             break
@@ -387,17 +387,17 @@ def prechop_line(line):
 
         else:
             comp += c
-        
+
     if (comp):
         components.append(comp)
 
     return components
 
-        
-    
+
+
 def chop_line(line):
     """Filter out comments then create words from the line"""
-            
+
 ##    segs_spaces = line.split()
 ##    segs = []
 ##    for ss in segs_spaces:
@@ -405,7 +405,7 @@ def chop_line(line):
 
     segs = prechop_line(line)
     #print segs
-    
+
     words = []
     for s in segs:
         # skip empty segs
@@ -431,7 +431,7 @@ def chop_line(line):
                 continue
             else:
                 words.append(word("string", s[1:-1]))
-                
+
         elif (s.startswith("$")):
             # should be a constant
             if (len(s) == 4 and s[1] == "'" and s[3] == "'"):
@@ -452,12 +452,10 @@ def chop_line(line):
         elif (s.startswith("@")):
             # a variable name - add another element to the word
             words.append(word("var", s[1:]))
-            
+
         else:
             words.append(word("arg", s))
-            
+
 
     #print words
     return words
-    
-

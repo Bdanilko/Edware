@@ -8,7 +8,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, 2014 Microbric Pty Ltd.
+# Copyright 2006, 2014, 2015, 2016 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -38,15 +38,14 @@ class Work_win(wx.ScrolledWindow):
 
     def on_enter(self, event):
         self.SetFocus()
-        
+
 ##    def on_enter(self, event):
 ##        #print "Enter window", event.GetPosition()
 ##        self.exit = False
 ##        event.Skip()
-        
+
 ##    def on_exit(self, event):
 ##        #print "Exit window", event.GetPosition(), event.GetId(), event.GetTimestamp()
 ##        if (event.LeftIsDown()):
 ##            self.exit = True
 ##        event.Skip()
-

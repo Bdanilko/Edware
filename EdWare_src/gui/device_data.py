@@ -6,7 +6,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, 2014 Microbric Pty Ltd.
+# Copyright 2006, 2014, 2015, 2016 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ class Data(object):
         self.mb_bmap = None
         self.mb_overlay = None
         self.overlays = []
-        
+
         self.groups = []
         self.devices = []
         self.device_dict = {}
@@ -58,7 +58,7 @@ def load_devices(big = True):
     else:
         base = DEVICES_SMALL
     base = DEVICES
-        
+
     cp = ConfigParser.RawConfigParser()
     cp.read(DEVICE_CONTROL)
 
@@ -73,26 +73,26 @@ def load_devices(big = True):
     #data.mb_overlay = wx.Bitmap(os.path.join(base, cp.get('motherboard', 'overlay')), wx.BITMAP_TYPE_ANY)
     data.mb_overlay = ""
     data.overlays = []
-    
+
     for i in range(12):
         name = "overlay%d" % (i,)
         #overlay = wx.Bitmap(os.path.join(base, cp.get('motherboard', name)), wx.BITMAP_TYPE_ANY)
         overlay = ""
         data.overlays.append(overlay)
-        
+
     group = 1
     while True:
         g_name = 'group%d' % (group)
         if (cp.has_section(g_name)):
             expname = cp.get(g_name, 'expbmap')
             colname = cp.get(g_name, 'colbmap')
-            
+
             # g_tuple = (cp.get(g_name, 'name'),
             #            wx.Bitmap(os.path.join(base, expname), wx.BITMAP_TYPE_ANY),
             #            wx.Bitmap(os.path.join(base, colname), wx.BITMAP_TYPE_ANY),)
             g_tuple = (cp.get(g_name, 'name'), "", "",)
             data.groups.append(g_tuple)
-            
+
         else:
             break
         group += 1
@@ -104,7 +104,7 @@ def load_devices(big = True):
             helpfile = None
             if (cp.has_option(d_name, 'helpfile')):
                 helpfile = os.path.join(DEVICES, cp.get(d_name, 'helpfile'))
-            
+
             d_tuple = (cp.get(d_name, 'name'), cp.get(d_name, 'group'))
             data.devices.append(d_tuple)
 
@@ -113,7 +113,7 @@ def load_devices(big = True):
 
             if (not sbmp_name):
                 sbmp_name = "sel_"+bmp_name
-                
+
             # bmp = wx.Bitmap(os.path.join(base, bmp_name), wx.BITMAP_TYPE_ANY)
             # sbmp = wx.Bitmap(os.path.join(base, sbmp_name), wx.BITMAP_TYPE_ANY)
             bmp = ""
@@ -127,7 +127,7 @@ def load_devices(big = True):
                 fsnname = "fsn_"+bmp_name
             if (not fssname):
                 fssname = "fss_"+bmp_name
-                
+
             # f_tuple = (wx.Image(os.path.join(base, fsnname), wx.BITMAP_TYPE_ANY),
             #            wx.Image(os.path.join(base, fssname), wx.BITMAP_TYPE_ANY),)
             f_tuple = ("", "")
@@ -146,7 +146,7 @@ def load_devices(big = True):
                 f_tuple = ("", "", "", "", "", "")
 
             data.fullsize_dict[cp.get(d_name, 'name')] = f_tuple
-            
+
         else:
             break
         device += 1
@@ -193,9 +193,8 @@ if (__name__ == '__main__'):
 ##    DEVICE_CONTROL = DEVICES + "/control.ini"
 ##    DEVICES_BIG = DEVICES + "/big"
 ##    DEVICES_SMALL = DEVICES + "/small"
-    
+
     load_devices()
     print data.groups
     print data.devices
     print data.device_dict
-    

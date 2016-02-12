@@ -8,7 +8,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, 2014 Microbric Pty Ltd.
+# Copyright 2006, 2014, 2015, 2016 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ class Program_pallete(pallete_win.Pallete_win):
                 bmap = bric_data.get_bric_bmap(name)
                 sel_bmap = bric_data.get_bric_bmap(name, bric_data.BRIC_SELECTED)
                 dis_bmap = bric_data.get_bric_bmap(name, bric_data.BRIC_DISABLED)
-                
+
                 self.add_item_bmap(group, name, bmap, sel_bmap, dis_bmap)
 
 
@@ -65,7 +65,6 @@ class Program_pallete(pallete_win.Pallete_win):
             # set the selection
             win_data.selection_take('pwork', bric_name, new_id)
 
-                
+
         # force the work area to redraw
         win_data.force_redraw('pwork')
-

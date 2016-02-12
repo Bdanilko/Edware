@@ -8,7 +8,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, 2014 Microbric Pty Ltd.
+# Copyright 2006, 2014, 2015, 2016 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -74,7 +74,7 @@ class Program(object):
 
     def get_bric_count(self):
         return self.bric_count
-    
+
     def get_stream_id(self, which):
         if ((which < self.get_stream_count()) and
             (self.streams[which] not in self.move_id)):
@@ -90,7 +90,7 @@ class Program(object):
 
     def get_bric_data(self, id):
         return self.brics[id].bric_data
-    
+
     def get_next_id(self, cur_id, which=0):
         # skip a bric being moved
 
@@ -118,22 +118,22 @@ class Program(object):
         else:
             print "WARNING - old bric id:",id
             print self.brics
-        
+
     def add_new_bric(self, prev_id, which_id, bric_name):
         #print "add_new_bric() prev_id:",prev_id, "which_id:",which_id,"bric_name:",bric_name
         if (bric_name in ['Loop', 'If']):
             self.bric_count += 2
             ids = self.new_ids(2)
-            
+
             start_bric = Bric(ids[0], bric_name)
             if (bric_name == "Loop"):
                 end_bric = Bric(ids[1], "EndLoop")
             else:
                 end_bric = Bric(ids[1], "EndIf")
-            
+
             self.brics[ids[0]] = start_bric
             self.brics[ids[1]] = end_bric
-            
+
             start_bric.next_id[0] = ids[1]
             start_bric.next_id[1] = ids[1]
             end_bric.prev_id[0] = ids[0]
@@ -149,7 +149,7 @@ class Program(object):
             new_id = self.new_id()
             new_bric = Bric(new_id, bric_name)
             self.brics[new_id] = new_bric
-            
+
             self.insert_bric(new_id, prev_id, which_id)
 
             return new_id
@@ -163,17 +163,17 @@ class Program(object):
 
         new_bric = self.brics[new_id]
         new_bric.prev_id[0] = prev_id
-        
+
         # Handle starting a new stream
         if (prev_id <= 0):
             self.streams.append(new_id)
             new_bric.next_id[0] = -1
-            
+
         else:
             if (new_bric.bric_name in ['If', 'Loop']):
                 # Special processing for if and loop
                 end_id = new_id + 1
-                
+
                 if (self.brics[prev_id].bric_name == "If"):
                     # previous bric is an if bric
                     next_id = self.brics[prev_id].next_id[which_id]
@@ -181,18 +181,18 @@ class Program(object):
                 else:
                     next_id = self.brics[prev_id].next_id[0]
                     self.brics[prev_id].next_id[0] = new_id
-                        
+
                 if (next_id >= 0):
                     if (self.brics[next_id].bric_name.startswith("End")):
                         # next bric is an end
                         self.brics[next_id].prev_id[which_id] = end_id
                     else:
                         self.brics[next_id].prev_id[0] = end_id
-                        
+
                 self.brics[end_id].next_id[0] = next_id
-                        
+
             else:
-                
+
                 if (self.brics[prev_id].bric_name == "If"):
                     # previous bric is an if bric
                     next_id = self.brics[prev_id].next_id[which_id]
@@ -200,24 +200,24 @@ class Program(object):
                 else:
                     next_id = self.brics[prev_id].next_id[0]
                     self.brics[prev_id].next_id[0] = new_id
-                        
+
                 if (next_id >= 0):
                     if (self.brics[next_id].bric_name.startswith("End")):
                         # next bric is an end
                         self.brics[next_id].prev_id[which_id] = new_id
                     else:
                         self.brics[next_id].prev_id[0] = new_id
-                        
+
                 new_bric.next_id[0] = next_id
 
         #print "Inserted bric", new_id
         #self.dump()
-            
+
     def new_id(self):
         self.start_id += 1
-        
+
         return self.start_id
-    
+
     def new_ids(self, count):
         result = []
         for i in range(count):
@@ -242,19 +242,19 @@ class Program(object):
                     break
             win_data.update_dirty(True)
             win_data.initialise_unused_events()
-            
+
             # refresh the programming pallete
             win_data.force_redraw("ppallete")
 
             del self.brics[id]
             self.bric_count -= 1
             return True
-            
+
         if (self.brics[id].bric_name in ('If', 'Loop')):
             # removing an EMPTY If or Loop
             # have to jump the end bit
             next_id = self.brics[next_id].next_id[0]
-            
+
         if (prev_id >= 0):
             if (self.brics[prev_id].bric_name == 'If'):
                 # previous bric is an if bric
@@ -277,11 +277,11 @@ class Program(object):
             else:
                 del self.brics[id]
                 self.bric_count -= 1
-            
+
         win_data.update_dirty(True)
         return True
-                    
-        
+
+
     def check_drag(self, bric_id, bric_name):
         """Check to see if this bric can be moved or deleted"""
         if (bric_name in ('Loop', 'If')):
@@ -293,31 +293,31 @@ class Program(object):
                 return False
 
         if (bric_name == 'Event' and self.brics[bric_id].next_id[0] != -1):
-            # Can't delete or drag an 'Event' which has brics 
+            # Can't delete or drag an 'Event' which has brics
             return False
-            
+
 ##        if (self.brics[bric_id].prev_id[0] == -1 and self.brics[id].next_id[0] != -1):
-##            # Can't delete or drag an 'Event' which has brics 
+##            # Can't delete or drag an 'Event' which has brics
 ##            return False
-        
+
         return True
 
     def is_last_bric(self, id):
         return self.brics[id].next_id == -1
-        
+
     def start_move(self, id, which_id):
         if (self.brics[id].bric_name in ["If", "Loop"]):
             self.move_id = [id, id+1]
         else:
             self.move_id = [id]
         self.move_which_id = which_id
-            
+
 
     def end_move(self, prev_id, new_which_id):
         """If prev_id == -1, then want to delete it.
         Returns True if all ok, False if want to delete but can't.
         If False, it puts it back in the pre-move spot,
-        if True then it adds it into the 
+        if True then it adds it into the
         pass"""
 
         bric_id = self.move_id[0]
@@ -325,7 +325,7 @@ class Program(object):
         old_data = bric.bric_data
         name = bric.bric_name
         old_which_id = self.move_which_id
-            
+
         if (prev_id == -1):
             if (self.remove_bric(self.move_id[0], old_which_id)):
                 win_data.remove_bric_refs(name, old_data)
@@ -343,7 +343,7 @@ class Program(object):
         win_data.update_dirty(True)
         #print "Moved bric", bric_id, "Prev:", prev_id
         #self.dump()
-        
+
         return True
 
     def abort_move(self):
@@ -366,7 +366,7 @@ class Program(object):
         bfs_results = []
         self.bfs(tree_data, 0, bfs_results)
         #print "BFS", bfs_results
-        
+
 
         # compute adjustments so that ifs don't go over each other
         #self.compute_adjustments(tree_data)
@@ -375,7 +375,7 @@ class Program(object):
 
         # Find the parents of a node and all of the paths from a node with max up and max down counts
         self.compute3(tree_data, results, parents_dict)
-        
+
         #print "Check", tree_data, results, parents_dict
         #print "parents_dict", parents_dict
 
@@ -392,7 +392,7 @@ class Program(object):
                 o_results[bric][1].append(ssf)
 
         #print "O_results:", o_results
-                    
+
         # put max overlap values into o_results - values of 0 can overlap, any
         # higher definitely overlaps
 
@@ -403,23 +403,23 @@ class Program(object):
             max_dn = max(o_results[bric][1])
             min_dn = min(o_results[bric][1])
             max_results[bric] = (max_up, min_up, max_dn, min_dn)
-            
-        
+
+
         # do adjustments
         #print "Results", results
         #print "max_results", max_results
 
         adjustments, min_min_y = self.try_adj(max_results, parents_dict, bfs_results)
-        
+
         #adjustments = self.do_adjustments(o_results, parents_dict)
 
         #print parents_dict
         #print o_results
         #print adjustments
-        
+
         return tree_data, adjustments, min_min_y
 
-                
+
     def get_subtree(self, dir, id, end_id):
         #print "get_subtree(): dir:", dir, "id:", id, "end_id:", end_id
         sub_tree = [dir]
@@ -430,10 +430,10 @@ class Program(object):
             if (id in self.move_id):
                 id = self.brics[id].next_id[0]
                 continue
-            
+
             sub_tree.append(id)
             #print "Sub_tree:", sub_tree, "id:", id, "end_id:", end_id
-            
+
             if (self.brics[id].bric_name == "If"):
                 sub_tree.append(-2)
                 # end bric is always one past if bric
@@ -471,7 +471,7 @@ class Program(object):
                 parents.append((new_bric_id))
                 top_parents = parents[:]
                 bot_parents = parents[:]
-                
+
                 self.walk(branch[i+1], sum_so_far, bric_id, side, results, top_parents, parents_dict)
                 self.walk(branch[i+2], sum_so_far, bric_id, side, results, bot_parents, parents_dict)
                 i += 3
@@ -488,7 +488,7 @@ class Program(object):
 
     def compute3(self, branch, results, parents_dict):
         start = branch[0]
-        
+
         i = 1
         while (i < len(branch)):
             if (branch[i] == -2):
@@ -512,7 +512,7 @@ class Program(object):
             if (branch[i] == -2):
                 if (len(results) <= level):
                     results.append([])
-                    
+
                 results[level].append(branch[i-1])
 
                 self.bfs(branch[i+1], level+1, results)
@@ -520,7 +520,7 @@ class Program(object):
                 i += 3
             else:
                 i += 1
-                
+
 
     def try_adj(self, maxs, parents, bfs):
         """maxs - dict[bric] with (max_up, min_up, max_dn, min_dn)
@@ -529,7 +529,7 @@ class Program(object):
            """
 
         #print "try_adj:", maxs, parents, bfs
-        
+
         adjust_up = {}
         adjust_dn = {}
         for level in bfs:
@@ -538,7 +538,7 @@ class Program(object):
                 adjust_dn[l] = 0
 
 
-        
+
         # work from the most distant nodes back
         level_index = len(bfs)
         while (level_index > 0):
@@ -561,7 +561,7 @@ class Program(object):
                         # move them both (move bottom one more to clear top)
                         adj_dn = -1*min_dn+1
                         adj_up = -1*max_up
-                        
+
                     elif (min_dn <= 0):
                         # mov the bottom one down
                         adj_dn = -1*diff + 1
@@ -570,13 +570,13 @@ class Program(object):
                         adj_up = diff - 1
 
                     #print "Adjust for node:", node, "up:", adj_up, "dn:", adj_dn
-                    
+
                     if (adj_up < 0):
                         adjust_up[node] -= adj_up
                         if (node in parents):
                             for p in parents[node]:
                                 adjust_dn[p] += (-1 * adj_up)
-                            
+
                     if (adj_dn > 0):
                         adjust_dn[node] += adj_dn
                         if (node in parents):
@@ -584,7 +584,7 @@ class Program(object):
                                 # BED testing change
                                 #adjust_up[p] -= (-1 * adj_up)
                                 adjust_up[p] -= (-1 * adj_dn)
-                            
+
                 work_index += 1
 
             level_index -= 1
@@ -596,7 +596,7 @@ class Program(object):
                 adj_dict[l] = [-1*adjust_up[l], adjust_dn[l]]
 
         # need to find how far down to start
-        
+
         # find the min min_up for all level 0 runs and add in any up adjustments
         min_min_up = -1
 ##        if (bfs):
@@ -608,12 +608,12 @@ class Program(object):
 ##                    if (node in parents[cnode]):
 ##                        # cnode is a child of node
 ##                        #print "child", cnode
-                        
+
 ##                min_up += adj_dict[node][0]
 ##                if (min_up < min_min_up):
 ##                    min_min_up = min_up
 
 ##        min_min_up += 1
-        
+
         #print "Adj:", adj_dict, min_min_up
         return adj_dict, min_min_up

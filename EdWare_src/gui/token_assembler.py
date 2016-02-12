@@ -9,7 +9,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, 2014 Microbric Pty Ltd.
+# Copyright 2006, 2014, 2015, 2016 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -79,7 +79,7 @@ def assem_file(f_name, called_from = [], pass_token_stream = None, pass_err = No
 
     # get each line but insert a file if find 'INSERT TOKENS'
     line_num = 1
-    for line in fh:    
+    for line in fh:
         # if 'INPUT TOKENS fname' push existing file
         insert_check = line.split()
         if ((len(insert_check) >= 3) and
@@ -90,7 +90,7 @@ def assem_file(f_name, called_from = [], pass_token_stream = None, pass_err = No
             called_from.pop()
         else:
             assem_line(line)
-            
+
         line_num += 1
 
     return True
@@ -99,7 +99,7 @@ def assem_line(line):
     """First scan of the operator to see which function to call"""
 
     err.set_context(3, line)
-    
+
     words = hl_parser.chop_line(line)
 
     if (not words):
@@ -108,10 +108,10 @@ def assem_line(line):
     t1 = words[0]
 
     err.set_context(4, hl_parser.format_word_list(words))
-    
+
     if (t1.type() == "label"):
       assem_spec_label(t1, words[1:], line=line)
-      
+
     elif (t1.type() == "op"):
         op = t1.val()
         words = words[1:]
@@ -120,7 +120,7 @@ def assem_line(line):
             size = 0
             if (op.endswith('w')):
                 size = 1
-                
+
             op = op[:-1]
             if (op == "mov"):
                 assem_move(size, words, "", line=line)
@@ -186,7 +186,7 @@ def assem_line(line):
                 return
 
 
-    
+
 def assem_move(size, words, special, line):
     logging.debug("Move size:%d, words:%s" % (size, hl_parser.format_word_list(words)))
     if (len(words) != 2):
@@ -196,7 +196,7 @@ def assem_move(size, words, special, line):
     token = tokens.Token("move", err, line)
     token.add_bits(0, 6, 3, 1)
     sdindex = 1
-    
+
     # source
     if (words[0].type() == "const"):
         if (not special and words[0].val() >= 0 and words[0].val() <= 3):
@@ -215,7 +215,7 @@ def assem_move(size, words, special, line):
                 else:
                     err.report_error("Source for lcd moves must be byte sized")
                     return
-                    
+
                 token.add_word(sdindex, words[0].val())
                 sdindex += 2
     elif (words[0].type() == "modreg"):
@@ -225,7 +225,7 @@ def assem_move(size, words, special, line):
             token.add_bits(0, 2, 0xf, 0x9)
         token.add_byte(sdindex, words[0].val())
         sdindex += 1
-        
+
     elif (words[0].type() in ["var", "arg"]):
         if (size == 0):
             token.add_bits(0, 2, 0xf, 0xc)
@@ -248,18 +248,18 @@ def assem_move(size, words, special, line):
     # if this is a time chkpt then the destination must be in 8bit space
     if (special == "time"):
         size = 0
-        
+
     # destination
     if (words[1].type() == "modreg"):
         if (special):
             err.report_error("Destination for lcd and time moves can NOT be mod/reg")
             return
-        
+
         token.add_bits(0, 0, 0x3, 0x0)
         token.add_byte(sdindex, words[1].val())
         sdindex += 1
 
-    
+
     elif (words[1].type() in ["var", "arg"]):
         if (size == 0):
             if (special != "lcd"):
@@ -270,7 +270,7 @@ def assem_move(size, words, special, line):
             if (special):
                 err.report_error("Desination for lcd and time moves can not be in word variables")
                 return
-            
+
             token.add_bits(0, 0, 0x3, 0x2)
 
         if (words[1].type() == "arg"):
@@ -339,13 +339,13 @@ def assem_data(size, words, line):
     if (length > len(values)):
         while (len(values) < length):
             values.append(0)
-    
+
     # Make the tokens
     if (len(values)):
-        
+
         tokens_to_create = (len(values)+14)/15
         last = len(values) % 15
-        
+
         #print tokens_to_create, last
         val_index = 0
         for i in range(tokens_to_create):
@@ -379,7 +379,7 @@ def assem_data(size, words, line):
                     token.add_word(token_index, values[val_index])
                     token_index += 2
                     val_index += 1
-                    
+
             token.finish(token_stream)
 
 
@@ -395,7 +395,7 @@ def assem_uni_math(op, size, words, line):
     token.add_bits(0, 6, 3, 2)
     token.add_bits(0, 3, 1, size)
     token.add_bits(0, 0, 3, uni_assem_map[op])
-    
+
     if (not words or
         (words[0].type() == "modreg" and words[0].val() == hl_parser.modreg_names["acc"])):
         token.add_bits(0, 2, 1, 0)
@@ -441,12 +441,12 @@ def assem_basic_math(op, size, words, line):
             token.add_byte(1, words[0].val())
         else:
             token.add_word(1, words[0].val())
-            
+
         token.finish(token_stream)
     else:
         err.report_error("Basic Math - invalid argument type")
         return
-    
+
 other1_assem_map = {"shl":0, "shr":1, "div":2, "mod":3}
 other2_assem_map = {"or":0, "and":1, "xor":2}
 
@@ -460,7 +460,7 @@ def assem_other_math(op, size, words, line):
     token = tokens.Token("log-math", err, line)
     token.add_bits(0, 6, 3, 2)
     token.add_bits(0, 3, 1, size)
-    
+
     if (op in other1_assem_map.keys()):
         token.add_bits(0,4,3,2)
         token.add_bits(0,0,3, other1_assem_map[op])
@@ -480,7 +480,7 @@ def assem_other_math(op, size, words, line):
     elif (words[0].type() == "const"):
         token.add_bits(0, 2, 1, 1)
         token.add_byte(1, words[0].val())
-            
+
         token.finish(token_stream)
     else:
         err.report_error("Logic Math - invalid argument type")
@@ -490,7 +490,7 @@ def assem_conv(op, words, line):
     logging.debug("Conv %s words:%s" % (op, hl_parser.format_word_list(words)))
 
     token = tokens.Token("conv", err, line)
-    
+
     if (op == "cmptime"):
         if (len(words) != 1):
             err.report_error("Cmptime needs one arguement")
@@ -554,7 +554,7 @@ def assem_stack(op, size, words, line):
         else:
             err.report_error("Push - invalid operand: %s" % (words[0].type()))
             return
-        
+
     else: # pop
         if (words[0].type() == 'modreg'):
             if (words[0].val() == hl_parser.modreg_names["acc"]):
@@ -572,7 +572,7 @@ def assem_stack(op, size, words, line):
         else:
             err.report_error("Pop - invalid operand: %s" % (words[0].type()))
             return
-        
+
 
     token.finish(token_stream)
 
@@ -588,15 +588,15 @@ def assem_event(op, words, line):
     token.add_bits(0, 6, 3, 2)
     token.add_bits(0, 4, 3, 3)
     token.add_bits(0, 0, 3, 3)
-    
+
     if (op == 'enable'):
         token.add_bits(0, 2, 1, 1)
     else: #(op == 'disable')
         token.add_bits(0, 2, 1, 0)
 
     token.finish(token_stream)
-    
-    
+
+
 
 jcond_assem_map = {'a':0, 'e':1, 'ne':2, 'gr':3, 'ge':4, 'l':5, 'le':6, 'z':1, 'nz':2}
 
@@ -606,7 +606,7 @@ def assem_jump(op, cond, words, line):
     # cond is one of: a, e, ne, g, l, le, lg or empty for ret, d?nz
     token = tokens.Token("jump", err, line)
     token.add_bits(0, 6, 3, 3)
-    
+
     if (op == "ret"):
         if (len(words) != 0):
             err.report_error("Ret don't take an argument")
@@ -650,14 +650,14 @@ def assem_jump(op, cond, words, line):
             else:
                 token.set_jump_label(1, words[0].val())
                 token.add_byte(1, 0)    # A placeholder
-            
+
         else:
             err.report_error("Jumps need either a constant or a label as argument, not a: "+words[0].type())
             return
 
     token.finish(token_stream)
-            
-    
+
+
 def assem_misc(op, words, line):
     logging.debug("Misc op:%s words:%s" % (op, hl_parser.format_word_list(words)))
     if (op == "stop"):
@@ -668,7 +668,7 @@ def assem_misc(op, words, line):
         token = tokens.Token("misc", err, line)
         token.add_bits(0, 0, 0xff, 0xff)
         token.finish(token_stream)
-        
+
     elif (op in ["bitset", "bitclr"]):
         if (len(words) != 2):
             err.report_error("Bitset/bitclr needs 2 arguments: bit and mod/reg")
@@ -678,7 +678,7 @@ def assem_misc(op, words, line):
         if (bit < 0 or bit > 7):
             err.report_error("Bitset/bitclr bit must be between 0 and 7 (not %d)" % (bit))
             return
-            
+
         modreg = words[1].amodreg()
 
         token = tokens.Token("misc", err, line)
@@ -687,11 +687,11 @@ def assem_misc(op, words, line):
             token.add_bits(0, 3, 0x1, 0x1)
         else:
             token.add_bits(0, 3, 0x1, 0x0)
-            
+
         token.add_bits(0, 0, 0x7, bit)
         token.add_byte(1, modreg)
         token.finish(token_stream)
-    
+
     else:
         err.report_error("Unknown misc operator: " + op)
         return
@@ -720,7 +720,7 @@ def assem_spec_data(which, words, line):
         name = '*'
     else:
         name = words[0].astr()
-    
+
     if (words[1].val() == '*'):
         start = -1
         if (name == '*'):
@@ -730,7 +730,7 @@ def assem_spec_data(which, words, line):
         start = words[1].anum()
 
     words = words[2:]
-    
+
     length = 1
     if (len(words) >= 1):
         if (words[0].val() == '*'):
@@ -781,13 +781,13 @@ def assem_spec_data(which, words, line):
         while (len(values) < length):
             values.append(0)
         #print values
-    
+
     # Make the tokens
     if (len(values)):
-        
+
         tokens_to_create = (len(values)+14)/15
         last = len(values) % 15
-        
+
         #print tokens_to_create, last
         val_index = 0
         for i in range(tokens_to_create):
@@ -821,7 +821,7 @@ def assem_spec_data(which, words, line):
                     token.add_word(token_index, values[val_index])
                     token_index += 2
                     val_index += 1
-                    
+
             token.finish(token_stream)
 
     # Add the info about the variable to the token_stream
@@ -848,7 +848,7 @@ def assem_spec_data_lcd(which, words, line):
         column = words[1].anum()
 
     start = row * ROW_LENGTH + column
-    
+
     if (words[2].val() == '*'):
         length = -1
     else:
@@ -888,13 +888,13 @@ def assem_spec_data_lcd(which, words, line):
     if ((length > 0) and (length > len(values))):
         while (len(values) < length):
             values.append(' ')
-    
+
     # Make the tokens
     if (len(values)):
-        
+
         tokens_to_create = (len(values)+14)/15
         last = len(values) % 15
-        
+
         #print tokens_to_create, last
         val_index = 0
         for i in range(tokens_to_create):
@@ -919,23 +919,23 @@ def assem_spec_data_lcd(which, words, line):
                 token.add_byte(token_index, values[val_index])
                 token_index += 1
                 val_index += 1
-                    
+
             token.finish(token_stream)
 
-        
+
 def assem_spec_binary(which, words, line):
     logging.debug("Spec_binary which:%s words:%s" % (which, hl_parser.format_word_list(words)))
 
     token = tokens.Token("binary", err, line)
     token_index = 0
-    
+
     # now words are the values
     for w in words:
         if (w.type() not in ["arg", "string", "const"]):
             err.report_error("Word should have been an argument or string!")
             return
         else:
-            
+
             if (w.type() == "string"):
                 for c in w.val():
                     token.add_byte(token_index, ord(c))
@@ -946,7 +946,7 @@ def assem_spec_binary(which, words, line):
 
     token.finish(token_stream)
 
-    
+
 def assem_spec_reserve(which, words, line):
     logging.debug("Spec_reserve which:%s words:%s" % (which, hl_parser.format_word_list(words)))
     if (len(words) != 2):
@@ -971,13 +971,13 @@ def assem_spec_version(words, line):
 
     token_stream.add_version(major, minor)
 
-    
+
 def assem_spec_begin_end(op, words, line):
     logging.debug("Spec_begin_end op:%s words:%s" % (op, hl_parser.format_word_list(words)))
     if (len(words) < 1):
         err.report_error("BEGIN/END need a type argument")
         return
-    
+
     if (words[0].astr() == "FIRMWARE"):
         if (op == "BEGIN"):
             if (len(words) != 1):
@@ -999,7 +999,7 @@ def assem_spec_begin_end(op, words, line):
         else:
             # END EVENT
             token_stream.add_end("event")
-    
+
     elif (words[0].astr() == "MAIN"):
         if (op == "BEGIN"):
             if (len(words) != 1):
@@ -1014,13 +1014,13 @@ def assem_spec_begin_end(op, words, line):
         err.report_error("BEGIN/END needs one of: MAIN, EVENT, FIRMWARE")
         return
 
-    
+
 def assem_spec_limits(words, line):
     logging.debug("Spec_limits words:%s" % (hl_parser.format_word_list(words)))
     if (len(words) != 5):
         err.report_error("LIMITS needs exactly 5 arguments")
         return
-    
+
     b_limit = words[0].anum()
     w_limit = words[1].anum()
     l_limit = words[2].anum()
@@ -1028,7 +1028,7 @@ def assem_spec_limits(words, line):
     t_bytes_limit = words[4].anum()
 
     token_stream.set_limits(b_limit, w_limit, l_limit, e_handlers, t_bytes_limit)
-    
+
 
 def assem_spec_device(words, line):
     logging.debug("Spec_device words:%s" % (hl_parser.format_word_list(words)))
@@ -1086,9 +1086,9 @@ def assem_spec_comms(words, line):
     token = tokens.Token("comms", err, line)
     token.add_bits(0, 0, 0xf, 0x8)
 
-    token.add_uword(1, words[0].anum()) 
+    token.add_uword(1, words[0].anum())
     token.finish(token_stream)
-    
+
     token_stream.set_comms(words[0].anum())
 
 def assem_spec_finish(words, line):
@@ -1098,7 +1098,7 @@ def assem_spec_finish(words, line):
         return
 
     token_stream.finish_tokens()
-    
+
 
 # ********* Main and tests ********************************************
 
@@ -1106,7 +1106,7 @@ def assem_spec_finish(words, line):
 def test():
     global token_stream
     global err
-    
+
     test_simp = ["incb %acc", "movb 12,@lil_count", "decw 1001/2", " # a comment line",
                   "   addb  $12 #do some adding",
                   "movb $'a', %acc", "branch :label1", "decw", "mulw 44", "subb $1000", "subw $-3000",
@@ -1129,7 +1129,7 @@ def test():
                       "BEGIN CONFIG 0,0", "BEGIN PROGRAM", "BEGIN EVENT %acc 0xfe 20/16"]
 
     test_other = ["stop 1", "COMMS", "COMMS 1 2", "FINISH 2",
-                  ":start1", ":start2", 
+                  ":start1", ":start2",
                   "stop", "FINISH", "COMMS 1024", "COMMS 400/16", "COMMS 0x400"]
 
     test_prog1 = ["COMMS 0x400", "LIMITS 20, 10, 64, 0, 200", 'RESERVB 0, 3', 'RESERVB 6, 2',
@@ -1138,7 +1138,7 @@ def test():
                   "DATW temps *, 5", 'DATA message * * "This is fun but long - will it work?"',
                   "movb 5, @count", ":b1", "movb @count, %acc", "cmpb 0",
                   "bre :f1", "decb @count", "bra :b1",
-                  ":f1", "movb 0, %acc", "END PROGRAM", "END CONFIG", "FINISH"] 
+                  ":f1", "movb 0, %acc", "END PROGRAM", "END CONFIG", "FINISH"]
 
 
     test_prog1 = ["COMMS 0x400", "LIMITS 200, 10, 64, 0, 200", 'RESERVB 0, 3', 'RESERVB 6, 2',
@@ -1166,7 +1166,7 @@ def test():
 
     err = logging_utils.Error_reporter()
     hl_parser.set_err_reporter(err)
-    
+
     #err.set_exit_on_error(False)
     #err.set_throw_on_error(False)
 
@@ -1185,7 +1185,7 @@ def test():
     #test_lines.extend(test_other)
     #test_lines.extend(test_prog2)
     test_lines.extend(test_new_good)
-    
+
     for t in test_lines:
         assem_line(t)
 
@@ -1199,16 +1199,16 @@ def test():
     token_analysis.fixup_sections()     # Add section headers including lengths
     token_analysis.fixup_jumps()        # Fixup globals which may change because of section headers
     token_analysis.fixup_crcs()         # Finally the crcs -- nothing will change now
-    
+
     token_stream.dump_tokens()
     logging_utils.dump_object(token_analysis, "Token_analyser")
-    
+
 
 def main():
-    
+
     logging_utils.setup_root(fname = "/tmp/token_tool.log")
     test()
-    
+
 if __name__ == "__main__":
     #print prechop_line("  link  :like 32,,,-45 \d 'Hi \" there' #no")
     #print prechop_line("32,322,33 45\ 343, \" Hello 'a' how''s it going?\"    4")
