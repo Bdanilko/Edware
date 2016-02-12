@@ -923,9 +923,13 @@ class BricworksApp(wx.App):
     def MacReopenApp(self):
         self.GetTopWindow().Raise()
 
-def main2(file_path=None, selected_audio="any"):
+def main2(file_path=None, selected_audio="any", userdir=False):
     audioToBeUsed = gui.downloader.set_audio_output(selected_audio)
     #print audioToBeUsed
+    if (userdir):
+        gui.paths.set_store_dir(gui.paths.get_user_dir())
+
+    gui.about.set_audio_info(audioToBeUsed)
 
     app = BricworksApp(False)
     if (file_path):
@@ -946,10 +950,12 @@ if __name__ == '__main__':
     parser.add_argument('-a', '--audio', dest='selected_audio',
                         default='any', choices=("any", "portaudio", "pygame", "winsound"),
                         help="Select a specific audio output if it's installed")
-    parser.add_argument('-v', '--version', action='version', version='1.0.4c')
+    parser.add_argument('-v', '--version', action='version', version='1.0.5a')
+    parser.add_argument('-u', '--userdir', dest='userdir', action='store_true',
+                        help="Store temp files in user directory instead of edware directory")
 
     args = parser.parse_args()
     #print args
 
 
-    main2(args.filename, args.selected_audio)
+    main2(args.filename, args.selected_audio, args.userdir)

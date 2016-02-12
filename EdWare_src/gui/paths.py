@@ -47,11 +47,11 @@ path = '~'
 new_path = os.path.expanduser(path)
 if (new_path == path):
     # didn't work, will have to just try to use the current directory
-    STORE_DIR = '.'
+    USER_DIR = '.'
 else:
-    STORE_DIR = new_path
+    USER_DIR = new_path
 
-# override to use the edison directory instead of the user's directory.
+# Start with the run directory to store temp files in
 STORE_DIR = RUN_DIR
 
 # print "Platform:", PLATFORM, ", Frozen:", FROZEN, ", Run_dir:", RUN_DIR, ", Store_dir:", STORE_DIR
@@ -65,8 +65,12 @@ def get_platform():
 def get_run_dir():
     return RUN_DIR
 
+def get_user_dir():
+    return USER_DIR
+
 def get_store_dir():
     return STORE_DIR
 
 def set_store_dir(newStoreDir):
+    global STORE_DIR
     STORE_DIR = newStoreDir

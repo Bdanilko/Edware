@@ -26,22 +26,28 @@ import wx
 import wx.html
 import os
 
+AUDIO_INFO = ""
+
+def set_audio_info(info):
+    global AUDIO_INFO
+    AUDIO_INFO = info
+
 class AboutBox(wx.Dialog):
 
     def __init__(self, parent):
         wx.Dialog.__init__(self, parent, -1, "About Edison EdWare", size=(600,500))
-        self.html_text = '''
+        self.html_start = '''
         <html>
         <body>
         <center>
         <h1>Edison EdWare</h1>
-        <h2>Version 1.0.4c</h2>
+        <h2>Version 1.0.5a</h2>
         Programming your Edison Robot<br>
         http://www.microbric.com/
         </center>
         <p>
         <font size="-2">
-        Copyright 2006,2014,2015 Microbric Pty Ltd<br>
+        Copyright 2006,2014,2015,2016 Microbric Pty Ltd<br>
         This program is distributed under the terms of the Gnu General Public License, version 2
         (for the full text, see gpl.txt in the docs directory)
         </font>
@@ -74,7 +80,9 @@ class AboutBox(wx.Dialog):
         <li><b>comscan.py</b> from bitpim (http://www.bitpim.org)
         </font>
         </ul>
+        '''
 
+        self.html_end = '''
         </body>
         </html>
         '''
@@ -83,7 +91,12 @@ class AboutBox(wx.Dialog):
         #self.test_text = "Environment - EdwareAudio:%s" % (os.getenv("edwareaudio", "NOT-SET"))
 
         html = wx.html.HtmlWindow(self)
-        html.SetPage(self.html_text + self.test_text)
+
+        self.audio_text = ""
+        if (AUDIO_INFO):
+            self.audio_text = '<p><font size="-4">'+AUDIO_INFO+'</font>'
+
+        html.SetPage(self.html_start + self.test_text + self.audio_text + self.html_end)
         button = wx.Button(self, wx.ID_OK, "Okay")
 
         sizer = wx.BoxSizer(wx.VERTICAL)

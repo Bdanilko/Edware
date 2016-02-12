@@ -1,6 +1,6 @@
 # -*- mode: python -*-
 a = Analysis(['edware.py'],
-             pathex=['/Users/Shared/edware/edware_1.0.4c'],
+             pathex=['/Users/Shared/edware/edware_1.0.5a'],
              hiddenimports=[],
              hookspath=None,
              runtime_hooks=None)
