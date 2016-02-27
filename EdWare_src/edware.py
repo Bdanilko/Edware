@@ -950,7 +950,7 @@ if __name__ == '__main__':
     parser.add_argument('-a', '--audio', dest='selected_audio',
                         default='any', choices=("any", "portaudio", "pygame", "winsound"),
                         help="Select a specific audio output if it's installed")
-    parser.add_argument('-v', '--version', action='version', version='1.0.5a')
+    parser.add_argument('-v', '--version', action='version', version='1.0.5-w')
     parser.add_argument('-u', '--userdir', dest='userdir', action='store_true',
                         help="Store temp files in user directory instead of edware directory")
 
