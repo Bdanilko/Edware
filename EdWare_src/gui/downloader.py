@@ -130,10 +130,10 @@ def set_audio_output(choice):
     using = "unknown"
 
     WAVER_PRESENT = False
-    if sys.platform.startswith("win"):
-        waver_path = os.path.join(paths.get_run_dir(), "waver", "waver.exe")
-        if os.path.isfile(waver_path):
-            WAVER_PRESENT = True
+    # if sys.platform.startswith("win"):
+    #     waver_path = os.path.join(paths.get_run_dir(), "waver", "waver.exe")
+    #     if os.path.isfile(waver_path):
+    #         WAVER_PRESENT = True
 
     installedList = []
     installed = ""
