@@ -1182,59 +1182,6 @@ class hex_downloader(wx.Dialog):
         self.Refresh()
 
 
-def convert(binString, outFilePath):
-    #print "Debug: in convert() with binString of length", len(binString)
-    waveWriter = wave.open(outFilePath, 'wb')
-    waveWriter.setnchannels(2)
-    waveWriter.setsampwidth(1)
-    waveWriter.setframerate(WAVE_SAMPLE_RATE_HZ)
-    waveWriter.setcomptype("NONE", "")
-
-    # now generate the file
-    index = 0
-    preamble = 0
-
-    while (preamble < 20):
-        waveWriter.writeframes(createAudio(0))
-        preamble += 1
-
-    while (index < len(binString)):
-        data = binString[index]
-        #print "..debug: coding value", data
-        # add start
-        waveWriter.writeframes(createAudio(6))
-
-        # now the actual data -- big endian or little endian
-        mask = 1
-        ones = 0
-        while (mask <= 0x80):
-            if (data & mask):
-                waveWriter.writeframes(createAudio(2))
-                ones += 1
-            else:
-                waveWriter.writeframes(createAudio(0))
-            mask <<= 1
-
-        # add parity
-        # if (ones % 2 == 1):
-        #     # odd so need to add a one
-        #     waveWriter.writeframes(createAudio(2))
-        # else:
-        #     # even so add a zero
-        #     waveWriter.writeframes(createAudio(0))
-
-        # add stop - BBB Changed to 8 - differs from start
-        waveWriter.writeframes(createAudio(8))
-
-        index += 1
-
-    # added to end as well - to ensure entrie data is played. - ## BBB
-    preamble = 0
-    while (preamble < 20):
-        waveWriter.writeframes(createAudio(0))
-        preamble += 1
-
-
 def waveFileLenInSeconds(waveFilePath):
     waveReader = wave.open(waveFilePath, 'rb')
     rate = waveReader.getframerate()
@@ -1247,7 +1194,6 @@ def waveFileLenInSeconds(waveFilePath):
 
 def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
     # print "Debug: in convert() with binString of length", len(binString)
-    audioFunction = createAudioRamping
     waveWriter = wave.open(outFilePath, 'wb')
     waveWriter.setnchannels(2)
     waveWriter.setsampwidth(1)
@@ -1270,8 +1216,8 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
     waveWriter.writeframes(createSilenceRamping(1000, sample_rate))
 
     preamble = 0
-    while (preamble < (sample_rate/2000)):
-        waveWriter.writeframes(audioFunction(0, sample_rate))
+    while (preamble < (sample_rate / 2000)):
+        waveWriter.writeframes(createAudioRamping(0, sample_rate))
         preamble += 1
 
     while (index < len(binString)):
@@ -1280,44 +1226,36 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
             # print "Debug -- pausing for", pauseMsecs, "msecs, after", index, "bytes"
             preamble = 0
             while (preamble < pauseMsecs):
-                waveWriter.writeframes(createAudio(0, sample_rate))
+                waveWriter.writeframes(createAudioRamping(0, sample_rate))
                 preamble += 1
             pauseCount = 0
 
         data = binString[index]
         # print "..debug: coding value", data
         # add start
-        waveWriter.writeframes(createAudio(6, sample_rate))
+        waveWriter.writeframes(createAudioRamping(6, sample_rate))
 
         # now the actual data -- big endian or little endian
         mask = 1
         ones = 0
         while (mask <= 0x80):
             if (data & mask):
-                waveWriter.writeframes(createAudio(2, sample_rate))
+                waveWriter.writeframes(createAudioRamping(2, sample_rate))
                 ones += 1
             else:
-                waveWriter.writeframes(createAudio(0, sample_rate))
+                waveWriter.writeframes(createAudioRamping(0, sample_rate))
             mask <<= 1
 
-        # add parity
-        # if (ones % 2 == 1):
-        #     # odd so need to add a one
-        #     waveWriter.writeframes(audioFunction(2))
-        # else:
-        #     # even so add a zero
-        #     waveWriter.writeframes(audioFunction(0))
-
         # add stop - BBB Changed to 8 - differs from start
-        waveWriter.writeframes(createAudio(8, sample_rate))
+        waveWriter.writeframes(createAudioRamping(8, sample_rate))
 
         index += 1
         pauseCount += 1
 
     # added to end as well - to ensure entire data is played. - ## BBB
     preamble = 0
-    while (preamble < (sample_rate/2000)):
-        waveWriter.writeframes(audioFunction(0, sample_rate))
+    while (preamble < (sample_rate / 2000)):
+        waveWriter.writeframes(createAudioRamping(0, sample_rate))
         preamble += 1
 
     # 500 milliseconds (1000 midQuantas) of silence at the end
@@ -1420,29 +1358,3 @@ def createAudioRamping(midQuantas, sample_rate):
 def createSilenceRamping(midQuantas, sample_rate):
     samples_per_quanta = sample_rate / 2000
     return ramp(128, 128, midQuantas * samples_per_quanta)
-
-
-def createAudio(midQuantas, sample_rate):
-    data = ""
-    samples_per_quanta = sample_rate / 2000
-
-    # write fars
-    count = 0
-    while (count < samples_per_quanta):
-        data += chr(255) + chr(0)
-        count += 1
-
-    # write nears
-    count = 0
-    while (count < samples_per_quanta):
-        data += chr(0) + chr(255)
-        count += 1
-
-    if (midQuantas > 0):
-        count = 0
-        samples = midQuantas * samples_per_quanta
-        while (count < samples):
-            data += chr(128) + chr(128)
-            count += 1
-
-    return data
