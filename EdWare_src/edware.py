@@ -8,7 +8,7 @@
 #
 # Author: Brian Danilko, Likeable Software (brian@likeablesoftware.com)
 #
-# Copyright 2006, 2014, 2015, 2016 Microbric Pty Ltd.
+# Copyright 2006, 2014, 2015, 2016, 2018 Microbric Pty Ltd.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -950,7 +950,7 @@ if __name__ == '__main__':
     parser.add_argument('-a', '--audio', dest='selected_audio',
                         default='any', choices=("any", "portaudio", "pygame", "winsound"),
                         help="Select a specific audio output if it's installed")
-    parser.add_argument('-v', '--version', action='version', version='1.0.6')
+    parser.add_argument('-v', '--version', action='version', version='1.0.7')
     parser.add_argument('-u', '--userdir', dest='userdir', action='store_true',
                         help="Store temp files in user directory instead of edware directory")
 

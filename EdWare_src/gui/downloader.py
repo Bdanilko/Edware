@@ -77,6 +77,8 @@ DOWNLOAD_PAUSE_MSECS = 2000
 
 WAVE_SAMPLE_RATE_HZ = 44100
 
+PULSE_AUDIO = True
+
 # A ramping function between two different samples - the
 # values are the percent of the change to apply in each sample.
 # Difference between each value is:
@@ -1200,6 +1202,14 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
 
     sample_rate = WAVE_SAMPLE_RATE_HZ
 
+    if (PULSE_AUDIO):
+        audio_func = createAudioWithPulses
+        silence_func = createSilenceWithPulses
+    else:
+        audio_func = createAudioRamping
+        silence_func = createSilenceRamping
+
+
     # print "sample_rate:", sample_rate
     waveWriter.setframerate(sample_rate)
     waveWriter.setcomptype("NONE", "")
@@ -1213,11 +1223,11 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
     pauseCount = 0
 
     # 500 milliseconds (1000 midQuantas) of silence at the end
-    waveWriter.writeframes(createSilenceRamping(1000, sample_rate))
+    waveWriter.writeframes(silence_func(1000, sample_rate))
 
     preamble = 0
     while (preamble < (sample_rate / 2000)):
-        waveWriter.writeframes(createAudioRamping(0, sample_rate))
+        waveWriter.writeframes(audio_func(0, sample_rate))
         preamble += 1
 
     while (index < len(binString)):
@@ -1226,28 +1236,28 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
             # print "Debug -- pausing for", pauseMsecs, "msecs, after", index, "bytes"
             preamble = 0
             while (preamble < pauseMsecs):
-                waveWriter.writeframes(createAudioRamping(0, sample_rate))
+                waveWriter.writeframes(audio_func(0, sample_rate))
                 preamble += 1
             pauseCount = 0
 
         data = binString[index]
         # print "..debug: coding value", data
         # add start
-        waveWriter.writeframes(createAudioRamping(6, sample_rate))
+        waveWriter.writeframes(audio_func(6, sample_rate))
 
         # now the actual data -- big endian or little endian
         mask = 1
         ones = 0
         while (mask <= 0x80):
             if (data & mask):
-                waveWriter.writeframes(createAudioRamping(2, sample_rate))
+                waveWriter.writeframes(audio_func(2, sample_rate))
                 ones += 1
             else:
-                waveWriter.writeframes(createAudioRamping(0, sample_rate))
+                waveWriter.writeframes(audio_func(0, sample_rate))
             mask <<= 1
 
         # add stop - BBB Changed to 8 - differs from start
-        waveWriter.writeframes(createAudioRamping(8, sample_rate))
+        waveWriter.writeframes(audio_func(8, sample_rate))
 
         index += 1
         pauseCount += 1
@@ -1255,11 +1265,11 @@ def convertWithPause(binString, outFilePath, pauseMsecs, bytesBetweenPauses):
     # added to end as well - to ensure entire data is played. - ## BBB
     preamble = 0
     while (preamble < (sample_rate / 2000)):
-        waveWriter.writeframes(createAudioRamping(0, sample_rate))
+        waveWriter.writeframes(audio_func(0, sample_rate))
         preamble += 1
 
     # 500 milliseconds (1000 midQuantas) of silence at the end
-    waveWriter.writeframes(createSilenceRamping(1000, sample_rate))
+    waveWriter.writeframes(silence_func(1000, sample_rate))
 
     waveWriter.close()
 
@@ -1354,7 +1364,35 @@ def createAudioRamping(midQuantas, sample_rate):
 
     return data
 
+def createAudioWithPulses(midQuantas, sample_rate):
+    data = ""
+    samples_per_quanta = sample_rate / 2000
+    total_samples = 2 * samples_per_quanta + (midQuantas * samples_per_quanta)
+
+    # write far
+    data += chr(255) + chr(0)
+    # write near
+    data += chr(0) + chr(255)
+
+    count = 2
+    while count < total_samples:
+        data += chr(128) + chr(128)
+        count += 1
+
+    return data
 
 def createSilenceRamping(midQuantas, sample_rate):
     samples_per_quanta = sample_rate / 2000
     return ramp(128, 128, midQuantas * samples_per_quanta)
+
+def createSilenceWithPulses(midQuantas, sample_rate):
+    data = ""
+    samples_per_quanta = sample_rate / 2000
+    total_samples = midQuantas * samples_per_quanta
+
+    count = 0
+    while count < total_samples:
+        data += chr(128) + chr(128)
+        count += 1
+
+    return data

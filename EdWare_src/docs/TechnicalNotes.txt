@@ -1,12 +1,12 @@
 Note -- this contains more detail notes about EdWare. BUT do not take this file
-as unchanging, complete, or minimal. In particular, some of this document may 
+as unchanging, complete, or minimal. In particular, some of this document may
 describe brics that are NOT used in Edison! The required source documents need
-to be read alongside this document. And the don't forget that there is an 
+to be read alongside this document. And the don't forget that there is an
 executable specification -- the existing python EdWare program.
 
 * Required source documents
 - Edison Product Specification
-- token_assembler.txt 
+- token_assembler.txt
 - tokens1.html
 
 * Details of creating EdWare Assembler from individual Brics
@@ -18,7 +18,7 @@ compiles brics to token assembler leaves a file called 'last_compile.mbc'.
 This is the ultimate documentation for how any bric is turned into the token
 assembler statement!
 
-In detail_win.py, 
+In detail_win.py,
 the brics typically have a XXX_convert function, which takes various
 commands. The "code" command, takes the bric type, along with data entered
 into the bric to generate the token assembler code.
@@ -64,7 +64,7 @@ This gives an example of how the code handles reading on/off from
 a variable. Note that the actual register name and bit needs to be
 found above or in the documents mentioned at the top of this file.
 - movb @VARIABLE %_cpu:acc
-- and $MASK 
+- and $MASK
 - brz :setToZero
 - bitset BIT mod_reg(output/action)
 - bra :done
@@ -123,7 +123,7 @@ found above or in the documents mentioned at the top of this file.
 - decb/decw @VARIABLE
 *** More math
 - just using the tokens for the actual operation, like in the inc/dec cases.
- 
+
 ** Motor Brics
 Rotations of the axle are computed using the fact that one rotation of the shaft
 equals 2.54mm, or 7.5 degrees. So for the other measurements, scaling is applied to
@@ -170,18 +170,18 @@ of which motor goes forward/backword/idle or stopped:
 **** Back left
 - Make the right motor go backward
 ** Event Brics
-- BEGIN EVENT mod_reg(status), MASK, VALUE  (where MASK and VALUE corresponds to 
+- BEGIN EVENT mod_reg(status), MASK, VALUE  (where MASK and VALUE corresponds to
                                              the event we are interested in)
 - bitclr $BIT mod_reg(status)
 - the code for the brics to be executed on the event follow this
- 
+
 ** Wait Brics
 *** In the main code
 - movtime $CONSTANT/@VARIABLE @_main_time_buffer
 - :WAIT_LABEL
 - cmptime @_main_time_buffer
 - brle WAIT_LABEL
- 
+
 *** In an event
 - movtime $CONSTANT/@VARIABLE @_event_time_buffer
 - :WAIT_LABEL
@@ -231,27 +231,69 @@ Place labels TEST_LABEL and END_LABEL at the ends of the loop code
 At the end of tokens1.html, there is a section on Download format. This details
 the header, and how the output of the assembled tokens are arranged for download.
 
-NOTE -- this will change slightly as the download is expanded to handle new 
-firmware downloads. 
+NOTE -- this will change slightly as the download is expanded to handle new
+firmware downloads.
 
 Currently the download is as documented for USB cable downloads (tokens1.html),
 but without the ENTER DOWNLOAD MODE and FIRMWARE MARKER | PROGRAM MARKER sequences.
 
 So, we have basically (see tokens1.html for details!):
 
-0: 0x20 (1 byte)  // EDISON_VERSION_BYTE   
+0: 0x20 (1 byte)  // EDISON_VERSION_BYTE
 
 1: databytes (2 bytes, LE)
 3: crc       (2 bytes, LE)
 5: 0x00      (1 byte) // module table NOT used
-6: event table offset (1 byte) 
+6: event table offset (1 byte)
 7: main prog   offset (2 bytes, LE)
 9: event tokens if used
 n: main program tokens
 
 
 * Creating the audio output file
-** Details of the audio file
+** New pulse wave method
+This method was developed to circumvent certain audio 'smoothing' functions
+*** Details of the audio file
+As you know from the product specification, data to be downloaded to Edison
+is encoded as audio files and played out the headphone jack. The current
+EdWare program conforms to that specification except that the parity bit
+is not sent (it was found that it wasn't needed). So each byte is encoded,
+with a start bit, 8 data bits (LSB first), then a stop bit.
+
+The output is encoded into a 'wav' file, with 2 channels, 8-bit data per channel,
+with a frame rate of 44100 Hz.
+
+The file 'Audio-to-Data-format.pdf' shows an example of how data is encoded.
+
+Basically the outputs on the 2 channels are in 1 of 3 states:
+- Far -- left channel is at max, right channel is at min,
+- Near -- left channel is at min, right channel is at max,
+- Mid  -- both channels are at 0.5 output
+
+Which leads to:
+- Start bit  : 1-Far, 1-Near, (8q-2) Mid
+- 0-data bit : 1-Far, 1-Near, (2q-2) Mid
+- 1-data bit : 1-Far, 1-Near, (4q-2) Mid
+- Stop bit   : 1-Far, 1-Near, (10q-2) Mid
+
+In a total audio file, a preamble and postscript of 20 0-data-bits are output. This allows
+for Edison to sync with the incoming data stream, and to make sure that the computer doesn't
+chop off some useful bits at the end of the transmission.
+
+*** Code to create the audio file
+The code to create the audio file is driven by the convert() method
+in the downloader.py file. It uses the method createAudio(N) to output the '1-Far, 1-Near'
+sequence followed by either N=0 (for the 0-data bit), N=2 (for the 1-data bit) or N=2 (for the
+start/stop Mid values) (note that 2 quanta - 2 samples are played before the N * quanta samples are added).
+
+Since 1q = 0.5ms, and we are playing the audio at 44.1 frames per 1ms, then 22 frames are recorded
+for each 1q time perioud. 1q isn't exactly 0.5ms (it's a bit fast), but this accuracy is acceptable
+to Edison.
+
+When EdWare downloads to Edison, it leaves behind the prepared audio file, called 'program.wav', so
+that it can be compared against other implmentations.
+** Old square wave method
+*** Details of the audio file
 As you know from the product specification, data to be downloaded to Edison
 is encoded as audio files and played out the headphone jack. The current
 EdWare program conforms to that specification except that the parity bit
@@ -278,11 +320,11 @@ In a total audio file, a preamble and postscript of 20 0-data-bits are output. T
 for Edison to sync with the incoming data stream, and to make sure that the computer doesn't
 chop off some useful bits at the end of the transmission.
 
-** Code to create the audio file
+*** Code to create the audio file
 The code to create the audio file is driven by the convert() method
 in the downloader.py file. It uses the method createAudio(N) to output the '1q-Far, 1q-Near'
-sequence followed by either N=0 (for the 0-data bit), N=2 (for the 1-data bit) or N=6 (for the 
-start/stop Mid values). 
+sequence followed by either N=0 (for the 0-data bit), N=2 (for the 1-data bit) or N=6 (for the
+start/stop Mid values).
 
 Since 1q = 0.5ms, and we are playing the audio at 44.1 frames per 1ms, then 22 frames are recorded
 for each 1q time perioud. 1q isn't exactly 0.5ms (it's a bit fast), but this accuracy is acceptable
