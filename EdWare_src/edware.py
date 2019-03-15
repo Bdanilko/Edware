@@ -953,9 +953,16 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--version', action='version', version='1.0.7')
     parser.add_argument('-u', '--userdir', dest='userdir', action='store_true',
                         help="Store temp files in user directory instead of edware directory")
+    parser.add_argument('-e', '--edwaredir', dest='edwaredir', action='store_true',
+                        help="Store temp files in edware directory instead of user directory")
+
 
     args = parser.parse_args()
     #print args
 
+    if args.userdir and args.edwaredir:
+        print "Both edware and user directories have been selected -- using the USER directory"
+        args.edwaredir = False
 
-    main2(args.filename, args.selected_audio, args.userdir)
+    # unless overridden with edwaredir, use the user directory
+    main2(args.filename, args.selected_audio, not args.edwaredir)

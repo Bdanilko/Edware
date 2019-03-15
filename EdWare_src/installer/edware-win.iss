@@ -2,9 +2,9 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "EdWare"
-#define MyAppVersion "1.0.6"
+#define MyAppVersion "1.0.7"
 #define MyAppPublisher "Microbric"
-#define MyAppURL "http://www.microbric.com/"
+#define MyAppURL "https://meetedison.com/"
 #define MyAppExeName "edware.exe"
 
 [Setup]
@@ -22,9 +22,9 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
-OutputDir=C:\Users\Brian\Documents\edware_1.0.6\inno
+OutputDir=C:\Users\User\Documents\edware_1.0.7\inno
 OutputBaseFilename=setup
-SetupIconFile=C:\Users\Brian\Documents\edware_1.0.6\EdWare.ico
+SetupIconFile=C:\Users\User\Documents\edware_1.0.7\EdWare.ico
 Compression=lzma
 SolidCompression=yes
 
@@ -36,8 +36,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
 
 [Files]
-Source: "C:\Users\Brian\Documents\edware_1.0.6\dist\edware\edware.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Brian\Documents\edware_1.0.6\dist\edware\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\User\Documents\edware_1.0.7\dist\edware\edware.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\User\Documents\edware_1.0.7\dist\edware\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

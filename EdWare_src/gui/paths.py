@@ -24,6 +24,7 @@
 import sys
 import os
 import os.path
+import tempfile
 
 FROZEN = getattr(sys, 'frozen', False)
 
@@ -51,8 +52,7 @@ if (new_path == path):
 else:
     USER_DIR = new_path
 
-# Start with the run directory to store temp files in
-STORE_DIR = RUN_DIR
+STORE_DIR = USER_DIR
 
 # print "Platform:", PLATFORM, ", Frozen:", FROZEN, ", Run_dir:", RUN_DIR, ", Store_dir:", STORE_DIR
 
@@ -73,4 +73,13 @@ def get_store_dir():
 
 def set_store_dir(newStoreDir):
     global STORE_DIR
-    STORE_DIR = newStoreDir
+    print "Trying to set store directory to:", newStoreDir
+    try:
+        STORE_DIR = newStoreDir
+        test_file = os.path.join(newStoreDir, "edware_test_write.txt")
+        fh = file(test_file, 'w')
+        fh.close()
+        os.remove(test_file)
+    except IOError:
+        print("Error setting store directory - use temp dir")
+        STORE_DIR = tempfile.gettempdir()

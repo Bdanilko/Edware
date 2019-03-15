@@ -47,7 +47,7 @@ class AboutBox(wx.Dialog):
         </center>
         <p>
         <font size="-2">
-        Copyright 2006,2014,2015,2016 Microbric Pty Ltd<br>
+        Copyright 2006,2014,2015,2016,2018 Microbric Pty Ltd<br>
         This program is distributed under the terms of the Gnu General Public License, version 2
         (for the full text, see gpl.txt in the docs directory)
         </font>
